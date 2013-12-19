@@ -27,8 +27,6 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	shiftPressed = false;
 	controlPressed = false;
 	altPressed = false;
-
-	mode = MODE_DEFAULT;
 }
 
 GLWidget::~GLWidget() {
@@ -43,8 +41,8 @@ void GLWidget::drawScene() {
 	float height = (float)((int)(camera->dz * 0.012f)) * 0.1f * 1.5f;
 
 	// draw the select area
-	if (editor->bbox != NULL) {
-		renderer->renderBBox(*editor->bbox, height);
+	if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA || editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
+		renderer->renderBBox(editor->bbox, height);
 	}
 
 	// draw the selected vertex
@@ -55,6 +53,13 @@ void GLWidget::drawScene() {
 	// draw the selected edge
 	if (editor->selectedEdge != NULL) {
 		renderer->renderPolyline(editor->selectedEdge->polyLine, height);
+	}
+
+	// draw the selected roads
+	if (editor->selectedRoads != NULL) {
+		editor->selectedRoads->setZ(camera->dz);
+		editor->selectedRoads->generateMesh();
+		renderer->render(editor->selectedRoads->renderable);
 	}
 }
 
@@ -119,27 +124,28 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 	if (e->buttons() & Qt::LeftButton) {
 		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
-		if (hitTest(editor->bbox, last2DPos)) {
-			mode = MODE_MOVING_SELECTION;
+		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && hitTest(editor->bbox, last2DPos)) {
+			editor->mode = RoadGraphEditor::MODE_AREA_SELECTED;
 		} else {
+			if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
+				// merge the selected roads to the others
+				editor->unselectRoads();
+			}
+
 			// if the vertex is close to the point, the vertex is selected
 			if (editor->selectVertex(last2DPos)) {
-				mode = MODE_VERTEX_SELECTED;
-			} else if (editor->selectEdge(last2DPos)) {
-				mode = MODE_EDGE_SELECTED;
+			} else if (editor->selectEdge(last2DPos)) {				
 			} else {
 				// if neither a vertex nor a edge is selected, then the selection mode starts
-				mode = MODE_RESIZING_SELECTION;
-
-				editor->startSelection(last2DPos);
+				editor->startArea(last2DPos);
 			}
 		}
 
 		mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
 		mainWin->controlWidget->setRoadEdge(editor->selectedEdge);
-
-		updateGL();
 	}
+
+	mainWin->ui.statusBar->showMessage(QString("MODE: %1").arg(editor->mode));
 }
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
@@ -148,19 +154,20 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-	if (mode == MODE_VERTEX_SELECTED) {
+	if (editor->mode == editor->MODE_VERTEX_SELECTED) {
 		if (controlPressed) {
 			float snap_threshold = camera->dz * 0.03f;
 			editor->stopMovingSelectedVertex(snap_threshold);
 		} else {
 			editor->stopMovingSelectedVertex();
 		}
-	} else if (mode == MODE_RESIZING_SELECTION) {
-		editor->endSelection();
-		mode = MODE_DEFAULT;
+	} else if (editor->mode == editor->MODE_DEFINING_AREA) {
+		editor->finalizeArea();
 	}
 
 	e->ignore();
+
+	mainWin->ui.statusBar->showMessage(QString("MODE: %1").arg(editor->mode));
 
 	setCursor(Qt::ArrowCursor);
 	updateGL();
@@ -179,9 +186,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	last2DPos = pos;
 
 	if (e->buttons() & Qt::LeftButton) {
-		if (mode == MODE_MOVING_SELECTION) {
-			editor->moveSelection(dx2D, dy2D);
-		} else if (mode == MODE_VERTEX_SELECTED) {
+		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
+			editor->moveArea(dx2D, dy2D);
+		} else if (editor->mode == RoadGraphEditor::MODE_VERTEX_SELECTED) {
 			if (controlPressed) {
 				float snap_threshold = camera->dz * 0.03f;
 
@@ -191,9 +198,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 				// move the selected vertex
 				editor->moveSelectedVertex(last2DPos);
 			}
-		} else if (mode == MODE_RESIZING_SELECTION) {
+		} else if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA) {
 			// update the selection box
-			editor->updateSelection(last2DPos);
+			editor->updateArea(last2DPos);
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
@@ -209,10 +216,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 
 		lastPos = e->pos();
 
-		mainWin->ui.statusBar->showMessage(QString("Z: %1").arg(camera->dz));
+		//mainWin->ui.statusBar->showMessage(QString("Z: %1").arg(camera->dz));
 	}
 
 	last2DPos = pos;
+	mainWin->ui.statusBar->showMessage(QString("MODE: %1").arg(editor->mode));
 
 	updateGL();
 }
@@ -306,18 +314,21 @@ void GLWidget::mouseTo2D(int x,int y, QVector2D *result) {
 	result->setY(posY);
 }
 
-bool GLWidget::hitTest(BBox* bbox, const QVector2D& pt) {
-	if (bbox == NULL) return false;
+bool GLWidget::hitTest(const BBox& bbox, const QVector2D& pt) {
+	float dx = bbox.dx();
+	float dy = bbox.dy();
 
-	if (!bbox->contains(pt)) return false;
+	if (pt.x() < bbox.minPt.x() - dx * 0.1f) return false;
+	if (pt.y() < bbox.minPt.y() - dy * 0.1f) return false;
+	if (pt.x() > bbox.maxPt.x() + dx * 0.1f) return false;
+	if (pt.y() > bbox.maxPt.y() + dy * 0.1f) return false;
 
-	float dx = bbox->maxPt.x() - bbox->minPt.x();
-	float dy = bbox->maxPt.y() - bbox->minPt.y();
+	/*
+	if (pt.x() < bbox.minPt.x() + dx * 0.1f) return true;
+	if (pt.x() > bbox.maxPt.x() - dx * 0.1f) return true;
+	if (pt.y() < bbox.minPt.y() + dy * 0.1f) return true;
+	if (pt.y() > bbox.maxPt.y() - dy * 0.1f) return true;
+	*/
 
-	if (pt.x() < bbox->minPt.x() + dx * 0.1f) return true;
-	if (pt.x() > bbox->maxPt.x() - dx * 0.1f) return true;
-	if (pt.y() < bbox->minPt.y() + dy * 0.1f) return true;
-	if (pt.y() > bbox->maxPt.y() - dy * 0.1f) return true;
-
-	return false;
+	return true;
 }

@@ -6,13 +6,21 @@
 
 class RoadGraphEditor {
 public:
+	static enum { MODE_DEFAULT = 0, MODE_VERTEX_SELECTED, MODE_EDGE_SELECTED, MODE_DEFINING_AREA, MODE_AREA_SELECTED };
+
+public:
 	RoadGraph* roads;
 
-	BBox* bbox;
+	int mode;
+
+	BBox bbox;
 	RoadVertex* selectedVertex;
 	RoadVertexDesc selectedVertexDesc;
 	RoadEdge* selectedEdge;
 	RoadEdgeDesc selectedEdgeDesc;
+
+	RoadGraph* selectedRoads;
+
 	ClipBoard* clipBoard;
 
 	std::vector<RoadGraph*> history;
@@ -35,15 +43,16 @@ public:
 	void removeShortDeadend(float threshold);
 
 	void selectAll();
-	void startSelection(const QVector2D& pt);
-	void updateSelection(const QVector2D& pt);
-	void endSelection();
-	void moveSelection(float dx, float dy);
+	void startArea(const QVector2D& pt);
+	void updateArea(const QVector2D& pt);
+	void finalizeArea();
+	void moveArea(float dx, float dy);
 	bool selectVertex(const QVector2D& pt);
 	bool selectEdge(const QVector2D& pt);
-	void moveSelectedVertex( const QVector2D& pt);
-	void moveSelectedVertex( const QVector2D& pt, float snap_threshold);
+	void moveSelectedVertex(const QVector2D& pt);
+	void moveSelectedVertex(const QVector2D& pt, float snap_threshold);
 	void stopMovingSelectedVertex();
 	void stopMovingSelectedVertex(float snap_threshold);
+	void unselectRoads();
 };
 

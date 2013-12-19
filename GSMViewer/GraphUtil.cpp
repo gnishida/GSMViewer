@@ -736,6 +736,7 @@ float GraphUtil::computeDissimilarityOfEdges(RoadGraph* roads1, RoadEdgeDesc e1,
 
 /**
  * Remove the isolated edges.
+ * Note that this function does not change neither the vertex desc nor the edge desc.
  */
 void GraphUtil::removeIsolatedEdges(RoadGraph* roads, bool onlyValidEdge) {
 	RoadEdgeIter ei, eend;
@@ -1009,7 +1010,7 @@ void GraphUtil::saveRoads(RoadGraph* roads, QString filename) {
 
 /**
  * Copy the road graph.
- * Note: This function copies all the vertices and edges including the invalid ones. Thus, their IDs will be preserved.
+ * Note: This function does not change neither the vertex desc nor the edge desc.
  */
 RoadGraph* GraphUtil::copyRoads(RoadGraph* roads, int roadType) {
 	RoadGraph* new_roads = new RoadGraph();
@@ -1043,6 +1044,8 @@ RoadGraph* GraphUtil::copyRoads(RoadGraph* roads, int roadType) {
 	if (roadType != 7) {
 		extractRoads(new_roads, roadType);
 	}
+
+	new_roads->setModified();
 
 	return new_roads;
 }
@@ -1112,9 +1115,6 @@ void GraphUtil::mergeRoads(RoadGraph* roads1, RoadGraph* roads2) {
 
 		addEdge(roads1, src1, tgt1, roads2->graph[*ei]);
 	}
-
-	// make the result to be a planer graph
-	//planarify(roads1);	// temporarily comment out because this takes too much time
 
 	roads1->setModified();
 }
@@ -1375,9 +1375,10 @@ float GraphUtil::extractMajorRoad(RoadGraph* roads, RoadEdgeDesc root, QList<Roa
 
 /**
  * Extract roads that reside in the specified area.
+ * If "strict" is true, only the edges that are completely within the area will be extracted.
  * Note that this function does not change neither the vertex desc nor the edge desc.
  */
-void GraphUtil::extractRoads(RoadGraph* roads, const AbstractArea& area, int roadType) {
+void GraphUtil::extractRoads(RoadGraph* roads, const AbstractArea& area, bool strict, int roadType) {
 	RoadEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
 		if (!roads->graph[*ei]->valid) continue;
@@ -1386,9 +1387,16 @@ void GraphUtil::extractRoads(RoadGraph* roads, const AbstractArea& area, int roa
 		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
 
 		if ((int)powf(2.0f, roads->graph[*ei]->type - 1) & roadType) {
-			// if both the vertices is out of the range, invalidate this edge.
-			if (!area.contains(roads->graph[src]->pt) && !area.contains(roads->graph[tgt]->pt)) {
-				roads->graph[*ei]->valid = false;
+			if (strict) {
+				// if either vertice is out of the range, invalidate this edge.
+				if (!area.contains(roads->graph[src]->pt) || !area.contains(roads->graph[tgt]->pt)) {
+					roads->graph[*ei]->valid = false;
+				}
+			} else {
+				// if both the vertices is out of the range, invalidate this edge.
+				if (!area.contains(roads->graph[src]->pt) && !area.contains(roads->graph[tgt]->pt)) {
+					roads->graph[*ei]->valid = false;
+				}
 			}
 		} else {
 			roads->graph[*ei]->valid = false;
@@ -1401,34 +1409,11 @@ void GraphUtil::extractRoads(RoadGraph* roads, const AbstractArea& area, int roa
 }
 
 /**
- * Extract roads that reside in the specified circle.
- * Note that this function does not change neither the vertex desc nor the edge desc.
- */
-/*void GraphUtil::extractRoadsByCircle(RoadGraph* roads, const QVector2D& center, float radius, int roadType) {
-	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		if (!roads->graph[*ei]->valid) continue;
-
-		if ((int)powf(2.0f, roads->graph[*ei]->type - 1) & roadType) {
-			RoadVertexDesc src = boost::source(*ei, roads->graph);
-			RoadVertexDesc tgt = boost::target(*ei, roads->graph);
-
-			// if both the vertices is out of the range, invalidate this edge.
-			if ((roads->graph[src]->pt - center).length() > radius && (roads->graph[tgt]->pt - center).length() > radius) {
-				roads->graph[*ei]->valid = false;
-			}
-		} else {
-			roads->graph[*ei]->valid = false;
-		}
-	}
-}
-*/
-
-/**
  * Subtract an area from the road graph.
+ * If "strict" is true, only the edges that are completely within the area will be subtracted.
  * Note that this function does not change neighter the vertex desc nor the edge desc.
  */
-void GraphUtil::subtractRoads(RoadGraph* roads, const AbstractArea& area) {
+void GraphUtil::subtractRoads(RoadGraph* roads, const AbstractArea& area, bool strict) {
 	RoadEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
 		if (!roads->graph[*ei]->valid) continue;
@@ -1436,9 +1421,16 @@ void GraphUtil::subtractRoads(RoadGraph* roads, const AbstractArea& area) {
 		RoadVertexDesc src = boost::source(*ei, roads->graph);
 		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
 
-		// if both the vertices is within the range, invalidate this edge.
-		if (area.contains(roads->graph[src]->pt) && area.contains(roads->graph[tgt]->pt)) {
-			roads->graph[*ei]->valid = false;
+		if (strict) {
+			// if both the vertices is within the range, invalidate this edge.
+			if (area.contains(roads->graph[src]->pt) && area.contains(roads->graph[tgt]->pt)) {
+				roads->graph[*ei]->valid = false;
+			}
+		} else {
+			// if either vertice is within the range, invalidate this edge.
+			if (area.contains(roads->graph[src]->pt) || area.contains(roads->graph[tgt]->pt)) {
+				roads->graph[*ei]->valid = false;
+			}
 		}
 	}
 
@@ -2103,6 +2095,8 @@ void GraphUtil::rotate(RoadGraph* roads, float theta, const QVector2D& rotationC
 			roads->graph[*ei]->polyLine[i].setY(sinf(theta) * (pos.x() - rotationCenter.x()) + cosf(theta) * (pos.y() - rotationCenter.y()) + rotationCenter.y());
 		}
 	}
+
+	roads->setModified();
 }
 
 /**
@@ -2122,6 +2116,8 @@ void GraphUtil::translate(RoadGraph* roads, QVector2D offset) {
 			roads->graph[*ei]->polyLine[i] += offset;
 		}
 	}
+
+	roads->setModified();
 }
 
 /**

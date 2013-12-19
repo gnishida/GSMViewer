@@ -40,15 +40,15 @@ public:
 			( (this->minPt.y() <= other.maxPt.y()) && (this->maxPt.y() >= other.minPt.y()) );					
 	}
 
-	inline QVector2D midPt() {
+	inline QVector2D midPt() const {
 		return 0.5 * (minPt + maxPt);
 	}
 
-	inline float dx() {
+	inline float dx() const {
 		return maxPt.x() - minPt.x();
 	}
 
-	inline float dy() {
+	inline float dy() const {
 		return maxPt.y() - minPt.y();
 	}
 

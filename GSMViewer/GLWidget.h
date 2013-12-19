@@ -11,7 +11,6 @@ class MainWindow;
 
 class GLWidget : public QGLWidget {
 public:
-	static enum { MODE_DEFAULT = 0, MODE_VERTEX_SELECTED, MODE_EDGE_SELECTED, MODE_RESIZING_SELECTION, MODE_MOVING_SELECTION };
 	static float MIN_Z;
 	static float MAX_Z;
 
@@ -50,6 +49,6 @@ protected:
 
 private:
 	void mouseTo2D(int x, int y, QVector2D *result);
-	bool hitTest(BBox* bbox, const QVector2D& pt);
+	bool hitTest(const BBox& bbox, const QVector2D& pt);
 };
 

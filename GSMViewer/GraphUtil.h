@@ -85,11 +85,8 @@ public:
 	static RoadGraph* extractMajorRoad(RoadGraph* roads, bool remove = true);
 	static float extractMajorRoad(RoadGraph* roads, RoadEdgeDesc root, QList<RoadEdgeDesc>& path);
 	static void extractRoads(RoadGraph* roads, int roadType = 7);
-	static void extractRoads(RoadGraph* roads, const AbstractArea& area, int roadType = 7);
-	//static void extractRoadsByBox(RoadGraph* roads, const BBox& bbox);
-	//static void extractRoadsByCircle(RoadGraph* roads, const QVector2D& center, float radius, int roadType = 7);
-	static void subtractRoads(RoadGraph* roads, const AbstractArea& area);
-	//static void subtractRoadsByCircle(RoadGraph* roads, const QVector2D& center, float radius);
+	static void extractRoads(RoadGraph* roads, const AbstractArea& area, bool strict, int roadType = 7);
+	static void subtractRoads(RoadGraph* roads, const AbstractArea& area, bool strict);
 
 	// Connectivity related functions
 	static std::vector<RoadVertexDesc> getNeighbors(RoadGraph* roads, RoadVertexDesc v, bool onlyValidVertex = true);
