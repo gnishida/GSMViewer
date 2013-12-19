@@ -72,7 +72,7 @@ public:
 	static bool hasCloseEdge(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2, float angle_threshold = 0.3f);
 
 	// File I/O
-	static void loadRoads(RoadGraph* roads, QString filename, int roadType);
+	static void loadRoads(RoadGraph* roads, QString filename, int roadType = 7);
 	static void saveRoads(RoadGraph* roads, QString filename);
 
 	// The entire graph related functions

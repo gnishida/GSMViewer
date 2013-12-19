@@ -134,54 +134,6 @@ void RoadGraph::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, float wi
 	}
 }
 
-/*Renderable RoadGraph::generateVertexMesh(RoadVertex* vertex) {
-	Renderable renderable(GL_POINTS, 10.0f);
-
-	Vertex v;
-
-	v.location[0] = vertex->pt.x();
-	v.location[1] = vertex->pt.y();
-	v.location[2] = highwayHeight + 1.0f;
-	v.color[0] = 0.0f;
-	v.color[1] = 0.0f;
-	v.color[2] = 1.0f;
-	v.normal[0] = 0.0f;
-	v.normal[1] = 0.0f;
-	v.normal[2] = 1.0f;
-
-	renderable.vertices.push_back(v);
-
-	return renderable;
-}*/
-
-/*std::vector<Renderable> RoadGraph::generateEdgeMesh(RoadEdge* edge) {
-	std::vector<Renderable> renderables;
-	renderables.push_back(Renderable(GL_LINE_STRIP, 3.0f));
-	renderables.push_back(Renderable(GL_POINTS, 10.0f));
-
-	if (edge == NULL) return renderables;
-	
-	Vertex v;
-
-	// add lines
-	for (int i = 0; i < edge->polyLine.size(); i++) {
-		v.location[0] = edge->polyLine[i].x();
-		v.location[1] = edge->polyLine[i].y();
-		v.location[2] = highwayHeight + 1.0f;
-		v.color[0] = 0.0f;
-		v.color[1] = 0.0f;
-		v.color[2] = 1.0f;
-		v.normal[0] = 0.0f;
-		v.normal[1] = 0.0f;
-		v.normal[2] = 1.0f;
-
-		renderables[0].vertices.push_back(v);
-		renderables[1].vertices.push_back(v);
-	}
-
-	return renderables;
-}*/
-
 bool RoadGraph::getModified() {
 	return modified;
 }

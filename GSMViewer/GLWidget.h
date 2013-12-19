@@ -12,6 +12,8 @@ class MainWindow;
 class GLWidget : public QGLWidget {
 public:
 	static enum { MODE_DEFAULT = 0, MODE_VERTEX_SELECTED, MODE_EDGE_SELECTED, MODE_RESIZING_SELECTION, MODE_MOVING_SELECTION };
+	static float MIN_Z;
+	static float MAX_Z;
 
 public:
 	MainWindow* mainWin;

@@ -1115,6 +1115,8 @@ void GraphUtil::mergeRoads(RoadGraph* roads1, RoadGraph* roads2) {
 
 	// make the result to be a planer graph
 	//planarify(roads1);	// temporarily comment out because this takes too much time
+
+	roads1->setModified();
 }
 
 /**

@@ -4,6 +4,10 @@
 #include <gl/GLU.h>
 #include <vector>
 
+float GLWidget::MIN_Z = 150.0f;
+//float GLWidget::MAX_Z = 11520.0f;
+float GLWidget::MAX_Z = 2880.0f;
+
 GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers), (QWidget*)mainWin) {
 	this->mainWin = mainWin;
 
@@ -14,10 +18,10 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// set up the camera
 	camera = new Camera();
 	camera->setLookAt(0.0f, 0.0f, 0.0f);
-	camera->setTranslation(0.0f, 0.0f, 150.0f);
+	camera->setTranslation(0.0f, 0.0f, MAX_Z);
 
-	// initialize the width per lane
-	editor->roads->setZ(150.0f);
+	// initialize the width and others
+	editor->roads->setZ(MAX_Z);
 
 	// initialize the key status
 	shiftPressed = false;
@@ -198,8 +202,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 		setCursor(Qt::SizeVerCursor);
 
 		camera->changeXYZTranslation(0, 0, -dy * camera->dz * 0.02f);
-		if (camera->dz < 150.0f) camera->dz = 150.0f;
-		if (camera->dz > 11520.0f) camera->dz = 11520.0f;
+		if (camera->dz < MIN_Z) camera->dz = MIN_Z;
+		if (camera->dz > MAX_Z) camera->dz = MAX_Z;
 
 		// tell the Z coordinate to the road graph so that road graph updates rendering related variables.
 		editor->roads->setZ(camera->dz);
