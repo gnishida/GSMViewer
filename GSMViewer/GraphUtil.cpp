@@ -1120,6 +1120,56 @@ void GraphUtil::mergeRoads(RoadGraph* roads1, RoadGraph* roads2) {
 }
 
 /**
+ * Connect roads1 to roads2 as much as possible.
+ * roads1 will be updated. roads2 will be ramained as it is.
+ */
+void GraphUtil::connectRoads(RoadGraph* roads1, RoadGraph* roads2, float connect_threshold) {
+	QMap<RoadVertexDesc, RoadVertexDesc> conv;
+
+	// copy vertices from the 2nd road to the 1st road
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads2->graph); vi != vend; ++vi) {
+		if (!roads2->graph[*vi]->valid) continue;
+
+		RoadVertex* v1 = new RoadVertex(*roads2->graph[*vi]);
+		RoadVertexDesc v1_desc = boost::add_vertex(roads1->graph);
+		roads1->graph[v1_desc] = v1;
+
+		conv[*vi] = v1_desc;
+	}
+
+	// copy edges from the 2nd road to the 1st road
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads2->graph); ei != eend; ++ei) {
+		if (!roads2->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src2 = boost::source(*ei, roads2->graph);
+		RoadVertexDesc tgt2 = boost::target(*ei, roads2->graph);
+
+		RoadVertexDesc src1 = conv[src2];
+		RoadVertexDesc tgt1 = conv[tgt2];
+
+		addEdge(roads1, src1, tgt1, roads2->graph[*ei]);
+	}
+
+	// for each roads2 vertex, try to find the close vertex of roads1 to connect
+	for (boost::tie(vi, vend) = boost::vertices(roads2->graph); vi != vend; ++vi) {
+		if (!roads2->graph[*vi]->valid) continue;
+		if (getDegree(roads2, *vi) > 1) continue;
+
+		RoadVertexDesc v1_desc;
+		if (getVertex(roads1, roads2->graph[*vi]->pt, connect_threshold, v1_desc)) {
+			addEdge(roads1, v1_desc, conv[*vi], 1, 1, false);	// to be updated!!!
+		}
+	}
+
+	// make the result to be a planer graph
+	//planarify(roads1);	// temporarily comment out because this takes too much time
+
+	roads1->setModified();
+}
+
+/**
  * Return the axix aligned bounding box of the road graph.
  */
 BBox GraphUtil::getAABoundingBox(RoadGraph* roads) {
