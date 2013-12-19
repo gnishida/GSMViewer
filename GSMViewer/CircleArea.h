@@ -11,5 +11,7 @@ private:
 public:
 	CircleArea(const QVector2D& center, float radius);
 	~CircleArea();
+
+	bool contains(const QVector2D& pt) const;
 };
 
