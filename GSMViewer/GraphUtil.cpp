@@ -332,6 +332,11 @@ void GraphUtil::removeIsolatedVertices(RoadGraph* roads, bool onlyValidVertex) {
 void GraphUtil::snapVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2) {
 	if (v1 == v2) return;
 
+	if (hasEdge(roads, v1, v2)) {
+		RoadEdgeDesc e = getEdge(roads, v1, v2);
+		roads->graph[e]->valid = false;
+	}
+
 	moveVertex(roads, v1, roads->graph[v2]->pt);
 
 	// Snap all the outing edges from v1
@@ -339,17 +344,17 @@ void GraphUtil::snapVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v
 	for (boost::tie(ei, eend) = boost::out_edges(v1, roads->graph); ei != eend; ++ei) {
 		if (!roads->graph[*ei]->valid) continue;
 
-		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+		RoadVertexDesc v1b = boost::target(*ei, roads->graph);
 
 		// invalidate the old edge
 		roads->graph[*ei]->valid = false;
 
-		if (tgt == v2) continue;
-		if (hasEdge(roads, v2, tgt)) continue;
-		if (hasCloseEdge(roads, v2, tgt)) continue;
+		if (v1b == v2) continue;
+		if (hasEdge(roads, v2, v1b)) continue;
+		//if (hasCloseEdge(roads, v2, v1b)) continue;	// <-- In this case, snap the edge to the other instead of discard it.
 
 		// add a new edge
-		addEdge(roads, v2, tgt, roads->graph[*ei]);
+		addEdge(roads, v2, v1b, roads->graph[*ei]);
 	}
 
 	// invalidate v1
@@ -848,6 +853,8 @@ RoadVertexDesc GraphUtil::splitEdge(RoadGraph* roads, RoadEdgeDesc edge_desc, co
 bool GraphUtil::hasCloseEdge(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2, float angle_threshold) {
 	RoadOutEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::out_edges(v1, roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
 		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
 
 		float angle = diffAngle(roads->graph[tgt]->pt - roads->graph[v1]->pt, roads->graph[v2]->pt - roads->graph[v1]->pt);
@@ -943,6 +950,9 @@ void GraphUtil::saveRoads(RoadGraph* roads, QString filename) {
 	// 各頂点につき、ID、X座標、Y座標を出力する
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
+		if (!roads->graph[*vi]->valid) continue;
+		if (getDegree(roads, *vi) == 0) continue;
+
 		RoadVertex* v = roads->graph[*vi];
 	
 		RoadVertexDesc desc = *vi;
@@ -959,6 +969,8 @@ void GraphUtil::saveRoads(RoadGraph* roads, QString filename) {
 	// 各エッジにつき、２つの頂点の各ID、道路タイプ、レーン数、一方通行か、ポリラインを構成するポイント数、各ポイントのX座標とY座標を出力する
 	RoadEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
 		RoadEdge* edge = roads->graph[*ei];
 
 		RoadVertexDesc src = boost::source(*ei, roads->graph);
@@ -1765,10 +1777,20 @@ void GraphUtil::simplify(RoadGraph* roads, float dist_threshold) {
 			if (!getVertex(roads, roads->graph[*vi]->getPt(), dist_threshold, *vi, v2)) break;
 			//if ((roads->graph[v2]->getPt() - roads->graph[*vi]->getPt()).length() > dist_threshold) break;
 
-			QVector2D pt = (roads->graph[*vi]->pt + roads->graph[v2]->pt) / 2.0f;
+			// define the new position
+			QVector2D pt;
+			int degree1 = getDegree(roads, *vi);
+			int degree2 = getDegree(roads, v2);
+			if (degree1 > 2 && degree2 <= 2) {
+				pt = roads->graph[*vi]->pt;
+			} else if (degree1 <= 2 && degree2 > 2) {
+				pt = roads->graph[v2]->pt;
+			} else {
+				pt = (roads->graph[*vi]->pt + roads->graph[v2]->pt) / 2.0f;
+			}
 
-			snapVertex(roads, v2, *vi);
 			moveVertex(roads, *vi, pt);
+			snapVertex(roads, v2, *vi);
 		}
 
 		// find the closest vertex
