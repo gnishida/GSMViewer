@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Wed Dec 18 12:02:45 2013
+** Created: Wed Dec 18 22:43:25 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -34,11 +34,14 @@ public:
     QAction *actionDeleteEdge;
     QAction *actionSave;
     QAction *actionUndo;
+    QAction *actionSelectAll;
+    QAction *actionCut;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuWindow;
     QMenu *menuEdit;
+    QMenu *menuSelect;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -62,6 +65,10 @@ public:
         actionSave->setObjectName(QString::fromUtf8("actionSave"));
         actionUndo = new QAction(MainWindow);
         actionUndo->setObjectName(QString::fromUtf8("actionUndo"));
+        actionSelectAll = new QAction(MainWindow);
+        actionSelectAll->setObjectName(QString::fromUtf8("actionSelectAll"));
+        actionCut = new QAction(MainWindow);
+        actionCut->setObjectName(QString::fromUtf8("actionCut"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         MainWindow->setCentralWidget(centralWidget);
@@ -74,6 +81,8 @@ public:
         menuWindow->setObjectName(QString::fromUtf8("menuWindow"));
         menuEdit = new QMenu(menuBar);
         menuEdit->setObjectName(QString::fromUtf8("menuEdit"));
+        menuSelect = new QMenu(menuBar);
+        menuSelect->setObjectName(QString::fromUtf8("menuSelect"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -83,6 +92,7 @@ public:
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
+        menuBar->addAction(menuSelect->menuAction());
         menuBar->addAction(menuEdit->menuAction());
         menuBar->addAction(menuWindow->menuAction());
         menuFile->addAction(actionNew);
@@ -94,7 +104,9 @@ public:
         menuWindow->addAction(actionControlWidget);
         menuEdit->addAction(actionUndo);
         menuEdit->addSeparator();
+        menuEdit->addAction(actionCut);
         menuEdit->addAction(actionDeleteEdge);
+        menuSelect->addAction(actionSelectAll);
 
         retranslateUi(MainWindow);
 
@@ -119,9 +131,14 @@ public:
         actionUndo->setWhatsThis(QString());
 #endif // QT_NO_WHATSTHIS
         actionUndo->setShortcut(QApplication::translate("MainWindow", "Ctrl+Z", 0, QApplication::UnicodeUTF8));
+        actionSelectAll->setText(QApplication::translate("MainWindow", "Select All", 0, QApplication::UnicodeUTF8));
+        actionSelectAll->setShortcut(QApplication::translate("MainWindow", "Ctrl+A", 0, QApplication::UnicodeUTF8));
+        actionCut->setText(QApplication::translate("MainWindow", "Cut", 0, QApplication::UnicodeUTF8));
+        actionCut->setShortcut(QApplication::translate("MainWindow", "Ctrl+X", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
         menuWindow->setTitle(QApplication::translate("MainWindow", "Window", 0, QApplication::UnicodeUTF8));
         menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));
+        menuSelect->setTitle(QApplication::translate("MainWindow", "Select", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

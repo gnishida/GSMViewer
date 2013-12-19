@@ -27,7 +27,9 @@ public slots:
 	void onNew();
 	void onOpen();
 	void onSave();
+	void onSelectAll();
 	void onUndo();
+	void onCut();
 	void onDeleteEdge();
 	void onShowControlWidget();
 };

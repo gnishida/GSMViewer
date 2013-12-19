@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'ControlWidget.ui'
 **
-** Created: Wed Dec 18 17:34:45 2013
+** Created: Wed Dec 18 23:27:41 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -53,6 +53,8 @@ public:
     QLineEdit *lineEditVertexPos;
     QLabel *label_8;
     QLineEdit *lineEditVertexNeighbors;
+    QGroupBox *groupBox_6;
+    QPushButton *pushButtonReduce;
 
     void setupUi(QDockWidget *ControlWidget)
     {
@@ -98,7 +100,7 @@ public:
         pushButtonSimplify->setGeometry(QRect(10, 50, 151, 31));
         groupBox_3 = new QGroupBox(dockWidgetContents);
         groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
-        groupBox_3->setGeometry(QRect(10, 500, 171, 91));
+        groupBox_3->setGeometry(QRect(10, 570, 171, 91));
         pushButtonRemoveShortDeadend = new QPushButton(groupBox_3);
         pushButtonRemoveShortDeadend->setObjectName(QString::fromUtf8("pushButtonRemoveShortDeadend"));
         pushButtonRemoveShortDeadend->setGeometry(QRect(10, 50, 151, 31));
@@ -138,6 +140,12 @@ public:
         lineEditVertexNeighbors = new QLineEdit(groupBox_5);
         lineEditVertexNeighbors->setObjectName(QString::fromUtf8("lineEditVertexNeighbors"));
         lineEditVertexNeighbors->setGeometry(QRect(80, 80, 81, 20));
+        groupBox_6 = new QGroupBox(dockWidgetContents);
+        groupBox_6->setObjectName(QString::fromUtf8("groupBox_6"));
+        groupBox_6->setGeometry(QRect(10, 500, 171, 61));
+        pushButtonReduce = new QPushButton(groupBox_6);
+        pushButtonReduce->setObjectName(QString::fromUtf8("pushButtonReduce"));
+        pushButtonReduce->setGeometry(QRect(10, 20, 151, 31));
         ControlWidget->setWidget(dockWidgetContents);
 
         retranslateUi(ControlWidget);
@@ -164,6 +172,8 @@ public:
         label_6->setText(QApplication::translate("ControlWidget", "ID", 0, QApplication::UnicodeUTF8));
         label_7->setText(QApplication::translate("ControlWidget", "Location", 0, QApplication::UnicodeUTF8));
         label_8->setText(QApplication::translate("ControlWidget", "Neighbors", 0, QApplication::UnicodeUTF8));
+        groupBox_6->setTitle(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
+        pushButtonReduce->setText(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(ControlWidget);
     } // retranslateUi
 

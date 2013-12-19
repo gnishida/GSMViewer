@@ -23,6 +23,9 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	shiftPressed = false;
 	controlPressed = false;
 	altPressed = false;
+
+	//selecting = false;
+	mode = MODE_DEFAULT;
 }
 
 GLWidget::~GLWidget() {
@@ -33,19 +36,22 @@ void GLWidget::drawScene() {
 	editor->roads->generateMesh();
 	renderer->render(editor->roads->renderable);
 
+	// define the height for other items
+	float height = (float)((int)(camera->dz * 0.012f)) * 0.1f * 1.5f;
+
+	// draw the select area
+	if (editor->bbox != NULL) {
+		renderer->renderBBox(*editor->bbox, height);
+	}
+
 	// draw the selected vertex
 	if (editor->selectedVertex != NULL) {
-		Renderable renderable = editor->roads->generateVertexMesh(editor->selectedVertex);
-		renderer->render(&renderable);
+		renderer->renderPoint(editor->selectedVertex->pt, height);
 	}
 
 	// draw the selected edge
 	if (editor->selectedEdge != NULL) {
-		std::vector<Renderable> renderables = editor->roads->generateEdgeMesh(editor->selectedEdge);
-
-		for (int i = 0; i < renderables.size(); i++) {
-			renderer->render(&renderables[i]);
-		}
+		renderer->renderPolyline(editor->selectedEdge->polyLine, height);
 	}
 }
 
@@ -105,16 +111,25 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 	this->setFocus();
 
 	lastPos = e->pos();
+	mouseTo2D(e->x(), e->y(), &last2DPos);
 
 	if (e->buttons() & Qt::LeftButton) {
-		QVector2D pos;
-		mouseTo2D(e->x(), e->y(), &pos);
-		mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
+		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
-		// if the vertex is close to the point, the vertex is also selected
-		RoadVertexDesc v_desc;
-		if (!editor->selectVertex(pos)) {
-			editor->selectEdge(pos);
+		if (hitTest(editor->bbox, last2DPos)) {
+			mode = MODE_MOVING_SELECTION;
+		} else {
+			// if the vertex is close to the point, the vertex is selected
+			if (editor->selectVertex(last2DPos)) {
+				mode = MODE_VERTEX_SELECTED;
+			} else if (editor->selectEdge(last2DPos)) {
+				mode = MODE_EDGE_SELECTED;
+			} else {
+				// if neither a vertex nor a edge is selected, then the selection mode starts
+				mode = MODE_RESIZING_SELECTION;
+
+				editor->startSelection(last2DPos);
+			}
 		}
 
 		mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
@@ -130,11 +145,16 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-	if (controlPressed) {
-		float snap_threshold = camera->dz * 0.03f;
-		editor->stopMovingSelectedVertex(snap_threshold);
-	} else {
-		editor->stopMovingSelectedVertex();
+	if (mode == MODE_VERTEX_SELECTED) {
+		if (controlPressed) {
+			float snap_threshold = camera->dz * 0.03f;
+			editor->stopMovingSelectedVertex(snap_threshold);
+		} else {
+			editor->stopMovingSelectedVertex();
+		}
+	} else if (mode == MODE_RESIZING_SELECTION) {
+		editor->endSelection();
+		mode = MODE_DEFAULT;
 	}
 
 	e->ignore();
@@ -146,24 +166,31 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	float dx = (float)(e->x() - lastPos.x());
 	float dy = (float)(e->y() - lastPos.y());
-	float camElevation = camera->getCamElevation();
-
 	lastPos = e->pos();
+	//float camElevation = camera->getCamElevation();
+
+	QVector2D pos;
+	mouseTo2D(e->x(), e->y(), &pos);
+	float dx2D = pos.x() - last2DPos.x();
+	float dy2D = pos.y() - last2DPos.y();
+	last2DPos = pos;
 
 	if (e->buttons() & Qt::LeftButton) {
-		if (editor->selectedVertex != NULL) {
-			QVector2D pos;
-			mouseTo2D(e->x(), e->y(), &pos);
-
+		if (mode == MODE_MOVING_SELECTION) {
+			editor->moveSelection(dx2D, dy2D);
+		} else if (mode == MODE_VERTEX_SELECTED) {
 			if (controlPressed) {
 				float snap_threshold = camera->dz * 0.03f;
 
 				// move the selected vertex
-				editor->moveSelectedVertex(pos, snap_threshold);
+				editor->moveSelectedVertex(last2DPos, snap_threshold);
 			} else {
 				// move the selected vertex
-				editor->moveSelectedVertex(pos);
+				editor->moveSelectedVertex(last2DPos);
 			}
+		} else if (mode == MODE_RESIZING_SELECTION) {
+			// update the selection box
+			editor->updateSelection(last2DPos);
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
@@ -181,6 +208,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 
 		mainWin->ui.statusBar->showMessage(QString("Z: %1").arg(camera->dz));
 	}
+
+	last2DPos = pos;
 
 	updateGL();
 }
@@ -272,4 +301,20 @@ void GLWidget::mouseTo2D(int x,int y, QVector2D *result) {
 
 	result->setX(posX);
 	result->setY(posY);
+}
+
+bool GLWidget::hitTest(BBox* bbox, const QVector2D& pt) {
+	if (bbox == NULL) return false;
+
+	if (!bbox->contains(pt)) return false;
+
+	float dx = bbox->maxPt.x() - bbox->minPt.x();
+	float dy = bbox->maxPt.y() - bbox->minPt.y();
+
+	if (pt.x() < bbox->minPt.x() + dx * 0.1f) return true;
+	if (pt.x() > bbox->maxPt.x() - dx * 0.1f) return true;
+	if (pt.y() < bbox->minPt.y() + dy * 0.1f) return true;
+	if (pt.y() > bbox->maxPt.y() - dy * 0.1f) return true;
+
+	return false;
 }

@@ -1378,6 +1378,29 @@ RoadGraph* GraphUtil::extractRoadsByCircle(RoadGraph* roads, const QVector2D& ce
 */
 
 /**
+ * Subtract a box from the road graph.
+ * Note that this function does not change neighter the vertex desc nor the edge desc.
+ */
+void GraphUtil::subtractRoadsByBox(RoadGraph* roads, const BBox& bbox) {
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+
+		// if both the vertices is within the range, invalidate this edge.
+		if (bbox.contains(roads->graph[src]->pt) && bbox.contains(roads->graph[tgt]->pt)) {
+			roads->graph[*ei]->valid = false;
+		}
+	}
+
+	removeIsolatedVertices(roads);
+
+	roads->setModified();
+}
+
+/**
  * Subtract a circle from the road graph.
  * Note that this function does not change neighter the vertex desc nor the edge desc.
  */
@@ -1396,6 +1419,8 @@ void GraphUtil::subtractRoadsByCircle(RoadGraph* roads, const QVector2D& center,
 	}
 
 	removeIsolatedVertices(roads);
+
+	roads->setModified();
 }
 
 /**
@@ -1650,7 +1675,8 @@ void GraphUtil::clean(RoadGraph* roads) {
  * Remove the vertices of degree of 2, and make it as a part of an edge.
  */
 void GraphUtil::reduce(RoadGraph* roads) {
-	// reduce the graph by removing the vertices which have two outing edges.
+	bool actuallReduced = false;
+
 	RoadVertexIter vi, vend;
 	bool deleted = false;
 	do {
@@ -1664,11 +1690,16 @@ void GraphUtil::reduce(RoadGraph* roads) {
 			if (getDegree(roads, *vi) == 2) {
 				if (reduce(roads, *vi)) {
 					deleted = true;
+					actuallReduced = true;
 					break;
 				}
 			}
 		}
 	} while (deleted);
+
+	if (actuallReduced) {
+		roads->setModified();
+	}
 }
 
 /**

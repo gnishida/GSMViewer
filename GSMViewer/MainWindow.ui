@@ -52,9 +52,17 @@
     </property>
     <addaction name="actionUndo"/>
     <addaction name="separator"/>
+    <addaction name="actionCut"/>
     <addaction name="actionDeleteEdge"/>
    </widget>
+   <widget class="QMenu" name="menuSelect">
+    <property name="title">
+     <string>Select</string>
+    </property>
+    <addaction name="actionSelectAll"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuSelect"/>
    <addaction name="menuEdit"/>
    <addaction name="menuWindow"/>
   </widget>
@@ -118,6 +126,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="text">
+    <string>Select All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionCut">
+   <property name="text">
+    <string>Cut</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
    </property>
   </action>
  </widget>

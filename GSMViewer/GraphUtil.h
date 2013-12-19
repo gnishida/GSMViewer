@@ -85,6 +85,7 @@ public:
 	static float extractMajorRoad(RoadGraph* roads, RoadEdgeDesc root, QList<RoadEdgeDesc>& path);
 	static void extractRoads(RoadGraph* roads, int roadType = 7);
 	static void extractRoadsByCircle(RoadGraph* roads, const QVector2D& center, float radius, int roadType = 7);
+	static void subtractRoadsByBox(RoadGraph* roads, const BBox& bbox);
 	static void subtractRoadsByCircle(RoadGraph* roads, const QVector2D& center, float radius);
 
 	// Connectivity related functions

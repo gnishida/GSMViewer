@@ -17,6 +17,7 @@ RoadGraphEditor::~RoadGraphEditor() {
 void RoadGraphEditor::clear() {
 	roads->clear();
 
+	bbox = NULL;
 	selectedVertex = NULL;
 	selectedEdge = NULL;
 	movingVertex = NULL;
@@ -47,6 +48,13 @@ void RoadGraphEditor::undo() {
 	selectedEdge = NULL;
 }
 
+void RoadGraphEditor::cut() {
+	if (bbox == NULL) return;
+
+	history.push_back(GraphUtil::copyRoads(roads));
+	GraphUtil::subtractRoadsByBox(roads, *bbox);
+}
+
 bool RoadGraphEditor::deleteEdge() {
 	if (selectedEdge == NULL) return false;
 
@@ -63,6 +71,62 @@ void RoadGraphEditor::simplify(float threshold) {
 	GraphUtil::simplify(roads, threshold);
 }
 
+void RoadGraphEditor::reduce() {
+	history.push_back(GraphUtil::copyRoads(roads));
+	GraphUtil::reduce(roads);
+}
+
+void RoadGraphEditor::removeShortDeadend(float threshold) {
+	history.push_back(GraphUtil::copyRoads(roads));
+	GraphUtil::removeShortDeadend(roads, threshold);
+}
+
+void RoadGraphEditor::selectAll() {
+	if (bbox != NULL) delete bbox;
+
+	bbox = new BBox(GraphUtil::getAABoundingBox(roads));
+}
+
+void RoadGraphEditor::startSelection(const QVector2D& pt) {
+	if (bbox != NULL) delete bbox;
+
+	bbox = new BBox();
+	bbox->addPoint(pt);
+}
+
+void RoadGraphEditor::updateSelection(const QVector2D& pt) {
+	bbox->maxPt.setX(pt.x());
+	bbox->maxPt.setY(pt.y());
+}
+
+void RoadGraphEditor::endSelection() {
+	if (bbox->maxPt.x() < bbox->minPt.x()) {
+		float x = bbox->maxPt.x();
+		bbox->maxPt.setX(bbox->minPt.x());
+		bbox->minPt.setX(x);
+	}
+	if (bbox->maxPt.y() < bbox->minPt.y()) {
+		float y = bbox->maxPt.y();
+		bbox->maxPt.setY(bbox->minPt.y());
+		bbox->minPt.setY(y);
+	}
+
+	// if the box is just a single point, cancel the selection.
+	if (bbox->maxPt.x() == bbox->minPt.x() && bbox->maxPt.y() == bbox->minPt.y()) {
+		delete bbox;
+		bbox = NULL;
+	}
+}
+
+void RoadGraphEditor::moveSelection(float dx, float dy) {
+	bbox->minPt.setX(bbox->minPt.x() + dx);
+	bbox->minPt.setY(bbox->minPt.y() + dy);
+	bbox->maxPt.setX(bbox->maxPt.x() + dx);
+	bbox->maxPt.setY(bbox->maxPt.y() + dy);
+
+
+}
+
 bool RoadGraphEditor::selectVertex(const QVector2D& pt) {
 	if (roads == NULL) return false;
 
@@ -75,7 +139,12 @@ bool RoadGraphEditor::selectVertex(const QVector2D& pt) {
 	selectedVertexDesc = desc;
 	selectedVertex = roads->graph[desc];
 
+	// clear the selction for other items
 	selectedEdge = NULL;
+	if (bbox != NULL) {
+		delete bbox;
+		bbox = NULL;
+	}
 
 	return true;
 }
@@ -91,6 +160,14 @@ bool RoadGraphEditor::selectEdge(const QVector2D& pt) {
 
 	selectedEdgeDesc = desc;
 	selectedEdge = roads->graph[selectedEdgeDesc];
+
+	// clear the selction for other items
+	selectedVertex = NULL;
+	if (bbox != NULL) {
+		delete bbox;
+		bbox = NULL;
+	}
+
 
 	return true;
 }

@@ -113,11 +113,20 @@ void ControlWidget::simplify() {
 }
 
 /**
+ * Event handler for button [Reduce]
+ */
+void ControlWidget::reduce() {
+	mainWin->glWidget->editor->reduce();
+
+	mainWin->glWidget->updateGL();
+}
+
+/**
  * Event handler for button [Remove Short Dead-End]
  */
 void ControlWidget::removeShortDeadend() {
 	float threshold = ui.lineEditRemoveShortDeadendThreshold->text().toFloat();
+	mainWin->glWidget->editor->removeShortDeadend(threshold);
 
-	GraphUtil::removeShortDeadend(mainWin->glWidget->editor->roads, threshold);
 	mainWin->glWidget->updateGL();
 }

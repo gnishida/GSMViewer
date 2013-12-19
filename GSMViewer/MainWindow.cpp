@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "GraphUtil.h"
 
 MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
@@ -14,7 +15,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
+	connect(ui.actionSelectAll, SIGNAL(triggered()), this, SLOT(onSelectAll()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
+	connect(ui.actionCut, SIGNAL(triggered()), this, SLOT(onCut()));
 	connect(ui.actionDeleteEdge, SIGNAL(triggered()), this, SLOT(onDeleteEdge()));
 	connect(ui.actionControlWidget, SIGNAL(triggered()), this, SLOT(onShowControlWidget()));
 
@@ -78,8 +81,18 @@ void MainWindow::onSave() {
 	QApplication::restoreOverrideCursor();
 }
 
+void MainWindow::onSelectAll() {
+	glWidget->editor->selectAll();
+	glWidget->updateGL();
+}
+
 void MainWindow::onUndo() {
 	glWidget->editor->undo();
+	glWidget->updateGL();
+}
+
+void MainWindow::onCut() {
+	glWidget->editor->cut();
 	glWidget->updateGL();
 }
 

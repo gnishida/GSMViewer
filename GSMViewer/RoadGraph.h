@@ -41,8 +41,8 @@ public:
 
 	void generateMesh();
 	void RoadGraph::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, float widthBase, QColor color, float height);
-	Renderable generateVertexMesh(RoadVertex* vertex);
-	std::vector<Renderable> generateEdgeMesh(RoadEdge* edge);
+	//Renderable generateVertexMesh(RoadVertex* vertex);
+	//std::vector<Renderable> generateEdgeMesh(RoadEdge* edge);
 
 	bool getModified();
 	void setModified();

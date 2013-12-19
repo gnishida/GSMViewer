@@ -134,7 +134,7 @@ void RoadGraph::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, float wi
 	}
 }
 
-Renderable RoadGraph::generateVertexMesh(RoadVertex* vertex) {
+/*Renderable RoadGraph::generateVertexMesh(RoadVertex* vertex) {
 	Renderable renderable(GL_POINTS, 10.0f);
 
 	Vertex v;
@@ -152,9 +152,9 @@ Renderable RoadGraph::generateVertexMesh(RoadVertex* vertex) {
 	renderable.vertices.push_back(v);
 
 	return renderable;
-}
+}*/
 
-std::vector<Renderable> RoadGraph::generateEdgeMesh(RoadEdge* edge) {
+/*std::vector<Renderable> RoadGraph::generateEdgeMesh(RoadEdge* edge) {
 	std::vector<Renderable> renderables;
 	renderables.push_back(Renderable(GL_LINE_STRIP, 3.0f));
 	renderables.push_back(Renderable(GL_POINTS, 10.0f));
@@ -180,7 +180,7 @@ std::vector<Renderable> RoadGraph::generateEdgeMesh(RoadEdge* edge) {
 	}
 
 	return renderables;
-}
+}*/
 
 bool RoadGraph::getModified() {
 	return modified;

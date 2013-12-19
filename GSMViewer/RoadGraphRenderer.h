@@ -2,6 +2,7 @@
 
 #include "RoadGraph.h"
 #include "Renderable.h"
+#include "BBox.h"
 
 class RoadGraphRenderer {
 public:
@@ -11,5 +12,9 @@ public:
 	RoadGraphRenderer();
 
 	void render(Renderable* renderable);
+
+	void renderBBox(const BBox& bbox, float height);
+	void renderPoint(const QVector2D& pt, float height);
+	void renderPolyline(std::vector<QVector2D>& polyline, float height);
 };
 
