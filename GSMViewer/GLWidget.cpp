@@ -323,12 +323,5 @@ bool GLWidget::hitTest(const BBox& bbox, const QVector2D& pt) {
 	if (pt.x() > bbox.maxPt.x() + dx * 0.1f) return false;
 	if (pt.y() > bbox.maxPt.y() + dy * 0.1f) return false;
 
-	/*
-	if (pt.x() < bbox.minPt.x() + dx * 0.1f) return true;
-	if (pt.x() > bbox.maxPt.x() - dx * 0.1f) return true;
-	if (pt.y() < bbox.minPt.y() + dy * 0.1f) return true;
-	if (pt.y() > bbox.maxPt.y() - dy * 0.1f) return true;
-	*/
-
 	return true;
 }
