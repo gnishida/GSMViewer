@@ -25,6 +25,7 @@ void RoadGraphEditor::clear() {
 	for (int i = 0; i < history.size(); i++) {
 		delete history[i];
 	}
+	history.clear();
 }
 
 void RoadGraphEditor::openRoad(QString filename) {

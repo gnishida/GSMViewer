@@ -16,6 +16,7 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	connect(ui.pushButtonCopy, SIGNAL(clicked()), this, SLOT(copy()));
 	connect(ui.pushButtonClean, SIGNAL(clicked()), this, SLOT(clean()));
 	connect(ui.pushButtonSimplify, SIGNAL(clicked()), this, SLOT(simplify()));
+	connect(ui.pushButtonReduce, SIGNAL(clicked()), this, SLOT(reduce()));
 	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
 
 	hide();
