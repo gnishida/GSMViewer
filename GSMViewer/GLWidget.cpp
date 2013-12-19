@@ -5,8 +5,8 @@
 #include <vector>
 
 float GLWidget::MIN_Z = 150.0f;
-//float GLWidget::MAX_Z = 11520.0f;
-float GLWidget::MAX_Z = 2880.0f;
+float GLWidget::MAX_Z = 11520.0f;
+//float GLWidget::MAX_Z = 2880.0f;
 
 GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers), (QWidget*)mainWin) {
 	this->mainWin = mainWin;
