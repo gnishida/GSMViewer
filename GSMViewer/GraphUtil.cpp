@@ -942,18 +942,18 @@ void GraphUtil::loadRoads(RoadGraph* roads, QString filename, int roadType) {
  * Save the road to a file.
  */
 void GraphUtil::saveRoads(RoadGraph* roads, QString filename) {
+	RoadGraph* temp = copyRoads(roads);
+	clean(temp);
+
 	FILE* fp = fopen(filename.toUtf8().data(), "wb");
 	
-	int nVertices = boost::num_vertices(roads->graph);
+	int nVertices = boost::num_vertices(temp->graph);
 	fwrite(&nVertices, sizeof(int), 1, fp);
 
 	// 各頂点につき、ID、X座標、Y座標を出力する
 	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
-		if (!roads->graph[*vi]->valid) continue;
-		if (getDegree(roads, *vi) == 0) continue;
-
-		RoadVertex* v = roads->graph[*vi];
+	for (boost::tie(vi, vend) = boost::vertices(temp->graph); vi != vend; ++vi) {
+		RoadVertex* v = temp->graph[*vi];
 	
 		RoadVertexDesc desc = *vi;
 		float x = v->getPt().x();
@@ -963,18 +963,16 @@ void GraphUtil::saveRoads(RoadGraph* roads, QString filename) {
 		fwrite(&y, sizeof(float), 1, fp);
 	}
 
-	int nEdges = boost::num_edges(roads->graph);
+	int nEdges = boost::num_edges(temp->graph);
 	fwrite(&nEdges, sizeof(int), 1, fp);
 
 	// 各エッジにつき、２つの頂点の各ID、道路タイプ、レーン数、一方通行か、ポリラインを構成するポイント数、各ポイントのX座標とY座標を出力する
 	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		if (!roads->graph[*ei]->valid) continue;
+	for (boost::tie(ei, eend) = boost::edges(temp->graph); ei != eend; ++ei) {
+		RoadEdge* edge = temp->graph[*ei];
 
-		RoadEdge* edge = roads->graph[*ei];
-
-		RoadVertexDesc src = boost::source(*ei, roads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+		RoadVertexDesc src = boost::source(*ei, temp->graph);
+		RoadVertexDesc tgt = boost::target(*ei, temp->graph);
 
 		fwrite(&src, sizeof(RoadVertexDesc), 1, fp);
 		fwrite(&tgt, sizeof(RoadVertexDesc), 1, fp);
@@ -1006,6 +1004,7 @@ void GraphUtil::saveRoads(RoadGraph* roads, QString filename) {
 
 	fclose(fp);
 
+	delete temp;
 }
 
 /**
