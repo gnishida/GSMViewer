@@ -18,13 +18,18 @@ public:
 	MainWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~MainWindow();
 
+protected:
+	void keyPressEvent(QKeyEvent* e);
+	void keyReleaseEvent(QKeyEvent* e);
+
 public slots:
-	void newRoad();
-	void openRoad();
-	void saveRoad();
-	void undo();
-	void deleteEdge();
-	void showControlWidget();
+	void onMenuEdit();
+	void onNew();
+	void onOpen();
+	void onSave();
+	void onUndo();
+	void onDeleteEdge();
+	void onShowControlWidget();
 };
 
 #endif // MAINWINDOW_H

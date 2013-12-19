@@ -2,10 +2,11 @@
 
 #include <qdockwidget.h>
 #include "ui_ControlWidget.h"
-#include "RoadVertex.h"
-#include "RoadEdge.h"
+#include "RoadGraph.h"
 
 class MainWindow;
+class GLWidget;
+class RoadGraphEditor;
 
 class ControlWidget : public QDockWidget {
 Q_OBJECT
@@ -17,10 +18,13 @@ private:
 public:
 	ControlWidget(MainWindow* mainWin);
 
-	void setRoadVertex(RoadVertex* selectedVertex);
+	void setRoadVertex(RoadVertexDesc vertexDesc, RoadVertex* selectedVertex);
 	void setRoadEdge(RoadEdge* selectedEdge);
 
 public slots:
+	void copy();
+	void clean();
 	void simplify();
+	void removeShortDeadend();
 };
 

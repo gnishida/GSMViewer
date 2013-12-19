@@ -43,7 +43,7 @@ public:
 	static int getVertexIndex(RoadGraph* roads, RoadVertexDesc desc, bool onlyValidVertex = true);
 	static RoadVertexDesc addVertex(RoadGraph* roads, RoadVertex* v);
 	static void moveVertex(RoadGraph* roads, RoadVertexDesc v, QVector2D pt);
-	static void collapseVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2);
+	//static void collapseVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2);
 	static int getDegree(RoadGraph* roads, RoadVertexDesc v, bool onlyValidEdge = true);
 	static std::vector<RoadVertexDesc> getVertices(RoadGraph* roads, bool onlyValidVertex = true);
 	static void removeIsolatedVertices(RoadGraph* roads, bool onlyValidVertex = true);
@@ -69,20 +69,21 @@ public:
 	static float computeDissimilarityOfEdges(RoadGraph* roads1, RoadEdgeDesc e1, RoadGraph* roads2, RoadEdgeDesc e2);
 	static void removeIsolatedEdges(RoadGraph* roads, bool onlyValidEdge = true);
 	static RoadVertexDesc splitEdge(RoadGraph* roads, RoadEdgeDesc edge_desc, const QVector2D& pt);
+	static bool hasCloseEdge(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2, float angle_threshold = 0.3f);
 
 	// File I/O
 	static void loadRoads(RoadGraph* roads, QString filename, int roadType);
 	static void saveRoads(RoadGraph* roads, QString filename);
 
 	// The entire graph related functions
-	static RoadGraph* copyRoads(RoadGraph* roads);
-	static RoadGraph* copyRoads(RoadGraph* roads, int roadType);
+	static RoadGraph* copyRoads(RoadGraph* roads, int roadType = 7);
 	static void copyRoads(RoadGraph* roads1, RoadGraph* roads2);
 	static void mergeRoads(RoadGraph* roads1, RoadGraph* roads2);
 	static BBox getAABoundingBox(RoadGraph* roads);
 	static BBox getBoudingBox(RoadGraph* roads, float theta1, float theta2, float theta_step = 0.087f);
 	static RoadGraph* extractMajorRoad(RoadGraph* roads, bool remove = true);
 	static float extractMajorRoad(RoadGraph* roads, RoadEdgeDesc root, QList<RoadEdgeDesc>& path);
+	static void extractRoads(RoadGraph* roads, int roadType = 7);
 	static void extractRoadsByCircle(RoadGraph* roads, const QVector2D& center, float radius, int roadType = 7);
 	static void subtractRoadsByCircle(RoadGraph* roads, const QVector2D& center, float radius);
 
@@ -122,7 +123,7 @@ public:
 	static float diffAngle(float angle1, float angle2, bool absolute = true);
 
 	// Compute similarity
-	static float computeDissimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_connectivity, float w_split, float w_angle, float w_distance);
+	//static float computeDissimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_connectivity, float w_split, float w_angle, float w_distance);
 	static float computeDissimilarity2(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_matching, float w_split, float w_angle, float w_distance);
 	static float computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_connectivity, float w_angle);
 	static void findCorrespondenceByNearestNeighbor(RoadGraph* roads1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map1, QMap<RoadVertexDesc, RoadVertexDesc>& map2);

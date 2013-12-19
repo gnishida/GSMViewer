@@ -18,6 +18,11 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	// initialize the width per lane
 	editor->roads->setZ(150.0f);
+
+	// initialize the key status
+	shiftPressed = false;
+	controlPressed = false;
+	altPressed = false;
 }
 
 GLWidget::~GLWidget() {
@@ -28,72 +33,28 @@ void GLWidget::drawScene() {
 	editor->roads->generateMesh();
 	renderer->render(editor->roads->renderable);
 
-	// draw the selected edge
-	if (editor->selectedEdge != NULL) {
-		Renderable renderable = editor->roads->generateEdgeMesh(editor->selectedEdge);
-
+	// draw the selected vertex
+	if (editor->selectedVertex != NULL) {
+		Renderable renderable = editor->roads->generateVertexMesh(editor->selectedVertex);
 		renderer->render(&renderable);
 	}
-}
 
-void GLWidget::mousePressEvent(QMouseEvent *e) {
-	this->setFocus();
+	// draw the selected edge
+	if (editor->selectedEdge != NULL) {
+		std::vector<Renderable> renderables = editor->roads->generateEdgeMesh(editor->selectedEdge);
 
-	lastPos = e->pos();
-
-	if (e->buttons() & Qt::LeftButton) {
-		QVector2D pos;
-		mouseTo2D(e->x(), e->y(), &pos);
-		mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
-
-		// if the vertex is close to the point, the vertex is also selected
-		RoadVertexDesc v_desc;
-		if (!editor->selectVertex(pos)) {
-			editor->selectEdge(pos);
+		for (int i = 0; i < renderables.size(); i++) {
+			renderer->render(&renderables[i]);
 		}
-
-		mainWin->controlWidget->setRoadVertex(editor->selectedVertex);
-		mainWin->controlWidget->setRoadEdge(editor->selectedEdge);
-
-		updateGL();
 	}
 }
 
-void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
-	e->ignore();
-
-	setCursor(Qt::ArrowCursor);
-	updateGL();
-}
-
-void GLWidget::mouseMoveEvent(QMouseEvent *e) {
-	float dx = (float)(e->x() - lastPos.x());
-	float dy = (float)(e->y() - lastPos.y());
-	float camElevation = camera->getCamElevation();
-
-	lastPos = e->pos();
-
-	if (e->buttons() & Qt::LeftButton) {
-	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
-		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
-	} else if (e->buttons() & Qt::RightButton) { // Zoom the camera
-		setCursor(Qt::SizeVerCursor);
-
-		camera->changeXYZTranslation(0, 0, -dy * camera->dz * 0.02f);
-		if (camera->dz < 150.0f) camera->dz = 150.0f;
-		if (camera->dz > 11520.0f) camera->dz = 11520.0f;
-
-		// tell the Z coordinate to the road graph so that road graph updates rendering related variables.
-		editor->roads->setZ(camera->dz);
-
-		lastPos = e->pos();
-
-		mainWin->ui.statusBar->showMessage(QString("Z: %1").arg(camera->dz));
-	}
-	updateGL();
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Event handlers
 
 void GLWidget::keyPressEvent(QKeyEvent *e) {
+	mainWin->onMenuEdit();
+
 	shiftPressed = false;
 	controlPressed = false;
 	altPressed = false;
@@ -108,6 +69,7 @@ void GLWidget::keyPressEvent(QKeyEvent *e) {
 	case Qt::Key_Alt:
 		altPressed = true;
 		break;
+	/*
 	case Qt::Key_Delete:
 		if (editor->deleteEdge()) {
 			updateGL();
@@ -117,6 +79,7 @@ void GLWidget::keyPressEvent(QKeyEvent *e) {
 		if (controlPressed) {
 			editor->undo();
 		}
+	*/
 	}
 }
 
@@ -136,6 +99,90 @@ void GLWidget::keyReleaseEvent(QKeyEvent* e) {
 	case Qt::Key_Alt:
 		altPressed = false;
 	}
+}
+
+void GLWidget::mousePressEvent(QMouseEvent *e) {
+	this->setFocus();
+
+	lastPos = e->pos();
+
+	if (e->buttons() & Qt::LeftButton) {
+		QVector2D pos;
+		mouseTo2D(e->x(), e->y(), &pos);
+		mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
+
+		// if the vertex is close to the point, the vertex is also selected
+		RoadVertexDesc v_desc;
+		if (!editor->selectVertex(pos)) {
+			editor->selectEdge(pos);
+		}
+
+		mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
+		mainWin->controlWidget->setRoadEdge(editor->selectedEdge);
+
+		updateGL();
+	}
+}
+
+void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
+	float dx = (float)(e->x() - lastPos.x());
+	float dy = (float)(e->y() - lastPos.y());
+	
+	lastPos = e->pos();
+
+	if (controlPressed) {
+		float snap_threshold = camera->dz * 0.03f;
+		editor->stopMovingSelectedVertex(snap_threshold);
+	} else {
+		editor->stopMovingSelectedVertex();
+	}
+
+	e->ignore();
+
+	setCursor(Qt::ArrowCursor);
+	updateGL();
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *e) {
+	float dx = (float)(e->x() - lastPos.x());
+	float dy = (float)(e->y() - lastPos.y());
+	float camElevation = camera->getCamElevation();
+
+	lastPos = e->pos();
+
+	if (e->buttons() & Qt::LeftButton) {
+		if (editor->selectedVertex != NULL) {
+			QVector2D pos;
+			mouseTo2D(e->x(), e->y(), &pos);
+
+			if (controlPressed) {
+				float snap_threshold = camera->dz * 0.03f;
+
+				// move the selected vertex
+				editor->moveSelectedVertex(pos, snap_threshold);
+			} else {
+				// move the selected vertex
+				editor->moveSelectedVertex(pos);
+			}
+		}
+	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
+		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
+	} else if (e->buttons() & Qt::RightButton) { // Zoom the camera
+		setCursor(Qt::SizeVerCursor);
+
+		camera->changeXYZTranslation(0, 0, -dy * camera->dz * 0.02f);
+		if (camera->dz < 150.0f) camera->dz = 150.0f;
+		if (camera->dz > 11520.0f) camera->dz = 11520.0f;
+
+		// tell the Z coordinate to the road graph so that road graph updates rendering related variables.
+		editor->roads->setZ(camera->dz);
+
+		lastPos = e->pos();
+
+		mainWin->ui.statusBar->showMessage(QString("Z: %1").arg(camera->dz));
+	}
+
+	updateGL();
 }
 
 void GLWidget::initializeGL() {

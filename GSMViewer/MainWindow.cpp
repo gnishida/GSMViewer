@@ -6,29 +6,52 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	// setup the docking widgets
 	controlWidget = new ControlWidget(this);
 
-	// register the menu handlers
-	connect(ui.actionNew, SIGNAL(triggered()), this, SLOT(newRoad()));
-	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(openRoad()));
-	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(saveRoad()));
+	// register the menu's "AboutToShow" handlers
+	connect(ui.menuEdit, SIGNAL(aboutToShow()), this, SLOT(onMenuEdit()));
+
+	// register the menu's action handlers
+	connect(ui.actionNew, SIGNAL(triggered()), this, SLOT(onNew()));
+	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
+	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
-	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(undo()));
-	connect(ui.actionDeleteEdge, SIGNAL(triggered()), this, SLOT(deleteEdge()));
-	connect(ui.actionControlWidget, SIGNAL(triggered()), this, SLOT(showControlWidget()));
+	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
+	connect(ui.actionDeleteEdge, SIGNAL(triggered()), this, SLOT(onDeleteEdge()));
+	connect(ui.actionControlWidget, SIGNAL(triggered()), this, SLOT(onShowControlWidget()));
 
 	// setup the GL widget
 	glWidget = new GLWidget(this);
 	setCentralWidget(glWidget);
+
+	// setup the event filter
+	glWidget->installEventFilter(this);
+	controlWidget->installEventFilter(this);
 }
 
 MainWindow::~MainWindow() {
 }
 
-void MainWindow::newRoad() {
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Event handlers
+
+void MainWindow::keyPressEvent(QKeyEvent* e) {
+	glWidget->keyPressEvent(e);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent* e) {
+	glWidget->keyReleaseEvent(e);
+}
+
+void MainWindow::onMenuEdit() {
+	ui.actionUndo->setDisabled(glWidget->editor->history.empty());
+	ui.actionDeleteEdge->setDisabled(glWidget->editor->selectedEdge == NULL);
+}
+
+void MainWindow::onNew() {
 	glWidget->editor->clear();
 	glWidget->updateGL();
 }
 
-void MainWindow::openRoad() {
+void MainWindow::onOpen() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open StreetMap file..."), "", tr("StreetMap Files (*.gsm)"));
 
 	if (filename.isEmpty()) {
@@ -42,7 +65,7 @@ void MainWindow::openRoad() {
 	QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::saveRoad() {
+void MainWindow::onSave() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save StreetMap file..."), "", tr("StreetMap Files (*.gsm)"));
 
 	if (filename.isEmpty()) {
@@ -55,15 +78,17 @@ void MainWindow::saveRoad() {
 	QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::undo() {
+void MainWindow::onUndo() {
 	glWidget->editor->undo();
+	glWidget->updateGL();
 }
 
-void MainWindow::deleteEdge() {
+void MainWindow::onDeleteEdge() {
 	glWidget->editor->deleteEdge();
+	glWidget->updateGL();
 }
 
-void MainWindow::showControlWidget() {
+void MainWindow::onShowControlWidget() {
 	controlWidget->show();
 	addDockWidget(Qt::LeftDockWidgetArea, controlWidget);
 }

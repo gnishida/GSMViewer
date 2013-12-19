@@ -224,12 +224,14 @@ void GraphUtil::moveVertex(RoadGraph* roads, RoadVertexDesc v, QVector2D pt) {
 
 	// Move the vertex
 	roads->graph[v]->pt = pt;
+
+	roads->setModified();
 }
 
 /**
  * Collapse v1 to v2.
  */
-void GraphUtil::collapseVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2) {
+/*void GraphUtil::collapseVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2) {
 	if (v1 == v2) return;
 
 	roads->graph[v1]->valid = false;
@@ -249,10 +251,33 @@ void GraphUtil::collapseVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDe
 		// If there is already an edge between v2 and v1b, don't create another edge.
 		if (hasEdge(roads, v2, v1b)) continue;
 
+		// If the new edge is too close to the existing edges, don't create another edge
+		bool tooClose = false;
+		RoadOutEdgeIter ei2, eend2;
+		for (boost::tie(ei2, eend2) = boost::out_edges(v2, roads->graph); ei2 != eend2; ++ei2) {
+			RoadVertexDesc v2b = boost::target(*ei2, roads->graph);
+			float angle = diffAngle(roads->graph[v2b]->pt - roads->graph[v2]->pt, roads->graph[v1b]->pt - roads->graph[v2]->pt);
+			if (angle < 0.3f) {
+				tooClose = true;
+			}
+		}
+		if (tooClose) continue;
+
+		// move the original edge between v1 and v1b
+		RoadVertexDesc src = boost::source(*ei, roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+		if (v1 == src) {
+			moveEdge(roads, *ei, roads->graph[v2]->pt, roads->graph[v1b]->pt);
+		} else {
+			moveEdge(roads, *ei, roads->graph[v1b]->pt, roads->graph[v2]->pt);
+		}
+
 		// create an edge between v2 and v1b
-		addEdge(roads, v2, v1b, roads->graph[*ei]->type, roads->graph[*ei]->lanes, roads->graph[*ei]->oneWay);
+		//addEdge(roads, v2, v1b, roads->graph[*ei]->type, roads->graph[*ei]->lanes, roads->graph[*ei]->oneWay);
+		addEdge(roads, v2, v1b, roads->graph[*ei]);
 	}
 }
+*/
 
 /**
  * Return the degree of the specified vertex.
@@ -288,6 +313,7 @@ std::vector<RoadVertexDesc> GraphUtil::getVertices(RoadGraph* roads, bool onlyVa
 
 /**
  * Remove the isolated vertices.
+ * Note that this function does not change neither the vertex desc nor the edge desc.
  */
 void GraphUtil::removeIsolatedVertices(RoadGraph* roads, bool onlyValidVertex) {
 	RoadVertexIter vi, vend;
@@ -315,15 +341,21 @@ void GraphUtil::snapVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v
 
 		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
 
-		// add a new edge
-		addEdge(roads, v2, tgt, roads->graph[*ei]);
-
 		// invalidate the old edge
 		roads->graph[*ei]->valid = false;
+
+		if (tgt == v2) continue;
+		if (hasEdge(roads, v2, tgt)) continue;
+		if (hasCloseEdge(roads, v2, tgt)) continue;
+
+		// add a new edge
+		addEdge(roads, v2, tgt, roads->graph[*ei]);
 	}
 
 	// invalidate v1
 	roads->graph[v1]->valid = false;
+
+	roads->setModified();
 }
 
 /**
@@ -811,6 +843,21 @@ RoadVertexDesc GraphUtil::splitEdge(RoadGraph* roads, RoadEdgeDesc edge_desc, co
 }
 
 /**
+ * Check if there is an edge outing from v1 that is too close to the line v1 - v2.
+ */
+bool GraphUtil::hasCloseEdge(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2, float angle_threshold) {
+	RoadOutEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::out_edges(v1, roads->graph); ei != eend; ++ei) {
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+
+		float angle = diffAngle(roads->graph[tgt]->pt - roads->graph[v1]->pt, roads->graph[v2]->pt - roads->graph[v1]->pt);
+		if (angle < angle_threshold) return true;
+	}
+
+	return false;
+}
+
+/**
  * Load the road from a file.
  */
 void GraphUtil::loadRoads(RoadGraph* roads, QString filename, int roadType) {
@@ -953,50 +1000,12 @@ void GraphUtil::saveRoads(RoadGraph* roads, QString filename) {
  * Copy the road graph.
  * Note: This function copies all the vertices and edges including the invalid ones. Thus, their IDs will be preserved.
  */
-RoadGraph* GraphUtil::copyRoads(RoadGraph* roads) {
-	RoadGraph* new_roads = new RoadGraph();
-	
-	QMap<RoadVertexDesc, RoadVertexDesc> conv;
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
-		// Add a vertex
-		RoadVertex* new_v = new RoadVertex(roads->graph[*vi]->getPt());
-		new_v->valid = roads->graph[*vi]->valid;
-		RoadVertexDesc new_v_desc = boost::add_vertex(new_roads->graph);
-		new_roads->graph[new_v_desc] = new_v;	
-
-		conv[*vi] = new_v_desc;
-	}
-
-	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		RoadVertexDesc src = boost::source(*ei, roads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
-
-		RoadVertexDesc new_src = conv[src];
-		RoadVertexDesc new_tgt = conv[tgt];
-
-		// Add an edge
-		RoadEdge* new_e = new RoadEdge(*roads->graph[*ei]);
-		std::pair<RoadEdgeDesc, bool> edge_pair = boost::add_edge(new_src, new_tgt, new_roads->graph);
-		new_roads->graph[edge_pair.first] = new_e;
-	}
-
-	return new_roads;
-}
-
-/**
- * Copy the road graph.
- * Only the specified road type is copied.
- */
 RoadGraph* GraphUtil::copyRoads(RoadGraph* roads, int roadType) {
 	RoadGraph* new_roads = new RoadGraph();
 	
 	QMap<RoadVertexDesc, RoadVertexDesc> conv;
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
-		if (!roads->graph[*vi]->valid) continue;
-
 		// Add a vertex
 		RoadVertex* new_v = new RoadVertex(roads->graph[*vi]->getPt());
 		new_v->valid = roads->graph[*vi]->valid;
@@ -1008,9 +1017,6 @@ RoadGraph* GraphUtil::copyRoads(RoadGraph* roads, int roadType) {
 
 	RoadEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		if (!roads->graph[*ei]->valid) continue;
-		if (!((int)powf(2.0f, roads->graph[*ei]->type - 1) & roadType)) continue;
-
 		RoadVertexDesc src = boost::source(*ei, roads->graph);
 		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
 
@@ -1023,9 +1029,9 @@ RoadGraph* GraphUtil::copyRoads(RoadGraph* roads, int roadType) {
 		new_roads->graph[edge_pair.first] = new_e;
 	}
 
-	removeIsolatedVertices(new_roads);
-	reduce(new_roads);
-	clean(new_roads);
+	if (roadType != 7) {
+		extractRoads(new_roads, roadType);
+	}
 
 	return new_roads;
 }
@@ -1206,6 +1212,27 @@ RoadGraph* GraphUtil::extractMajorRoad(RoadGraph* roads, bool remove) {
 	}
 
 	return new_roads;
+}
+
+/**
+ * Extract the specified type of road segments.
+ * Note that this function does not change neither the vertex desc nor the edge desc.
+ */
+void GraphUtil::extractRoads(RoadGraph* roads, int roadType) {
+	if (roadType == 7) return;
+
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
+		if (!((int)powf(2.0f, roads->graph[*ei]->type - 1) & roadType)) {
+			roads->graph[*ei]->valid = false;
+		}
+	}
+
+	removeIsolatedVertices(roads);
+
+	roads->setModified();
 }
 
 /**
@@ -1709,8 +1736,8 @@ void GraphUtil::simplify(RoadGraph* roads, float dist_threshold) {
 
 			QVector2D pt = (roads->graph[*vi]->pt + roads->graph[v2]->pt) / 2.0f;
 
-			collapseVertex(roads, v2, *vi);
-			roads->graph[*vi]->pt = pt;
+			snapVertex(roads, v2, *vi);
+			moveVertex(roads, *vi, pt);
 		}
 
 		// find the closest vertex
@@ -1737,6 +1764,8 @@ void GraphUtil::simplify(RoadGraph* roads, float dist_threshold) {
 			}
 		}
 	}
+
+	roads->setModified();
 }
 
 /**
@@ -2424,6 +2453,8 @@ void GraphUtil::snapDeadendEdges2(RoadGraph* roads, int degree, float threshold)
  * Remove too short dead-end edges unless it has a pair.
  */
 void GraphUtil::removeShortDeadend(RoadGraph* roads, float threshold) {
+	bool actuallyDeleted = false;
+
 	bool deleted = true;
 	while (deleted) {
 		deleted = false;
@@ -2448,10 +2479,13 @@ void GraphUtil::removeShortDeadend(RoadGraph* roads, float threshold) {
 					roads->graph[*vi]->valid = false;
 					roads->graph[*ei]->valid = false;
 					deleted = true;
+					actuallyDeleted = true;
 				}
 			}
 		}
 	}
+
+	if (actuallyDeleted) roads->setModified();
 }
 
 /**
@@ -2567,7 +2601,7 @@ float GraphUtil::diffAngle(float angle1, float angle2, bool absolute) {
  * @param w_angle				エッジの角度のペナルティ
  * @param w_distance			対応する頂点の距離に対するペナルティ
  */
-float GraphUtil::computeDissimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_connectivity, float w_split, float w_angle, float w_distance) {
+/*float GraphUtil::computeDissimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_connectivity, float w_split, float w_angle, float w_distance) {
 	float penalty = 0.0f;
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2682,6 +2716,7 @@ float GraphUtil::computeDissimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, Ro
 
 	return penalty;
 }
+*/
 
 /**
  * 対応する頂点が与えられている時に、２つの道路網のトポロジーの違いを数値化して返却する。
