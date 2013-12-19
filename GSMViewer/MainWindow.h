@@ -30,6 +30,8 @@ public slots:
 	void onSelectAll();
 	void onUndo();
 	void onCut();
+	void onCopy();
+	void onPaste();
 	void onDeleteEdge();
 	void onShowControlWidget();
 };

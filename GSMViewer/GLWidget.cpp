@@ -28,7 +28,6 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	controlPressed = false;
 	altPressed = false;
 
-	//selecting = false;
 	mode = MODE_DEFAULT;
 }
 

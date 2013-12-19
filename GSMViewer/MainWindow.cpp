@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	connect(ui.actionSelectAll, SIGNAL(triggered()), this, SLOT(onSelectAll()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionCut, SIGNAL(triggered()), this, SLOT(onCut()));
+	connect(ui.actionCopy, SIGNAL(triggered()), this, SLOT(onCopy()));
+	connect(ui.actionPaste, SIGNAL(triggered()), this, SLOT(onPaste()));
 	connect(ui.actionDeleteEdge, SIGNAL(triggered()), this, SLOT(onDeleteEdge()));
 	connect(ui.actionControlWidget, SIGNAL(triggered()), this, SLOT(onShowControlWidget()));
 
@@ -93,6 +95,16 @@ void MainWindow::onUndo() {
 
 void MainWindow::onCut() {
 	glWidget->editor->cut();
+	glWidget->updateGL();
+}
+
+void MainWindow::onCopy() {
+	glWidget->editor->copy();
+	glWidget->updateGL();
+}
+
+void MainWindow::onPaste() {
+	glWidget->editor->paste();
 	glWidget->updateGL();
 }
 

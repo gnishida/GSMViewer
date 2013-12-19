@@ -23,7 +23,6 @@ public:
 	QPoint lastPos;
 	QVector2D last2DPos;
 
-	//bool selecting;
 	int mode;
 
 	// key status

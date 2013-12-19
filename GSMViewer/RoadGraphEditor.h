@@ -2,6 +2,7 @@
 
 #include "RoadGraph.h"
 #include "BBox.h"
+#include "ClipBoard.h"
 
 class RoadGraphEditor {
 public:
@@ -12,6 +13,7 @@ public:
 	RoadVertexDesc selectedVertexDesc;
 	RoadEdge* selectedEdge;
 	RoadEdgeDesc selectedEdgeDesc;
+	ClipBoard* clipBoard;
 
 	std::vector<RoadGraph*> history;
 	RoadVertex* movingVertex;
@@ -25,6 +27,8 @@ public:
 	void saveRoad(QString filename);
 	void undo();
 	void cut();
+	void copy();
+	void paste();
 	bool deleteEdge();
 	void simplify(float threshold);
 	void reduce();

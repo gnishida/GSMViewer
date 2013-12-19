@@ -21,6 +21,7 @@ void RoadGraphEditor::clear() {
 	selectedVertex = NULL;
 	selectedEdge = NULL;
 	movingVertex = NULL;
+	clipBoard = NULL;
 
 	for (int i = 0; i < history.size(); i++) {
 		delete history[i];
@@ -53,7 +54,18 @@ void RoadGraphEditor::cut() {
 	if (bbox == NULL) return;
 
 	history.push_back(GraphUtil::copyRoads(roads));
-	GraphUtil::subtractRoadsByBox(roads, *bbox);
+	GraphUtil::subtractRoads(roads, *bbox);
+}
+
+void RoadGraphEditor::copy() {
+	if (bbox == NULL) return;
+
+	//clipBoard->copy(bbox, GraphUtil::
+}
+
+void RoadGraphEditor::paste() {
+	if (bbox == NULL) return;
+
 }
 
 bool RoadGraphEditor::deleteEdge() {

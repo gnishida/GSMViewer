@@ -1,9 +1,10 @@
 #pragma once
 
+#include "AbstractArea.h"
 #include <QVector2D>
 #include <vector>
 
-class BBox {
+class BBox : public AbstractArea {
 public:
 	QVector2D minPt;
 	QVector2D maxPt;
