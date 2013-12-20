@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'ControlWidget.ui'
 **
-** Created: Wed Dec 18 23:27:41 2013
+** Created: Thu Dec 19 16:26:37 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -43,7 +43,7 @@ public:
     QPushButton *pushButtonRemoveShortDeadend;
     QLabel *label_5;
     QLineEdit *lineEditRemoveShortDeadendThreshold;
-    QPushButton *pushButtonCopy;
+    QPushButton *pushButtonExtractAvenues;
     QGroupBox *groupBox_4;
     QPushButton *pushButtonClean;
     QGroupBox *groupBox_5;
@@ -55,19 +55,20 @@ public:
     QLineEdit *lineEditVertexNeighbors;
     QGroupBox *groupBox_6;
     QPushButton *pushButtonReduce;
+    QPushButton *pushButtonConnectRoads;
 
     void setupUi(QDockWidget *ControlWidget)
     {
         if (ControlWidget->objectName().isEmpty())
             ControlWidget->setObjectName(QString::fromUtf8("ControlWidget"));
-        ControlWidget->resize(192, 711);
+        ControlWidget->resize(192, 822);
         ControlWidget->setMinimumSize(QSize(192, 240));
         ControlWidget->setStyleSheet(QString::fromUtf8("background-color: rgb(181, 181, 181);"));
         dockWidgetContents = new QWidget();
         dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
         groupBox = new QGroupBox(dockWidgetContents);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        groupBox->setGeometry(QRect(10, 140, 171, 111));
+        groupBox->setGeometry(QRect(10, 130, 171, 111));
         label = new QLabel(groupBox);
         label->setObjectName(QString::fromUtf8("label"));
         label->setGeometry(QRect(10, 20, 31, 16));
@@ -88,7 +89,7 @@ public:
         lineEditEdgeOneWay->setGeometry(QRect(80, 80, 81, 20));
         groupBox_2 = new QGroupBox(dockWidgetContents);
         groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
-        groupBox_2->setGeometry(QRect(10, 400, 171, 91));
+        groupBox_2->setGeometry(QRect(10, 340, 171, 91));
         label_4 = new QLabel(groupBox_2);
         label_4->setObjectName(QString::fromUtf8("label_4"));
         label_4->setGeometry(QRect(10, 20, 46, 21));
@@ -100,7 +101,7 @@ public:
         pushButtonSimplify->setGeometry(QRect(10, 50, 151, 31));
         groupBox_3 = new QGroupBox(dockWidgetContents);
         groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
-        groupBox_3->setGeometry(QRect(10, 570, 171, 91));
+        groupBox_3->setGeometry(QRect(10, 510, 171, 91));
         pushButtonRemoveShortDeadend = new QPushButton(groupBox_3);
         pushButtonRemoveShortDeadend->setObjectName(QString::fromUtf8("pushButtonRemoveShortDeadend"));
         pushButtonRemoveShortDeadend->setGeometry(QRect(10, 50, 151, 31));
@@ -110,18 +111,18 @@ public:
         lineEditRemoveShortDeadendThreshold = new QLineEdit(groupBox_3);
         lineEditRemoveShortDeadendThreshold->setObjectName(QString::fromUtf8("lineEditRemoveShortDeadendThreshold"));
         lineEditRemoveShortDeadendThreshold->setGeometry(QRect(70, 20, 71, 20));
-        pushButtonCopy = new QPushButton(dockWidgetContents);
-        pushButtonCopy->setObjectName(QString::fromUtf8("pushButtonCopy"));
-        pushButtonCopy->setGeometry(QRect(20, 270, 151, 31));
+        pushButtonExtractAvenues = new QPushButton(dockWidgetContents);
+        pushButtonExtractAvenues->setObjectName(QString::fromUtf8("pushButtonExtractAvenues"));
+        pushButtonExtractAvenues->setGeometry(QRect(20, 630, 151, 31));
         groupBox_4 = new QGroupBox(dockWidgetContents);
         groupBox_4->setObjectName(QString::fromUtf8("groupBox_4"));
-        groupBox_4->setGeometry(QRect(10, 330, 171, 61));
+        groupBox_4->setGeometry(QRect(10, 270, 171, 61));
         pushButtonClean = new QPushButton(groupBox_4);
         pushButtonClean->setObjectName(QString::fromUtf8("pushButtonClean"));
         pushButtonClean->setGeometry(QRect(10, 20, 151, 31));
         groupBox_5 = new QGroupBox(dockWidgetContents);
         groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
-        groupBox_5->setGeometry(QRect(10, 20, 171, 111));
+        groupBox_5->setGeometry(QRect(10, 10, 171, 111));
         label_6 = new QLabel(groupBox_5);
         label_6->setObjectName(QString::fromUtf8("label_6"));
         label_6->setGeometry(QRect(10, 20, 31, 16));
@@ -142,10 +143,13 @@ public:
         lineEditVertexNeighbors->setGeometry(QRect(80, 80, 81, 20));
         groupBox_6 = new QGroupBox(dockWidgetContents);
         groupBox_6->setObjectName(QString::fromUtf8("groupBox_6"));
-        groupBox_6->setGeometry(QRect(10, 500, 171, 61));
+        groupBox_6->setGeometry(QRect(10, 440, 171, 61));
         pushButtonReduce = new QPushButton(groupBox_6);
         pushButtonReduce->setObjectName(QString::fromUtf8("pushButtonReduce"));
         pushButtonReduce->setGeometry(QRect(10, 20, 151, 31));
+        pushButtonConnectRoads = new QPushButton(dockWidgetContents);
+        pushButtonConnectRoads->setObjectName(QString::fromUtf8("pushButtonConnectRoads"));
+        pushButtonConnectRoads->setGeometry(QRect(20, 690, 151, 31));
         ControlWidget->setWidget(dockWidgetContents);
 
         retranslateUi(ControlWidget);
@@ -165,7 +169,7 @@ public:
         groupBox_3->setTitle(QApplication::translate("ControlWidget", "Remove Short Dead-End", 0, QApplication::UnicodeUTF8));
         pushButtonRemoveShortDeadend->setText(QApplication::translate("ControlWidget", "Remove Short Dead-End", 0, QApplication::UnicodeUTF8));
         label_5->setText(QApplication::translate("ControlWidget", "Threshold", 0, QApplication::UnicodeUTF8));
-        pushButtonCopy->setText(QApplication::translate("ControlWidget", "Copy Avenues", 0, QApplication::UnicodeUTF8));
+        pushButtonExtractAvenues->setText(QApplication::translate("ControlWidget", "Extract Avenues", 0, QApplication::UnicodeUTF8));
         groupBox_4->setTitle(QApplication::translate("ControlWidget", "Clean", 0, QApplication::UnicodeUTF8));
         pushButtonClean->setText(QApplication::translate("ControlWidget", "Clean", 0, QApplication::UnicodeUTF8));
         groupBox_5->setTitle(QApplication::translate("ControlWidget", "Vertex", 0, QApplication::UnicodeUTF8));
@@ -174,6 +178,7 @@ public:
         label_8->setText(QApplication::translate("ControlWidget", "Neighbors", 0, QApplication::UnicodeUTF8));
         groupBox_6->setTitle(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
         pushButtonReduce->setText(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
+        pushButtonConnectRoads->setText(QApplication::translate("ControlWidget", "Connect Roads", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(ControlWidget);
     } // retranslateUi
 

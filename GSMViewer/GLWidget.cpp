@@ -27,6 +27,7 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	shiftPressed = false;
 	controlPressed = false;
 	altPressed = false;
+	keyXPressed = false;
 }
 
 GLWidget::~GLWidget() {
@@ -83,17 +84,9 @@ void GLWidget::keyPressEvent(QKeyEvent *e) {
 	case Qt::Key_Alt:
 		altPressed = true;
 		break;
-	/*
-	case Qt::Key_Delete:
-		if (editor->deleteEdge()) {
-			updateGL();
-		}
+	case Qt::Key_X:
+		keyXPressed = true;
 		break;
-	case Qt::Key_D:
-		if (controlPressed) {
-			editor->undo();
-		}
-	*/
 	}
 }
 
@@ -112,6 +105,10 @@ void GLWidget::keyReleaseEvent(QKeyEvent* e) {
 		break;
 	case Qt::Key_Alt:
 		altPressed = false;
+		break;
+	case Qt::Key_X:
+		keyXPressed = false;
+		break;
 	}
 }
 
@@ -130,6 +127,10 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 			if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
 				// merge the selected roads to the others
 				editor->unselectRoads();
+			}
+
+			if (keyXPressed) {
+				editor->splitEdge(last2DPos);
 			}
 
 			// if the vertex is close to the point, the vertex is selected

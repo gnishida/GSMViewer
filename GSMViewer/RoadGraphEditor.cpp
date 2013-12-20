@@ -76,7 +76,6 @@ void RoadGraphEditor::paste() {
 	if (selectedRoads != NULL) {
 		delete selectedRoads;
 	}
-
 	selectedRoads = clipBoard->paste();
 
 	// update the bbox according to the paseted roads
@@ -153,6 +152,19 @@ void RoadGraphEditor::finalizeArea() {
 	if (bbox.maxPt.x() == bbox.minPt.x() && bbox.maxPt.y() == bbox.minPt.y()) {
 		mode = MODE_DEFAULT;
 	} else {
+		history.push_back(GraphUtil::copyRoads(roads));
+
+		// copy the roads in the area to "selectedRoads"
+		if (selectedRoads != NULL) {
+			delete selectedRoads;
+		}
+		selectedRoads = GraphUtil::copyRoads(roads);
+		GraphUtil::extractRoads(selectedRoads, bbox, true);
+		GraphUtil::clean(selectedRoads);
+
+		// subtract the area from the roads
+		GraphUtil::subtractRoads(roads, bbox, true);
+
 		mode = MODE_AREA_SELECTED;
 	}
 }
@@ -247,7 +259,7 @@ void RoadGraphEditor::stopMovingSelectedVertex(float snap_threshold) {
 	if (movingVertex != NULL) {
 		// if there is a vertex close to this point, snap to it.
 		RoadVertexDesc desc;
-		if (GraphUtil::getVertex(roads, roads->graph[selectedVertexDesc]->pt, snap_threshold, selectedVertexDesc, desc)) {
+		if (GraphUtil::getVertex(roads, selectedVertexDesc, snap_threshold, desc)) {
 			GraphUtil::snapVertex(roads, selectedVertexDesc, desc);
 		}
 	}
@@ -255,6 +267,9 @@ void RoadGraphEditor::stopMovingSelectedVertex(float snap_threshold) {
 	movingVertex = NULL;
 }
 
+/**
+ * Merge the selected roads to the actual roads.
+ */
 void RoadGraphEditor::unselectRoads() {
 	if (selectedRoads != NULL) {
 		GraphUtil::mergeRoads(roads, selectedRoads);
@@ -263,4 +278,28 @@ void RoadGraphEditor::unselectRoads() {
 	}
 
 	mode = MODE_DEFAULT;
+}
+
+/**
+ * Merge the selected roads to the actual roads. 
+ * By tring to connect the selected roads to the other as much as possible, the resulting roads hopefully look natural.
+ */
+void RoadGraphEditor::connectRoads() {
+	if (selectedRoads != NULL) {
+		GraphUtil::connectRoads(roads, selectedRoads, 60.0f);
+		delete selectedRoads;
+		selectedRoads = NULL;
+	}
+
+	mode = MODE_DEFAULT;
+}
+
+bool RoadGraphEditor::splitEdge(const QVector2D& pt) {
+	RoadEdgeDesc e_desc;
+	if (GraphUtil::getEdge(roads, pt, roads->widthBase, e_desc)) {
+		GraphUtil::splitEdge(roads, e_desc, pt);
+		return true;
+	} else {
+		return false;
+	}
 }

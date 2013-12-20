@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Thu Dec 19 13:28:50 2013
+** Created: Thu Dec 19 17:02:55 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -55,26 +55,50 @@ public:
         MainWindow->setMinimumSize(QSize(1000, 800));
         actionNew = new QAction(MainWindow);
         actionNew->setObjectName(QString::fromUtf8("actionNew"));
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/MainWindow/Resources/New_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionNew->setIcon(icon);
         actionOpen = new QAction(MainWindow);
         actionOpen->setObjectName(QString::fromUtf8("actionOpen"));
+        QIcon icon1;
+        icon1.addFile(QString::fromUtf8(":/MainWindow/Resources/Open_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionOpen->setIcon(icon1);
         actionExit = new QAction(MainWindow);
         actionExit->setObjectName(QString::fromUtf8("actionExit"));
         actionControlWidget = new QAction(MainWindow);
         actionControlWidget->setObjectName(QString::fromUtf8("actionControlWidget"));
         actionDeleteEdge = new QAction(MainWindow);
         actionDeleteEdge->setObjectName(QString::fromUtf8("actionDeleteEdge"));
+        QIcon icon2;
+        icon2.addFile(QString::fromUtf8(":/MainWindow/Resources/Delete_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionDeleteEdge->setIcon(icon2);
         actionSave = new QAction(MainWindow);
         actionSave->setObjectName(QString::fromUtf8("actionSave"));
+        QIcon icon3;
+        icon3.addFile(QString::fromUtf8(":/MainWindow/Resources/Save_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionSave->setIcon(icon3);
         actionUndo = new QAction(MainWindow);
         actionUndo->setObjectName(QString::fromUtf8("actionUndo"));
+        QIcon icon4;
+        icon4.addFile(QString::fromUtf8(":/MainWindow/Resources/Undo_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionUndo->setIcon(icon4);
         actionSelectAll = new QAction(MainWindow);
         actionSelectAll->setObjectName(QString::fromUtf8("actionSelectAll"));
         actionCut = new QAction(MainWindow);
         actionCut->setObjectName(QString::fromUtf8("actionCut"));
+        QIcon icon5;
+        icon5.addFile(QString::fromUtf8(":/MainWindow/Resources/Cut_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionCut->setIcon(icon5);
         actionCopy = new QAction(MainWindow);
         actionCopy->setObjectName(QString::fromUtf8("actionCopy"));
+        QIcon icon6;
+        icon6.addFile(QString::fromUtf8(":/MainWindow/Resources/Copy_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionCopy->setIcon(icon6);
         actionPaste = new QAction(MainWindow);
         actionPaste->setObjectName(QString::fromUtf8("actionPaste"));
+        QIcon icon7;
+        icon7.addFile(QString::fromUtf8(":/MainWindow/Resources/Paste_24x24.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionPaste->setIcon(icon7);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         MainWindow->setCentralWidget(centralWidget);

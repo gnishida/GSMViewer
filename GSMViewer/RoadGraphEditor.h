@@ -54,5 +54,7 @@ public:
 	void stopMovingSelectedVertex();
 	void stopMovingSelectedVertex(float snap_threshold);
 	void unselectRoads();
+	void connectRoads();
+	bool splitEdge(const QVector2D& pt);
 };
 

@@ -78,6 +78,10 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/New_24x24.png</normaloff>:/MainWindow/Resources/New_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>New</string>
    </property>
@@ -86,6 +90,10 @@
    </property>
   </action>
   <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/Open_24x24.png</normaloff>:/MainWindow/Resources/Open_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>Open</string>
    </property>
@@ -104,6 +112,10 @@
    </property>
   </action>
   <action name="actionDeleteEdge">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/Delete_24x24.png</normaloff>:/MainWindow/Resources/Delete_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>Delete Edge</string>
    </property>
@@ -112,6 +124,10 @@
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/Save_24x24.png</normaloff>:/MainWindow/Resources/Save_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>Save</string>
    </property>
@@ -120,6 +136,10 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/Undo_24x24.png</normaloff>:/MainWindow/Resources/Undo_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>Undo</string>
    </property>
@@ -139,6 +159,10 @@
    </property>
   </action>
   <action name="actionCut">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/Cut_24x24.png</normaloff>:/MainWindow/Resources/Cut_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>Cut</string>
    </property>
@@ -147,6 +171,10 @@
    </property>
   </action>
   <action name="actionCopy">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/Copy_24x24.png</normaloff>:/MainWindow/Resources/Copy_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>Copy</string>
    </property>
@@ -155,6 +183,10 @@
    </property>
   </action>
   <action name="actionPaste">
+   <property name="icon">
+    <iconset resource="MainWindow.qrc">
+     <normaloff>:/MainWindow/Resources/Paste_24x24.png</normaloff>:/MainWindow/Resources/Paste_24x24.png</iconset>
+   </property>
    <property name="text">
     <string>Paste</string>
    </property>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>192</width>
-    <height>711</height>
+    <height>822</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -24,7 +24,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>140</y>
+      <y>130</y>
       <width>171</width>
       <height>111</height>
      </rect>
@@ -106,7 +106,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>400</y>
+      <y>340</y>
       <width>171</width>
       <height>91</height>
      </rect>
@@ -155,7 +155,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>570</y>
+      <y>510</y>
       <width>171</width>
       <height>91</height>
      </rect>
@@ -200,24 +200,24 @@
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="pushButtonCopy">
+   <widget class="QPushButton" name="pushButtonExtractAvenues">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>270</y>
+      <y>630</y>
       <width>151</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Copy Avenues</string>
+     <string>Extract Avenues</string>
     </property>
    </widget>
    <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>330</y>
+      <y>270</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -243,7 +243,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>20</y>
+      <y>10</y>
       <width>171</width>
       <height>111</height>
      </rect>
@@ -325,7 +325,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>500</y>
+      <y>440</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -346,6 +346,19 @@
       <string>Reduce</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QPushButton" name="pushButtonConnectRoads">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>690</y>
+      <width>151</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Connect Roads</string>
+    </property>
    </widget>
   </widget>
  </widget>

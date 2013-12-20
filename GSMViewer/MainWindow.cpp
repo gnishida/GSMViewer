@@ -48,6 +48,9 @@ void MainWindow::keyReleaseEvent(QKeyEvent* e) {
 
 void MainWindow::onMenuEdit() {
 	ui.actionUndo->setDisabled(glWidget->editor->history.empty());
+	ui.actionCut->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_AREA_SELECTED);
+	ui.actionCopy->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_AREA_SELECTED);
+	ui.actionPaste->setDisabled(glWidget->editor->clipBoard->empty());
 	ui.actionDeleteEdge->setDisabled(glWidget->editor->selectedEdge == NULL);
 }
 
@@ -109,6 +112,7 @@ void MainWindow::onPaste() {
 }
 
 void MainWindow::onDeleteEdge() {
+	qDebug() << "onDeleteEdge";
 	glWidget->editor->deleteEdge();
 	glWidget->updateGL();
 }

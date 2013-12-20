@@ -13,11 +13,12 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	ui.lineEditRemoveShortDeadendThreshold->setText("10");
 
 	// register the event handlers
-	connect(ui.pushButtonCopy, SIGNAL(clicked()), this, SLOT(copy()));
 	connect(ui.pushButtonClean, SIGNAL(clicked()), this, SLOT(clean()));
 	connect(ui.pushButtonSimplify, SIGNAL(clicked()), this, SLOT(simplify()));
 	connect(ui.pushButtonReduce, SIGNAL(clicked()), this, SLOT(reduce()));
 	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
+	connect(ui.pushButtonExtractAvenues, SIGNAL(clicked()), this, SLOT(extractAvenues()));
+	connect(ui.pushButtonConnectRoads, SIGNAL(clicked()), this, SLOT(connectRoads()));
 
 	hide();
 }
@@ -86,15 +87,6 @@ void ControlWidget::setRoadEdge(RoadEdge* selectedEdge) {
 // Event handlers
 
 /**
- * Event handler for button [Copy]
- */
-void ControlWidget::copy() {
-	GraphUtil::extractRoads(mainWin->glWidget->editor->roads, 6);
-
-	mainWin->glWidget->updateGL();
-}
-
-/**
  * Event handler for button [Clean]
  */
 void ControlWidget::clean() {
@@ -128,6 +120,24 @@ void ControlWidget::reduce() {
 void ControlWidget::removeShortDeadend() {
 	float threshold = ui.lineEditRemoveShortDeadendThreshold->text().toFloat();
 	mainWin->glWidget->editor->removeShortDeadend(threshold);
+
+	mainWin->glWidget->updateGL();
+}
+
+/**
+ * Event handler for button [Extract Avenues]
+ */
+void ControlWidget::extractAvenues() {
+	GraphUtil::extractRoads(mainWin->glWidget->editor->roads, 6);
+
+	mainWin->glWidget->updateGL();
+}
+
+/**
+ * Event handler for button [Connect Roads]
+ */
+void ControlWidget::connectRoads() {
+	mainWin->glWidget->editor->connectRoads();
 
 	mainWin->glWidget->updateGL();
 }

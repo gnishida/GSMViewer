@@ -22,12 +22,11 @@ public:
 	QPoint lastPos;
 	QVector2D last2DPos;
 
-	int mode;
-
 	// key status
 	bool shiftPressed;
 	bool controlPressed;
 	bool altPressed;
+	bool keyXPressed;
 
 public:
 	GLWidget(MainWindow *parent);
