@@ -259,7 +259,7 @@ void RoadGraphEditor::stopMovingSelectedVertex(float snap_threshold) {
 	if (movingVertex != NULL) {
 		// if there is a vertex close to this point, snap to it.
 		RoadVertexDesc desc;
-		if (GraphUtil::getVertex(roads, selectedVertexDesc, snap_threshold, desc)) {
+		if (GraphUtil::getVertex(roads, roads->graph[selectedVertexDesc]->pt, snap_threshold, selectedVertexDesc, desc)) {
 			GraphUtil::snapVertex(roads, selectedVertexDesc, desc);
 		}
 	}

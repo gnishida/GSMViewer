@@ -148,7 +148,7 @@ bool GraphUtil::getVertex(RoadGraph* roads, const QVector2D& pos, float threshol
  * Find the closest vertex from the specified vertex. 
  * If the closet vertex is within the threshold, return true. Otherwise, return false.
  */
-bool GraphUtil::getVertex(RoadGraph* roads, RoadVertexDesc v, float threshold, RoadVertexDesc& desc, bool onlyValidVertex) {
+/*bool GraphUtil::getVertex(RoadGraph* roads, RoadVertexDesc v, float threshold, RoadVertexDesc& desc, bool onlyValidVertex) {
 	float min_dist = std::numeric_limits<float>::max();
 
 	RoadVertexIter vi, vend;
@@ -165,13 +165,13 @@ bool GraphUtil::getVertex(RoadGraph* roads, RoadVertexDesc v, float threshold, R
 
 	if (min_dist <= threshold) return true;
 	else return false;
-}
+}*/
 
 /**
  * Find the closest vertex from the specified point. 
  * If the closet vertex is within the threshold, return true. Otherwise, return false.
  */
-/*bool GraphUtil::getVertex(RoadGraph* roads, QVector2D pos, float threshold, RoadVertexDesc ignore, RoadVertexDesc& desc, bool onlyValidVertex) {
+bool GraphUtil::getVertex(RoadGraph* roads, QVector2D pos, float threshold, RoadVertexDesc ignore, RoadVertexDesc& desc, bool onlyValidVertex) {
 	float min_dist = std::numeric_limits<float>::max();
 
 	RoadVertexIter vi, vend;
@@ -189,7 +189,6 @@ bool GraphUtil::getVertex(RoadGraph* roads, RoadVertexDesc v, float threshold, R
 	if (min_dist <= threshold) return true;
 	else return false;
 }
-*/
 
 /**
  * 当該頂点が、何番目の頂点かを返却する。
@@ -1179,7 +1178,7 @@ void GraphUtil::connectRoads(RoadGraph* roads1, RoadGraph* roads2, float connect
 		if (getDegree(roads1, conv[*vi]) > 1) continue;
 
 		RoadVertexDesc v1_desc;
-		if (getVertex(roads1, conv[*vi], connect_threshold, v1_desc)) {
+		if (getVertex(roads1, roads1->graph[conv[*vi]]->pt, connect_threshold, conv[*vi], v1_desc)) {
 			if (!conv.contains(v1_desc)) {
 				addEdge(roads1, v1_desc, conv[*vi], 1, 1, false);	// to be updated!!!
 				continue;
@@ -1868,7 +1867,7 @@ void GraphUtil::simplify(RoadGraph* roads, float dist_threshold) {
 		while (true) {
 			//RoadVertexDesc v2 = findNearestVertex(roads, roads->graph[*vi]->getPt(), *vi);
 			RoadVertexDesc v2;
-			if (!getVertex(roads, *vi, dist_threshold, v2)) break;
+			if (!getVertex(roads, roads->graph[*vi]->pt, dist_threshold, *vi, v2)) break;
 			//if ((roads->graph[v2]->getPt() - roads->graph[*vi]->getPt()).length() > dist_threshold) break;
 
 			// define the new position
