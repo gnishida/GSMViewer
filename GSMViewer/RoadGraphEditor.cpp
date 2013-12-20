@@ -27,6 +27,7 @@ void RoadGraphEditor::clear() {
 	selectedRoads = NULL;
 	selectedRoadsOrig = NULL;
 	selectedArea = NULL;
+	clearInterpolatedRoads();
 	clipBoard->clear();
 
 	for (int i = 0; i < history.size(); i++) {
@@ -35,10 +36,40 @@ void RoadGraphEditor::clear() {
 	history.clear();
 }
 
+void RoadGraphEditor::clearInterpolatedRoads() {
+	// clear the interpolated roads
+	for (int i = 0; i < interpolatedRoads.size(); i++) {
+		delete interpolatedRoads[i];
+	}
+	interpolatedRoads.clear();
+}
+
 void RoadGraphEditor::openRoad(QString filename) {
 	clear();
 
 	GraphUtil::loadRoads(roads, filename, 7);
+}
+
+void RoadGraphEditor::openToAddRoad(QString filename) {
+	if (selectedRoads == NULL) selectedRoads = new RoadGraph();
+	GraphUtil::loadRoads(selectedRoads, filename, 7);
+
+	// update the bbox according to the loaded roads
+	if (selectedArea != NULL) {
+		delete selectedArea;
+	}
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
+
+	// inflate the bbox a little so that all the vertices are completely within the bbox.
+	/*
+	((BBox*)selectedArea)->minPt.setX(((BBox*)selectedArea)->minPt.x() - selectedArea->dx() * 0.1f);
+	((BBox*)selectedArea)->minPt.setY(((BBox*)selectedArea)->minPt.y() - selectedArea->dy() * 0.1f);
+	((BBox*)selectedArea)->maxPt.setX(((BBox*)selectedArea)->maxPt.x() + selectedArea->dx() * 0.1f);
+	((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->maxPt.y() + selectedArea->dy() * 0.1f);
+	*/
+
+	mode = MODE_AREA_SELECTED;
+
 }
 
 void RoadGraphEditor::saveRoad(QString filename) {
@@ -350,7 +381,7 @@ void RoadGraphEditor::connectRoads() {
 /**
  * Interpolate the selected roads and the actual roads.
  */
-void RoadGraphEditor::interpolate(float ratio) {
+void RoadGraphEditor::interpolate() {
 	if (selectedRoads != NULL) {
 		BBox bbox1 = GraphUtil::getAABoundingBox(roads);
 		BBox bbox2 = GraphUtil::getAABoundingBox(selectedRoads);
@@ -383,29 +414,56 @@ void RoadGraphEditor::interpolate(float ratio) {
 		QMap<RoadVertexDesc, RoadVertexDesc> map1;
 		QMap<RoadVertexDesc, RoadVertexDesc> map2;
 		GraphUtil::findCorrespondence(roads1, &tree1, selectedRoads, &tree2, true, 1.5f, map1, map2);
-		
-		// interpolate
-		RoadGraph* temp = GraphUtil::interpolate(roads1, selectedRoads, map1, 1 - ratio);
 
-		// merge it with the actual roads
-		GraphUtil::subtractRoads(roads, *selectedArea, true);
-		//GraphUtil::connectRoads(roads, temp, 30.0f);
-		GraphUtil::mergeRoads(roads, temp);
+		// clear the interpolated roads
+		clearInterpolatedRoads();
 
-		// clear the "fullyPaired" flag of "roads"
-		RoadEdgeIter ei, eend;
-		for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-			roads->graph[*ei]->fullyPaired = false;
+		for (int i = 0; i <= 20; i++) {
+			float ratio = (float)i / 20.0f;
+
+			// interpolate
+			RoadGraph* temp = GraphUtil::interpolate(roads1, selectedRoads, map1, 1 - ratio);
+			interpolatedRoads.push_back(temp);
+
+			// clear the "fullyPaired" flag of "roads1"
+			RoadEdgeIter ei, eend;
+			for (boost::tie(ei, eend) = boost::edges(roads1->graph); ei != eend; ++ei) {
+				roads1->graph[*ei]->fullyPaired = false;
+			}
+
+			// clear the "fullyPaired" flag of "selectedRoads"
+			for (boost::tie(ei, eend) = boost::edges(selectedRoads->graph); ei != eend; ++ei) {
+				selectedRoads->graph[*ei]->fullyPaired = false;
+			}
 		}
 
 		// delete temporary roads
 		delete roads1;
-		delete temp;
 
 		// clear the selected roads
 		delete selectedRoads;
-		selectedRoads = NULL;
+
+		selectedRoads = interpolatedRoads[0];
+
+		// subtract the area from the roads
+		GraphUtil::subtractRoads(roads, *selectedArea, true);
 	}
+
+	mode = MODE_AREA_SELECTED;
+}
+
+void RoadGraphEditor::showInterpolatedRoads(int ratio) {
+	if (ratio < 0 || ratio >= interpolatedRoads.size()) return;
+
+	selectedRoads = interpolatedRoads[ratio];
+	selectedRoads->setModified();
+}
+
+void RoadGraphEditor::finalizeInterpolation(int ratio) {
+	if (selectedRoads != NULL) {
+		GraphUtil::mergeRoads(roads, selectedRoads);
+	}
+	clearInterpolatedRoads();
 
 	mode = MODE_DEFAULT;
 }

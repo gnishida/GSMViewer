@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'ControlWidget.ui'
 **
-** Created: Fri Dec 20 02:14:13 2013
+** Created: Fri Dec 20 08:05:35 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -20,6 +20,7 @@
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
+#include <QtGui/QSlider>
 #include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -58,8 +59,8 @@ public:
     QPushButton *pushButtonConnectRoads;
     QGroupBox *groupBox_7;
     QPushButton *pushButtonInterpolation;
-    QLabel *label_9;
-    QLineEdit *lineEditInterpolationRatio;
+    QSlider *horizontalSliderInterpolationRatio;
+    QPushButton *pushButtonFinalizeInterpolation;
 
     void setupUi(QDockWidget *ControlWidget)
     {
@@ -93,7 +94,7 @@ public:
         lineEditEdgeOneWay->setGeometry(QRect(80, 80, 81, 20));
         groupBox_2 = new QGroupBox(dockWidgetContents);
         groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
-        groupBox_2->setGeometry(QRect(10, 330, 171, 91));
+        groupBox_2->setGeometry(QRect(10, 320, 171, 91));
         label_4 = new QLabel(groupBox_2);
         label_4->setObjectName(QString::fromUtf8("label_4"));
         label_4->setGeometry(QRect(20, 20, 46, 21));
@@ -105,7 +106,7 @@ public:
         pushButtonSimplify->setGeometry(QRect(10, 50, 151, 31));
         groupBox_3 = new QGroupBox(dockWidgetContents);
         groupBox_3->setObjectName(QString::fromUtf8("groupBox_3"));
-        groupBox_3->setGeometry(QRect(10, 500, 171, 91));
+        groupBox_3->setGeometry(QRect(10, 490, 171, 91));
         pushButtonRemoveShortDeadend = new QPushButton(groupBox_3);
         pushButtonRemoveShortDeadend->setObjectName(QString::fromUtf8("pushButtonRemoveShortDeadend"));
         pushButtonRemoveShortDeadend->setGeometry(QRect(10, 50, 151, 31));
@@ -117,10 +118,10 @@ public:
         lineEditRemoveShortDeadendThreshold->setGeometry(QRect(80, 20, 81, 20));
         pushButtonExtractAvenues = new QPushButton(dockWidgetContents);
         pushButtonExtractAvenues->setObjectName(QString::fromUtf8("pushButtonExtractAvenues"));
-        pushButtonExtractAvenues->setGeometry(QRect(20, 610, 151, 31));
+        pushButtonExtractAvenues->setGeometry(QRect(20, 590, 151, 31));
         groupBox_4 = new QGroupBox(dockWidgetContents);
         groupBox_4->setObjectName(QString::fromUtf8("groupBox_4"));
-        groupBox_4->setGeometry(QRect(10, 260, 171, 61));
+        groupBox_4->setGeometry(QRect(10, 250, 171, 61));
         pushButtonClean = new QPushButton(groupBox_4);
         pushButtonClean->setObjectName(QString::fromUtf8("pushButtonClean"));
         pushButtonClean->setGeometry(QRect(10, 20, 151, 31));
@@ -147,25 +148,26 @@ public:
         lineEditVertexNeighbors->setGeometry(QRect(80, 80, 81, 20));
         groupBox_6 = new QGroupBox(dockWidgetContents);
         groupBox_6->setObjectName(QString::fromUtf8("groupBox_6"));
-        groupBox_6->setGeometry(QRect(10, 430, 171, 61));
+        groupBox_6->setGeometry(QRect(10, 420, 171, 61));
         pushButtonReduce = new QPushButton(groupBox_6);
         pushButtonReduce->setObjectName(QString::fromUtf8("pushButtonReduce"));
         pushButtonReduce->setGeometry(QRect(10, 20, 151, 31));
         pushButtonConnectRoads = new QPushButton(dockWidgetContents);
         pushButtonConnectRoads->setObjectName(QString::fromUtf8("pushButtonConnectRoads"));
-        pushButtonConnectRoads->setGeometry(QRect(20, 650, 151, 31));
+        pushButtonConnectRoads->setGeometry(QRect(20, 630, 151, 31));
         groupBox_7 = new QGroupBox(dockWidgetContents);
         groupBox_7->setObjectName(QString::fromUtf8("groupBox_7"));
-        groupBox_7->setGeometry(QRect(10, 690, 171, 91));
+        groupBox_7->setGeometry(QRect(10, 670, 171, 131));
         pushButtonInterpolation = new QPushButton(groupBox_7);
         pushButtonInterpolation->setObjectName(QString::fromUtf8("pushButtonInterpolation"));
-        pushButtonInterpolation->setGeometry(QRect(10, 50, 151, 31));
-        label_9 = new QLabel(groupBox_7);
-        label_9->setObjectName(QString::fromUtf8("label_9"));
-        label_9->setGeometry(QRect(20, 20, 46, 21));
-        lineEditInterpolationRatio = new QLineEdit(groupBox_7);
-        lineEditInterpolationRatio->setObjectName(QString::fromUtf8("lineEditInterpolationRatio"));
-        lineEditInterpolationRatio->setGeometry(QRect(82, 20, 81, 20));
+        pushButtonInterpolation->setGeometry(QRect(10, 20, 151, 31));
+        horizontalSliderInterpolationRatio = new QSlider(groupBox_7);
+        horizontalSliderInterpolationRatio->setObjectName(QString::fromUtf8("horizontalSliderInterpolationRatio"));
+        horizontalSliderInterpolationRatio->setGeometry(QRect(10, 60, 151, 19));
+        horizontalSliderInterpolationRatio->setOrientation(Qt::Horizontal);
+        pushButtonFinalizeInterpolation = new QPushButton(groupBox_7);
+        pushButtonFinalizeInterpolation->setObjectName(QString::fromUtf8("pushButtonFinalizeInterpolation"));
+        pushButtonFinalizeInterpolation->setGeometry(QRect(10, 90, 151, 31));
         ControlWidget->setWidget(dockWidgetContents);
 
         retranslateUi(ControlWidget);
@@ -197,7 +199,7 @@ public:
         pushButtonConnectRoads->setText(QApplication::translate("ControlWidget", "Connect Roads", 0, QApplication::UnicodeUTF8));
         groupBox_7->setTitle(QApplication::translate("ControlWidget", "Interpolation", 0, QApplication::UnicodeUTF8));
         pushButtonInterpolation->setText(QApplication::translate("ControlWidget", "Interpolation", 0, QApplication::UnicodeUTF8));
-        label_9->setText(QApplication::translate("ControlWidget", "Ratio", 0, QApplication::UnicodeUTF8));
+        pushButtonFinalizeInterpolation->setText(QApplication::translate("ControlWidget", "OK", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(ControlWidget);
     } // retranslateUi
 

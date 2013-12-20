@@ -29,5 +29,7 @@ public slots:
 	void extractAvenues();
 	void connectRoads();
 	void interpolation();
+	void interpolationRatio(int ratio);
+	void finalizeInterpolation();
 };
 

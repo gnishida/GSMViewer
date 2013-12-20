@@ -21,6 +21,7 @@ public:
 
 	RoadGraph* selectedRoads;
 	RoadGraph* selectedRoadsOrig;
+	std::vector<RoadGraph*> interpolatedRoads;
 
 	ClipBoard* clipBoard;
 
@@ -32,7 +33,9 @@ public:
 	~RoadGraphEditor();
 
 	void clear();
+	void clearInterpolatedRoads();
 	void openRoad(QString filename);
+	void openToAddRoad(QString filename);
 	void saveRoad(QString filename);
 	void undo();
 	void cut();
@@ -60,7 +63,9 @@ public:
 	void stopMovingSelectedVertex(float snap_threshold);
 	void unselectRoads();
 	void connectRoads();
-	void interpolate(float ratio);
+	void interpolate();
+	void showInterpolatedRoads(int ratio);
+	void finalizeInterpolation(int ratio);
 	bool splitEdge(const QVector2D& pt);
 };
 

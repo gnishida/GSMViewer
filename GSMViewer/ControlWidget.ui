@@ -106,7 +106,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>330</y>
+      <y>320</y>
       <width>171</width>
       <height>91</height>
      </rect>
@@ -155,7 +155,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>500</y>
+      <y>490</y>
       <width>171</width>
       <height>91</height>
      </rect>
@@ -204,7 +204,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>610</y>
+      <y>590</y>
       <width>151</width>
       <height>31</height>
      </rect>
@@ -217,7 +217,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>260</y>
+      <y>250</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -325,7 +325,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>430</y>
+      <y>420</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -351,7 +351,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>650</y>
+      <y>630</y>
       <width>151</width>
       <height>31</height>
      </rect>
@@ -364,9 +364,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>690</y>
+      <y>670</y>
       <width>171</width>
-      <height>91</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="title">
@@ -376,7 +376,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
+       <y>20</y>
        <width>151</width>
        <height>31</height>
       </rect>
@@ -385,27 +385,30 @@
       <string>Interpolation</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_9">
+    <widget class="QSlider" name="horizontalSliderInterpolationRatio">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>20</y>
-       <width>46</width>
-       <height>21</height>
+       <x>10</x>
+       <y>60</y>
+       <width>151</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonFinalizeInterpolation">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>151</width>
+       <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Ratio</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEditInterpolationRatio">
-     <property name="geometry">
-      <rect>
-       <x>82</x>
-       <y>20</y>
-       <width>81</width>
-       <height>20</height>
-      </rect>
+      <string>OK</string>
      </property>
     </widget>
    </widget>

@@ -3325,6 +3325,12 @@ bool GraphUtil::forceMatching(RoadGraph* roads1, RoadVertexDesc parent1, Abstrac
  * The roads1 shows its appearance with the ratio of t, whereas the roads2 shows it appeareance with the ratio of (1-t).
  */
 RoadGraph* GraphUtil::interpolate(RoadGraph* roads1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map, float t) {
+	if (t == 0.0f) {
+		return GraphUtil::copyRoads(roads2);
+	} else if (t == 1.0f) {
+		return GraphUtil::copyRoads(roads1);
+	}
+
 	RoadGraph* new_roads = new RoadGraph();
 
 	QMap<RoadVertexDesc, RoadVertexDesc> conv;
@@ -3360,7 +3366,7 @@ RoadGraph* GraphUtil::interpolate(RoadGraph* roads1, RoadGraph* roads2, QMap<Roa
 			RoadEdgeDesc e2 = GraphUtil::getEdge(roads2, v2, u2);
 
 			RoadEdgeDesc e_desc = GraphUtil::addEdge(new_roads, conv[v1], conv[u1], roads1->graph[*ei]->type, roads1->graph[*ei]->lanes, roads1->graph[*ei]->oneWay);
-			new_roads->graph[e_desc]->polyLine = GraphUtil::interpolateEdges(roads1, *ei, v1, roads2, e2, v2, 0.5);
+			new_roads->graph[e_desc]->polyLine = GraphUtil::interpolateEdges(roads1, *ei, v1, roads2, e2, v2, t);
 		} else {
 			// since there is no corresponding edge on roads2, just add the edge of roads1.
 			RoadEdgeDesc e_desc = GraphUtil::addEdge(new_roads, conv[v1], conv[u1], roads1->graph[*ei]);

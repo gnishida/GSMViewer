@@ -35,6 +35,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenToAdd"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
@@ -192,6 +193,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionOpenToAdd">
+   <property name="text">
+    <string>Open To Add</string>
    </property>
   </action>
  </widget>
