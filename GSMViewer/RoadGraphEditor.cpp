@@ -1,5 +1,7 @@
 #include "RoadGraphEditor.h"
 #include "GraphUtil.h"
+#include "BFSTree.h"
+#include "ArcArea.h"
 
 RoadGraphEditor::RoadGraphEditor() {
 	roads = new RoadGraph();
@@ -23,6 +25,8 @@ void RoadGraphEditor::clear() {
 	selectedEdge = NULL;
 	movingVertex = NULL;
 	selectedRoads = NULL;
+	selectedRoadsOrig = NULL;
+	selectedArea = NULL;
 	clipBoard->clear();
 
 	for (int i = 0; i < history.size(); i++) {
@@ -54,20 +58,22 @@ void RoadGraphEditor::undo() {
 
 void RoadGraphEditor::cut() {
 	if (mode != MODE_AREA_SELECTED) return;
+	if (selectedArea == NULL) return;
 
 	history.push_back(GraphUtil::copyRoads(roads));
 
 	// extract the roads within the area, and put it into the clipboard.
-	clipBoard->copy(roads, bbox);
+	clipBoard->copy(roads, *selectedArea);
 
-	GraphUtil::subtractRoads(roads, bbox, true);
+	GraphUtil::subtractRoads(roads, *selectedArea, true);
 }
 
 void RoadGraphEditor::copy() {
 	if (mode != MODE_AREA_SELECTED) return;
+	if (selectedArea == NULL) return;
 
 	// extract the roads within the area, and put it into the clipboard.
-	clipBoard->copy(roads, bbox);
+	clipBoard->copy(roads, *selectedArea);
 }
 
 void RoadGraphEditor::paste() {
@@ -79,17 +85,21 @@ void RoadGraphEditor::paste() {
 	selectedRoads = clipBoard->paste();
 
 	// update the bbox according to the paseted roads
-	bbox = GraphUtil::getAABoundingBox(selectedRoads);
+	if (selectedArea != NULL) {
+		delete selectedArea;
+	}
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
 
 	// move the pasted roads to the center of the screen (to be updated!!!)
-	GraphUtil::translate(selectedRoads, bbox.minPt * -1.0f);
-	bbox = GraphUtil::getAABoundingBox(selectedRoads);
+	GraphUtil::translate(selectedRoads, selectedArea->midPt() * -1.0f);
+	delete selectedArea;
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
 
 	// inflate the bbox a little so that all the vertices are completely within the bbox.
-	bbox.minPt.setX(bbox.minPt.x() - bbox.dx() * 0.1f);
-	bbox.minPt.setY(bbox.minPt.y() - bbox.dy() * 0.1f);
-	bbox.maxPt.setX(bbox.maxPt.x() + bbox.dx() * 0.1f);
-	bbox.maxPt.setY(bbox.maxPt.y() + bbox.dy() * 0.1f);
+	((BBox*)selectedArea)->minPt.setX(((BBox*)selectedArea)->minPt.x() - selectedArea->dx() * 0.1f);
+	((BBox*)selectedArea)->minPt.setY(((BBox*)selectedArea)->minPt.y() - selectedArea->dy() * 0.1f);
+	((BBox*)selectedArea)->maxPt.setX(((BBox*)selectedArea)->maxPt.x() + selectedArea->dx() * 0.1f);
+	((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->maxPt.y() + selectedArea->dy() * 0.1f);
 
 	mode = MODE_AREA_SELECTED;
 }
@@ -121,65 +131,108 @@ void RoadGraphEditor::removeShortDeadend(float threshold) {
 }
 
 void RoadGraphEditor::selectAll() {
-	bbox = GraphUtil::getAABoundingBox(roads);
+	if (selectedArea != NULL) delete selectedArea;
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(roads));
 }
 
 void RoadGraphEditor::startArea(const QVector2D& pt) {
-	bbox.reset();
-	bbox.addPoint(pt);
+	if (selectedArea != NULL) delete selectedArea;
+	selectedArea = new BBox();
+	((BBox*)selectedArea)->addPoint(pt);
 
 	mode = MODE_DEFINING_AREA;
 }
 
 void RoadGraphEditor::updateArea(const QVector2D& pt) {
-	bbox.maxPt.setX(pt.x());
-	bbox.maxPt.setY(pt.y());
+	((BBox*)selectedArea)->maxPt.setX(pt.x());
+	((BBox*)selectedArea)->minPt.setY(pt.y());
 }
 
 void RoadGraphEditor::finalizeArea() {
-	if (bbox.maxPt.x() < bbox.minPt.x()) {
-		float x = bbox.maxPt.x();
-		bbox.maxPt.setX(bbox.minPt.x());
-		bbox.minPt.setX(x);
+	if (((BBox*)selectedArea)->maxPt.x() < ((BBox*)selectedArea)->minPt.x()) {
+		float x = ((BBox*)selectedArea)->maxPt.x();
+		((BBox*)selectedArea)->maxPt.setX(((BBox*)selectedArea)->minPt.x());
+		((BBox*)selectedArea)->minPt.setX(x);
 	}
-	if (bbox.maxPt.y() < bbox.minPt.y()) {
-		float y = bbox.maxPt.y();
-		bbox.maxPt.setY(bbox.minPt.y());
-		bbox.minPt.setY(y);
+	if (((BBox*)selectedArea)->maxPt.y() < ((BBox*)selectedArea)->minPt.y()) {
+		float y = ((BBox*)selectedArea)->maxPt.y();
+		((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->minPt.y());
+		((BBox*)selectedArea)->minPt.setY(y);
 	}
 
 	// if the box is just a single point, cancel the selection.
-	if (bbox.maxPt.x() == bbox.minPt.x() && bbox.maxPt.y() == bbox.minPt.y()) {
+	if (((BBox*)selectedArea)->maxPt.x() == ((BBox*)selectedArea)->minPt.x() && ((BBox*)selectedArea)->maxPt.y() == ((BBox*)selectedArea)->minPt.y()) {
 		mode = MODE_DEFAULT;
 	} else {
 		history.push_back(GraphUtil::copyRoads(roads));
 
-		// copy the roads in the area to "selectedRoads"
 		if (selectedRoads != NULL) {
 			delete selectedRoads;
+			selectedRoads = NULL;
 		}
+
+		// copy the roads in the area to "selectedRoads"
 		selectedRoads = GraphUtil::copyRoads(roads);
-		GraphUtil::extractRoads(selectedRoads, bbox, true);
+		GraphUtil::extractRoads(selectedRoads, *selectedArea, true);
 		GraphUtil::clean(selectedRoads);
 
 		// subtract the area from the roads
-		GraphUtil::subtractRoads(roads, bbox, true);
+		GraphUtil::subtractRoads(roads, *selectedArea, true);
 
 		mode = MODE_AREA_SELECTED;
 	}
 }
 
+void RoadGraphEditor::resizeAreaBR(const QVector2D& pt) {
+	((BBox*)selectedArea)->maxPt.setX(pt.x());
+	((BBox*)selectedArea)->minPt.setY(pt.y());
+}
+
+void RoadGraphEditor::startDistortingArea() {
+	mode = MODE_DISTORTING_AREA;
+
+	QVector2D leftPt(((BBox*)selectedArea)->minPt.x(), ((BBox*)selectedArea)->midPt().y());
+	QVector2D rightPt(((BBox*)selectedArea)->maxPt.x(), ((BBox*)selectedArea)->midPt().y());
+	float arc_len = selectedArea->dy();
+
+	delete selectedArea;
+	selectedArea = new ArcArea(leftPt, rightPt, 10000.0f, arc_len);
+
+	// save the original roads
+	if (selectedRoadsOrig != NULL) delete selectedRoadsOrig;
+	selectedRoadsOrig = GraphUtil::copyRoads(selectedRoads);
+
+	GraphUtil::distort(selectedRoads, selectedRoadsOrig, (ArcArea*)selectedArea);
+}
+
+void RoadGraphEditor::distortArea(float dx, float dy) {
+	if (mode != MODE_DISTORTING_AREA) return;
+	if (selectedArea == NULL) return;
+
+	((ArcArea*)selectedArea)->radius += dx * 50.0f;
+	if (((ArcArea*)selectedArea)->radius < 1000.0f) {
+		((ArcArea*)selectedArea)->radius = 1000.0f;
+	}
+	((ArcArea*)selectedArea)->arc_len += dy * 15.0f;
+
+	GraphUtil::distort(selectedRoads, selectedRoadsOrig, (ArcArea*)selectedArea);
+}
+
+void RoadGraphEditor::finalizeDistortArea() {
+	if (selectedRoadsOrig != NULL) {
+		delete selectedRoadsOrig;
+		selectedRoadsOrig = NULL;
+	}
+
+	mode = MODE_AREA_SELECTED;
+}
+
 void RoadGraphEditor::moveArea(float dx, float dy) {
 	if (mode != MODE_AREA_SELECTED) return;
 
-	bbox.minPt.setX(bbox.minPt.x() + dx);
-	bbox.minPt.setY(bbox.minPt.y() + dy);
-	bbox.maxPt.setX(bbox.maxPt.x() + dx);
-	bbox.maxPt.setY(bbox.maxPt.y() + dy);
+	selectedArea->translate(dx, dy);
 
-	if (selectedRoads != NULL) {
-		GraphUtil::translate(selectedRoads, QVector2D(dx, dy));
-	}
+	GraphUtil::translate(selectedRoads, QVector2D(dx, dy));
 }
 
 bool RoadGraphEditor::selectVertex(const QVector2D& pt) {
@@ -287,6 +340,69 @@ void RoadGraphEditor::unselectRoads() {
 void RoadGraphEditor::connectRoads() {
 	if (selectedRoads != NULL) {
 		GraphUtil::connectRoads(roads, selectedRoads, 60.0f);
+		delete selectedRoads;
+		selectedRoads = NULL;
+	}
+
+	mode = MODE_DEFAULT;
+}
+
+/**
+ * Interpolate the selected roads and the actual roads.
+ */
+void RoadGraphEditor::interpolate(float ratio) {
+	if (selectedRoads != NULL) {
+		BBox bbox1 = GraphUtil::getAABoundingBox(roads);
+		BBox bbox2 = GraphUtil::getAABoundingBox(selectedRoads);
+
+		// if there is no intersection between two road graphs, connect two graphs instead.
+		if (!bbox1.overlapsWithBBoxXY(bbox2)) {
+			connectRoads();
+			return;
+		}
+
+		RoadGraph* roads1 = GraphUtil::copyRoads(roads);
+		GraphUtil::extractRoads(roads1, *selectedArea, true);
+		GraphUtil::clean(roads1);
+
+		// if there is no edge in the actual roads within the area, connect two graphs instead.
+		if (GraphUtil::getNumEdges(roads1) == 0) {
+			connectRoads();
+			return;
+		}
+
+		// define the roots
+		RoadVertexDesc root1 = GraphUtil::getVertex(roads1, bbox2.midPt());
+		RoadVertexDesc root2 = GraphUtil::getVertex(selectedRoads, bbox2.midPt());
+
+		// build trees
+		BFSTree tree1(roads1, root1);
+		BFSTree tree2(selectedRoads, root2);
+
+		// find matching
+		QMap<RoadVertexDesc, RoadVertexDesc> map1;
+		QMap<RoadVertexDesc, RoadVertexDesc> map2;
+		GraphUtil::findCorrespondence(roads1, &tree1, selectedRoads, &tree2, true, 1.5f, map1, map2);
+		
+		// interpolate
+		RoadGraph* temp = GraphUtil::interpolate(roads1, selectedRoads, map1, 1 - ratio);
+
+		// merge it with the actual roads
+		GraphUtil::subtractRoads(roads, *selectedArea, true);
+		//GraphUtil::connectRoads(roads, temp, 30.0f);
+		GraphUtil::mergeRoads(roads, temp);
+
+		// clear the "fullyPaired" flag of "roads"
+		RoadEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+			roads->graph[*ei]->fullyPaired = false;
+		}
+
+		// delete temporary roads
+		delete roads1;
+		delete temp;
+
+		// clear the selected roads
 		delete selectedRoads;
 		selectedRoads = NULL;
 	}

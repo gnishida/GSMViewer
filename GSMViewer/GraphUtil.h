@@ -3,6 +3,7 @@
 #include "RoadGraph.h"
 #include "BBox.h"
 #include "AbstractForest.h"
+#include "ArcArea.h"
 #include <vector>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -111,6 +112,7 @@ public:
 	static void skeltonize(RoadGraph* roads);
 	static void rotate(RoadGraph* roads, float theta, const QVector2D& rotationCenter = QVector2D(0, 0));
 	static void translate(RoadGraph* roads, QVector2D offset);
+	static void distort(RoadGraph* roads, RoadGraph* orig_roads, ArcArea* area);
 	static RoadGraph* convertToGridNetwork(RoadGraph* roads, RoadVertexDesc start);
 	static RoadGraph* approximateToGridNetwork(RoadGraph* roads, float cellLength, QVector2D orig);
 	static void scaleToBBox(RoadGraph* roads, BBox& area);
@@ -137,6 +139,7 @@ public:
 	static bool forceMatching(RoadGraph* roads1, RoadVertexDesc parent1, AbstractForest* forest1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, RoadVertexDesc parent2, AbstractForest* forest2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, RoadVertexDesc& child1, RoadVertexDesc& child2);
 
 	// Interpolation
+	static RoadGraph* interpolate(RoadGraph* roads1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map, float t);
 	static RoadGraph* interpolate(RoadGraph* roads1, const QVector2D& center, float radius, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map);
 
 	static bool nextSequence(std::vector<int>& seq, int N);

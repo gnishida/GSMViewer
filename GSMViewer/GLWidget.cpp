@@ -41,9 +41,9 @@ void GLWidget::drawScene() {
 	// define the height for other items
 	float height = (float)((int)(camera->dz * 0.012f)) * 0.1f * 1.5f;
 
-	// draw the select area
-	if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA || editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
-		renderer->renderBBox(editor->bbox, height);
+	// draw the selected area
+	if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA || editor->mode == RoadGraphEditor::MODE_AREA_SELECTED || editor->mode == RoadGraphEditor::MODE_RESIZING_AREA_BR || editor->mode == RoadGraphEditor::MODE_DISTORTING_AREA) {
+		renderer->renderArea(*editor->selectedArea, height);
 	}
 
 	// draw the selected vertex
@@ -121,7 +121,11 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 	if (e->buttons() & Qt::LeftButton) {
 		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
-		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && hitTest(editor->bbox, last2DPos)) {
+		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && editor->selectedArea->hitTestResizingPoint(last2DPos)) {
+			editor->mode = RoadGraphEditor::MODE_RESIZING_AREA_BR;
+		} else if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && editor->selectedArea->hitTestDistortionPoint(last2DPos)) {
+			editor->startDistortingArea();
+		} else if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && editor->selectedArea->hitTest(last2DPos)) {
 			editor->mode = RoadGraphEditor::MODE_AREA_SELECTED;
 		} else {
 			if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
@@ -155,15 +159,17 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-	if (editor->mode == editor->MODE_VERTEX_SELECTED) {
+	if (editor->mode == RoadGraphEditor::MODE_VERTEX_SELECTED) {
 		if (controlPressed) {
 			float snap_threshold = camera->dz * 0.03f;
 			editor->stopMovingSelectedVertex(snap_threshold);
 		} else {
 			editor->stopMovingSelectedVertex();
 		}
-	} else if (editor->mode == editor->MODE_DEFINING_AREA) {
+	} else if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA) {
 		editor->finalizeArea();
+	} else if (editor->mode == RoadGraphEditor::MODE_DISTORTING_AREA) {
+		editor->finalizeDistortArea();
 	}
 
 	e->ignore();
@@ -202,6 +208,10 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 		} else if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA) {
 			// update the selection box
 			editor->updateArea(last2DPos);
+		} else if (editor->mode == editor->MODE_DISTORTING_AREA) {
+			editor->distortArea(dx, dy);
+		} else if (editor->mode == editor->MODE_RESIZING_AREA_BR) {
+			editor->resizeAreaBR(last2DPos);
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
@@ -313,16 +323,4 @@ void GLWidget::mouseTo2D(int x,int y, QVector2D *result) {
 
 	result->setX(posX);
 	result->setY(posY);
-}
-
-bool GLWidget::hitTest(const BBox& bbox, const QVector2D& pt) {
-	float dx = bbox.dx();
-	float dy = bbox.dy();
-
-	if (pt.x() < bbox.minPt.x() - dx * 0.1f) return false;
-	if (pt.y() < bbox.minPt.y() - dy * 0.1f) return false;
-	if (pt.x() > bbox.maxPt.x() + dx * 0.1f) return false;
-	if (pt.y() > bbox.maxPt.y() + dy * 0.1f) return false;
-
-	return true;
 }

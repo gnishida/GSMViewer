@@ -35,7 +35,7 @@ void RoadGraphRenderer::render(Renderable* renderable) {
 	glEnd();
 }
 
-void RoadGraphRenderer::renderBBox(const BBox& bbox, float height) {
+void RoadGraphRenderer::renderArea(const AbstractArea& area, float height) {
 	std::vector<Renderable> renderables;
 	renderables.push_back(Renderable(GL_LINE_STIPPLE, 3.0f));
 	renderables.push_back(Renderable(GL_POINTS, 10.0f));
@@ -49,35 +49,27 @@ void RoadGraphRenderer::renderBBox(const BBox& bbox, float height) {
 	v.normal[1] = 0.0f;
 	v.normal[2] = 1.0f;
 
-	// add each edge of the box
-	v.location[0] = bbox.minPt.x();
-	v.location[1] = bbox.minPt.y();
-	v.location[2] = height;
-	renderables[0].vertices.push_back(v);
-	renderables[1].vertices.push_back(v);
+	for (int i = 0; i < area.polyline().size(); i++) {
+		v.location[0] = area.polyline()[i].x();
+		v.location[1] = area.polyline()[i].y();
+		v.location[2] = height;
+		renderables[0].vertices.push_back(v);
+		renderables[1].vertices.push_back(v);
+	}
 
-	v.location[0] = bbox.maxPt.x();
-	v.location[1] = bbox.minPt.y();
+	v.location[0] = area.polyline()[0].x();
+	v.location[1] = area.polyline()[0].y();
 	v.location[2] = height;
 	renderables[0].vertices.push_back(v);
-	renderables[1].vertices.push_back(v);
 
-	v.location[0] = bbox.maxPt.x();
-	v.location[1] = bbox.maxPt.y();
+	// distortion control point
+	v.color[0] = 1.0f;
+	v.color[1] = 0.0f;
+	v.color[2] = 0.0f;
+	v.location[0] = area.distortionPt().x();
+	v.location[1] = area.distortionPt().y();
 	v.location[2] = height;
-	renderables[0].vertices.push_back(v);
 	renderables[1].vertices.push_back(v);
-
-	v.location[0] = bbox.minPt.x();
-	v.location[1] = bbox.maxPt.y();
-	v.location[2] = height;
-	renderables[0].vertices.push_back(v);
-	renderables[1].vertices.push_back(v);
-
-	v.location[0] = bbox.minPt.x();
-	v.location[1] = bbox.minPt.y();
-	v.location[2] = height;
-	renderables[0].vertices.push_back(v);
 
 	for (int i = 0; i < renderables.size(); i++) {
 		render(&renderables[i]);

@@ -1,16 +1,17 @@
 #pragma once
 
 #include "AbstractArea.h"
-#include <QVector2D>
 
-class CircleArea : public AbstractArea {
-private:
-	QVector2D center;
+class ArcArea : public AbstractArea {
+public:
+	QVector2D leftPt;
+	QVector2D rightPt;
 	float radius;
+	float arc_len;
 
 public:
-	CircleArea(const QVector2D& center, float radius);
-	~CircleArea();
+	ArcArea(const QVector2D& leftPt, const QVector2D& rightPt, float radius, float arc_len);
+	~ArcArea();
 
 	bool contains(const QVector2D& pt) const;
 	QVector2D midPt() const;
@@ -22,5 +23,6 @@ public:
 	bool hitTestResizingPoint(const QVector2D& pt) const;
 	std::vector<QVector2D> polyline() const;
 	QVector2D distortionPt() const;
+	QVector2D deform(const QVector2D& pt) const;
 };
 

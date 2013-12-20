@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="AbstractArea.cpp" />
     <ClCompile Include="AbstractForest.cpp" />
+    <ClCompile Include="ArcArea.cpp" />
     <ClCompile Include="BBox.cpp" />
     <ClCompile Include="BFSForest.cpp" />
     <ClCompile Include="BFSTree.cpp" />
@@ -219,6 +220,7 @@
   <ItemGroup>
     <ClInclude Include="AbstractArea.h" />
     <ClInclude Include="AbstractForest.h" />
+    <ClInclude Include="ArcArea.h" />
     <ClInclude Include="BBox.h" />
     <ClInclude Include="BFSForest.h" />
     <ClInclude Include="BFSTree.h" />

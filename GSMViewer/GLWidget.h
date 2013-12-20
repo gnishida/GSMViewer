@@ -48,6 +48,8 @@ protected:
 
 private:
 	void mouseTo2D(int x, int y, QVector2D *result);
-	bool hitTest(const BBox& bbox, const QVector2D& pt);
+	bool hitTest(const AbstractArea& area, const QVector2D& pt);
+	bool hitTestDistortionPoint(const AbstractArea& area, const QVector2D& pt);
+	bool hitTestResizingPoint(const AbstractArea& area, const QVector2D& pt);
 };
 

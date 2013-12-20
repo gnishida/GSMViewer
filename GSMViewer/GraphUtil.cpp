@@ -2185,6 +2185,29 @@ void GraphUtil::translate(RoadGraph* roads, QVector2D offset) {
 	roads->setModified();
 }
 
+void GraphUtil::distort(RoadGraph* roads, RoadGraph* orig_roads, ArcArea* area) {
+	// distort the roads
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(orig_roads->graph); vi != vend; ++vi) {
+		roads->graph[*vi]->pt = area->deform(orig_roads->graph[*vi]->pt);
+		//moveVertex(roads, *vi, area->deform(orig_roads->graph[*vi]->pt));
+	}
+	
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(orig_roads->graph); ei != eend; ++ei) {
+		RoadVertexDesc src = boost::source(*ei, orig_roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, orig_roads->graph);
+
+		RoadEdgeDesc e = getEdge(roads, src, tgt);
+
+		for (int i = 0; i < orig_roads->graph[*ei]->polyLine.size(); i++) {
+			roads->graph[e]->polyLine[i] = area->deform(orig_roads->graph[*ei]->polyLine[i]);
+		}
+	}
+
+	roads->setModified();
+}
+
 /**
  * 道路網をグリッド型に無理やり変換する。
  * 頂点startから開始し、エッジの方向に基づいて、上下左右方向に、ノードを広げていくイメージ。
@@ -3295,6 +3318,57 @@ bool GraphUtil::forceMatching(RoadGraph* roads1, RoadVertexDesc parent1, Abstrac
 
 	// No pair is found, i.e. all the children should have pairs.
 	return false;
+}
+
+/**
+ * Interpolate two road graphs. (Type1 interpolateion)
+ * The roads1 shows its appearance with the ratio of t, whereas the roads2 shows it appeareance with the ratio of (1-t).
+ */
+RoadGraph* GraphUtil::interpolate(RoadGraph* roads1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map, float t) {
+	RoadGraph* new_roads = new RoadGraph();
+
+	QMap<RoadVertexDesc, RoadVertexDesc> conv;
+
+	// Add vertices to the interpolated roads
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads1->graph); vi != vend; ++vi) {
+		if (!roads1->graph[*vi]->valid) continue;
+
+		RoadVertexDesc v2 = map[*vi];
+
+		// Add a vertex
+		RoadVertex* new_v = new RoadVertex(roads1->graph[*vi]->pt * t + roads2->graph[v2]->pt * (1 - t));
+		RoadVertexDesc new_v_desc = boost::add_vertex(new_roads->graph);
+		new_roads->graph[new_v_desc] = new_v;
+
+		conv[*vi] = new_v_desc;
+	}
+
+	// Add edges to the interpolated roads
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads1->graph); ei != eend; ++ei) {
+		if (!roads1->graph[*ei]->valid) continue;
+
+		RoadVertexDesc v1 = boost::source(*ei, roads1->graph);
+		RoadVertexDesc u1 = boost::target(*ei, roads1->graph);
+
+		RoadVertexDesc v2 = map[v1];
+		RoadVertexDesc u2 = map[u1];
+
+		// Is there a corresponding edge?
+		if (GraphUtil::hasEdge(roads2, v2, u2)) {
+			RoadEdgeDesc e2 = GraphUtil::getEdge(roads2, v2, u2);
+
+			RoadEdgeDesc e_desc = GraphUtil::addEdge(new_roads, conv[v1], conv[u1], roads1->graph[*ei]->type, roads1->graph[*ei]->lanes, roads1->graph[*ei]->oneWay);
+			new_roads->graph[e_desc]->polyLine = GraphUtil::interpolateEdges(roads1, *ei, v1, roads2, e2, v2, 0.5);
+		} else {
+			// since there is no corresponding edge on roads2, just add the edge of roads1.
+			RoadEdgeDesc e_desc = GraphUtil::addEdge(new_roads, conv[v1], conv[u1], roads1->graph[*ei]);
+			GraphUtil::moveEdge(new_roads, e_desc, new_roads->graph[conv[v1]]->pt, new_roads->graph[conv[u1]]->pt);
+		}
+	}
+	
+	return new_roads;
 }
 
 /**

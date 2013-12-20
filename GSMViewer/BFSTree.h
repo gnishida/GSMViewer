@@ -6,6 +6,9 @@
 
 class BFSTree : public AbstractForest {
 public:
+	int depth;
+
+public:
 	BFSTree(RoadGraph* roads, RoadVertexDesc root, int maxDepth = 0);
 	~BFSTree();
 	

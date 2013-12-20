@@ -52,6 +52,47 @@ public:
 		return maxPt.y() - minPt.y();
 	}
 
+	inline void translate(float x, float y) {
+		minPt.setX(minPt.x() + x);
+		minPt.setY(minPt.y() + y);
+		maxPt.setX(maxPt.x() + x);
+		maxPt.setY(maxPt.y() + y);
+	}
+
+	bool hitTest(const QVector2D& pt) const {
+		if (pt.x() < minPt.x() - dx() * 0.1f) return false;
+		if (pt.y() < minPt.y() - dy() * 0.1f) return false;
+		if (pt.x() > maxPt.x() + dx() * 0.1f) return false;
+		if (pt.y() > maxPt.y() + dy() * 0.1f) return false;
+
+		return true;
+	}
+
+	bool hitTestDistortionPoint(const QVector2D& pt) const {
+		if (fabs(pt.x() - midPt().x()) < dx() * 0.1f && fabs(pt.y() - minPt.y()) < dy() * 0.1f) return true;
+		else return false;
+	}
+
+	bool hitTestResizingPoint(const QVector2D& pt) const {
+		if (fabs(pt.x() - maxPt.x()) < dx() * 0.1f && fabs(pt.y() - minPt.y()) < dy() * 0.1f) return true;
+		else return false;
+	}
+
+	std::vector<QVector2D> polyline() const {
+		std::vector<QVector2D> ret;
+
+		ret.push_back(minPt);
+		ret.push_back(QVector2D(maxPt.x(), minPt.y()));
+		ret.push_back(maxPt);
+		ret.push_back(QVector2D(minPt.x(), maxPt.y()));
+
+		return ret;
+	}
+
+	virtual QVector2D distortionPt() const {
+		return QVector2D(midPt().x(), minPt.y());
+	}
+
 	inline void recalculate(const std::vector<QVector2D>& vertices) {
 		minPt.setX(FLT_MAX);
 		minPt.setY(FLT_MAX);

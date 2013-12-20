@@ -28,5 +28,6 @@ public slots:
 	void removeShortDeadend();
 	void extractAvenues();
 	void connectRoads();
+	void interpolation();
 };
 

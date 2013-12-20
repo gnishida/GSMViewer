@@ -7,6 +7,7 @@
  */
 BFSTree::BFSTree(RoadGraph* roads, RoadVertexDesc root, int maxDepth) : AbstractForest(roads) {
 	this->roots.push_back(root);
+	depth = 0;
 
 	buildForest(maxDepth);
 }
@@ -33,8 +34,12 @@ void BFSTree::buildForest(int maxDepth) {
 		RoadVertexDesc parent = seeds.front();
 		seeds.pop_front();
 
-		// check the depth
-		if (maxDepth > 0 && getDepth(parent) > maxDepth) continue;
+		// update the depth of this tree
+		int d = getDepth(parent);
+		if (d > depth) depth = d;
+
+		// check the depth limit
+		if (maxDepth > 0 && d >= maxDepth) continue;
 
 		std::vector<RoadVertexDesc> children;
 

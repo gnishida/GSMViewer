@@ -11,6 +11,7 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	ui.setupUi(this);
 	ui.lineEditSimplifyThreshold->setText("10");
 	ui.lineEditRemoveShortDeadendThreshold->setText("10");
+	ui.lineEditInterpolationRatio->setText("0.7");
 
 	// register the event handlers
 	connect(ui.pushButtonClean, SIGNAL(clicked()), this, SLOT(clean()));
@@ -19,6 +20,7 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
 	connect(ui.pushButtonExtractAvenues, SIGNAL(clicked()), this, SLOT(extractAvenues()));
 	connect(ui.pushButtonConnectRoads, SIGNAL(clicked()), this, SLOT(connectRoads()));
+	connect(ui.pushButtonInterpolation, SIGNAL(clicked()), this, SLOT(interpolation()));
 
 	hide();
 }
@@ -141,3 +143,14 @@ void ControlWidget::connectRoads() {
 
 	mainWin->glWidget->updateGL();
 }
+
+/**
+ * Event handler for button [Interpolation]
+ */
+void ControlWidget::interpolation() {
+	float ratio = ui.lineEditInterpolationRatio->text().toFloat();
+	mainWin->glWidget->editor->interpolate(ratio);
+
+	mainWin->glWidget->updateGL();
+}
+
