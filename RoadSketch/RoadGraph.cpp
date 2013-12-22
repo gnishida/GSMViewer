@@ -10,8 +10,6 @@
 
 RoadGraph::RoadGraph() {
 	modified = true;
-
-	renderable = new Renderable(GL_TRIANGLES);
 }
 
 RoadGraph::~RoadGraph() {
@@ -20,10 +18,9 @@ RoadGraph::~RoadGraph() {
 void RoadGraph::generateMesh() {
 	if (!modified) return;
 
-	//renderables.clear();
-	renderable->vertices.clear();
+	renderables.clear();
 
-	//renderables.push_back(Renderable(GL_TRIANGLES));
+	renderables.push_back(Renderable(GL_TRIANGLE_STRIP));
 
 	// road edge
 	RoadEdgeIter ei, eend;
@@ -51,10 +48,10 @@ void RoadGraph::generateMesh() {
 		// draw the border of the road segment
 		if (!showLocalStreets && edge->type == 1) {
 			// If this is the local street and it should be drawn in gray color, it should be a little narrow line.
-			addMeshFromEdge(renderable, edge, widthBase * 0.6f, bColor, 0.0f);
+			addMeshFromEdge(&renderables[0], edge, widthBase * 0.6f, bColor, 0.0f);
 		} else {
-			addMeshFromEdge(renderable, edge, widthBase * (1.0f + curbRatio), bColor, 0.0f);
-			addMeshFromEdge(renderable, edge, widthBase, color, height);
+			addMeshFromEdge(&renderables[0], edge, widthBase * (1.0f + curbRatio), bColor, 0.0f);
+			addMeshFromEdge(&renderables[0], edge, widthBase, color, height);
 		}
 	}
 

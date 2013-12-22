@@ -2,8 +2,6 @@
 
 Sketch::Sketch() {
 	modified = true;
-
-	renderable = new Renderable(GL_LINE_STRIP);
 }
 
 Sketch::~Sketch() {
@@ -12,8 +10,7 @@ Sketch::~Sketch() {
 void Sketch::generateMesh() {
 	if (!modified) return;
 
-	//renderables.clear();
-	renderable->vertices.clear();
+	renderables.clear();
 
 	// road edge
 	RoadEdgeIter ei, eend;
@@ -24,7 +21,9 @@ void Sketch::generateMesh() {
 
 		QColor color = QColor(0, 0, 255);
 
-		addMeshFromEdge(renderable, edge, widthBase, color, 0.0f);
+		Renderable renderable(GL_LINE_STRIP);
+		addMeshFromEdge(&renderable, edge, widthBase, color, 0.0f);
+		renderables.push_back(renderable);
 	}
 
 	modified = false;

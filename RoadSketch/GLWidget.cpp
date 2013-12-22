@@ -29,7 +29,7 @@ GLWidget::~GLWidget() {
 void GLWidget::drawScene() {
 	// draw the road graph
 	sketch->generateMesh();
-	renderer->render(sketch->renderable);
+	renderer->render(sketch->renderables);
 
 }
 
@@ -63,8 +63,6 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 		sketch->currentEdge = GraphUtil::addEdge(sketch, v1_desc, v2_desc, 1, 1, false);
 	}
 
-	qDebug() << last2DPos;
-
 	updateGL();
 }
 
@@ -74,7 +72,12 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-
+	sketch->graph[sketch->currentEdge]->polyLine = GraphUtil::simplifyPolyLine(sketch->graph[sketch->currentEdge]->polyLine, camera->dz * 0.01f);
+	RoadVertexDesc desc;
+	if (GraphUtil::getVertex(sketch, sketch->graph[sketch->currentVertex]->pt, camera->dz * 0.1f, sketch->currentVertex, desc)) {
+		GraphUtil::snapVertex(sketch, sketch->currentVertex, desc);
+	}
+	sketch->setModified();
 
 	e->ignore();
 

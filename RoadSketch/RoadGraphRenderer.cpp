@@ -5,7 +5,13 @@ RoadGraphRenderer::RoadGraphRenderer() {
 }
 
 //void RoadGraphRenderer::render(std::vector<Renderable>& renderables) {
-void RoadGraphRenderer::render(Renderable* renderable) {
+void RoadGraphRenderer::render(std::vector<Renderable>& renderables) {
+	for (int i = 0; i < renderables.size(); i++) {
+		renderGeometry(&renderables[i]);
+	}
+}
+
+void RoadGraphRenderer::renderGeometry(Renderable* renderable) {
 	if (renderable->type == GL_LINE_STIPPLE) {
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1 , 0xF0F0);
@@ -72,7 +78,7 @@ void RoadGraphRenderer::renderArea(const AbstractArea& area, float height) {
 	renderables[1].vertices.push_back(v);
 
 	for (int i = 0; i < renderables.size(); i++) {
-		render(&renderables[i]);
+		render(renderables);
 	}
 }
 
@@ -93,7 +99,7 @@ void RoadGraphRenderer::renderPoint(const QVector2D& pt, float height) {
 
 	renderable.vertices.push_back(v);
 
-	render(&renderable);
+	renderGeometry(&renderable);
 }
 
 void RoadGraphRenderer::renderPolyline(std::vector<QVector2D>& polyline, float height) {
@@ -119,8 +125,6 @@ void RoadGraphRenderer::renderPolyline(std::vector<QVector2D>& polyline, float h
 		renderables[1].vertices.push_back(v);
 	}
 
-	for (int i = 0; i < renderables.size(); i++) {
-		render(&renderables[i]);
-	}
+	render(renderables);
 }
 

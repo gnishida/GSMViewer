@@ -26,7 +26,7 @@ class RoadGraph {
 public:
 	BGLGraph graph;
 	bool modified;
-	Renderable* renderable;
+	std::vector<Renderable> renderables;
 
 	// for rendering (These variables should be updated via setZ() function only!!
 	float highwayHeight;
