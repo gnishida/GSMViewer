@@ -5,13 +5,16 @@
 #include <vector>
 
 float GLWidget::MIN_Z = 150.0f;
-float GLWidget::MAX_Z = 11520.0f;
+float GLWidget::MAX_Z = 5760.0f;
+//float GLWidget::MAX_Z = 11520.0f;
 //float GLWidget::MAX_Z = 2880.0f;
 
 GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers), (QWidget*)mainWin) {
 	this->mainWin = mainWin;
 
 	sketch = new Sketch();
+	//roadDB = new RoadGraphDatabase("osm/example1.gsm");
+	roadDB = new RoadGraphDatabase("osm/3x3/madrid.gsm");
 
 	// set up the camera
 	camera = new Camera();
@@ -21,6 +24,7 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// initialize the width and others
 	sketch->setZ(MAX_Z);
 
+	mode = MODE_DEFAULT;
 }
 
 GLWidget::~GLWidget() {
@@ -31,6 +35,11 @@ void GLWidget::drawScene() {
 	sketch->generateMesh();
 	renderer->render(sketch->renderables);
 
+	// draw the shadow roads
+	for (int i = 0; i < shadowRoads.size(); i++) {
+		shadowRoads[i]->generateMesh();
+		renderer->render(shadowRoads[i]->roads->renderables);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +70,10 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 
 		sketch->currentVertex = v2_desc;
 		sketch->currentEdge = GraphUtil::addEdge(sketch, v1_desc, v2_desc, 1, 1, false);
+
+		mode = MODE_SKETCH;
+	} else {
+		mode = MODE_DEFAULT;
 	}
 
 	updateGL();
@@ -72,12 +85,20 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-	sketch->graph[sketch->currentEdge]->polyLine = GraphUtil::simplifyPolyLine(sketch->graph[sketch->currentEdge]->polyLine, camera->dz * 0.01f);
-	RoadVertexDesc desc;
-	if (GraphUtil::getVertex(sketch, sketch->graph[sketch->currentVertex]->pt, camera->dz * 0.1f, sketch->currentVertex, desc)) {
-		GraphUtil::snapVertex(sketch, sketch->currentVertex, desc);
+	if (mode == MODE_SKETCH) {
+		sketch->graph[sketch->currentEdge]->polyLine = GraphUtil::simplifyPolyLine(sketch->graph[sketch->currentEdge]->polyLine, camera->dz * 0.01f);
+		RoadVertexDesc desc;
+		if (GraphUtil::getVertex(sketch, sketch->graph[sketch->currentVertex]->pt, camera->dz * 0.1f, sketch->currentVertex, desc)) {
+			GraphUtil::snapVertex(sketch, sketch->currentVertex, desc);
+		}
+		GraphUtil::planarify(sketch);
+		sketch->setModified();
+
+		// search similar roads
+		roadDB->findSimilarRoads(sketch, 5, shadowRoads);
+
+		mode = MODE_DEFAULT;
 	}
-	sketch->setModified();
 
 	e->ignore();
 
@@ -212,3 +233,4 @@ void GLWidget::mouseTo2D(int x,int y, QVector2D *result) {
 	result->setX(posX);
 	result->setY(posY);
 }
+

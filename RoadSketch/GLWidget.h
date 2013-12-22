@@ -5,6 +5,8 @@
 #include "RoadGraph.h"
 #include "RoadGraphRenderer.h"
 #include "Sketch.h"
+#include "RoadGraphDatabase.h"
+#include "ShadowRoadGraph.h"
 #include <QGLWidget>
 #include <QString>
 
@@ -12,6 +14,7 @@ class MainWindow;
 
 class GLWidget : public QGLWidget {
 public:
+	static enum { MODE_DEFAULT = 0, MODE_SKETCH };
 	static float MIN_Z;
 	static float MAX_Z;
 
@@ -19,10 +22,12 @@ public:
 	MainWindow* mainWin;
 	Camera* camera;
 	Sketch* sketch;
+	RoadGraphDatabase* roadDB;
+	QList<ShadowRoadGraph*> shadowRoads;
 	RoadGraphRenderer* renderer;
 	QPoint lastPos;
 	QVector2D last2DPos;
-
+	int mode;
 
 public:
 	GLWidget(MainWindow *parent);
@@ -44,5 +49,6 @@ protected:
 
 private:
 	void mouseTo2D(int x, int y, QVector2D *result);
+	void searchSimilariRoads(RoadGraph* roads);
 };
 

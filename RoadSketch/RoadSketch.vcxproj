@@ -158,9 +158,12 @@
     <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="RoadEdge.cpp" />
     <ClCompile Include="RoadGraph.cpp" />
+    <ClCompile Include="RoadGraphDatabase.cpp" />
     <ClCompile Include="RoadGraphRenderer.cpp" />
     <ClCompile Include="RoadVertex.cpp" />
+    <ClCompile Include="ShadowRoadGraph.cpp" />
     <ClCompile Include="Sketch.cpp" />
+    <ClCompile Include="TopNSearch.cpp" />
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -217,9 +220,12 @@
     <ClInclude Include="Renderable.h" />
     <ClInclude Include="RoadEdge.h" />
     <ClInclude Include="RoadGraph.h" />
+    <ClInclude Include="RoadGraphDatabase.h" />
     <ClInclude Include="RoadGraphRenderer.h" />
     <ClInclude Include="RoadVertex.h" />
+    <ClInclude Include="ShadowRoadGraph.h" />
     <ClInclude Include="Sketch.h" />
+    <ClInclude Include="TopNSearch.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>

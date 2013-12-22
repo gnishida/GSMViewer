@@ -2960,7 +2960,7 @@ float GraphUtil::computeDissimilarity2(RoadGraph* roads1, QMap<RoadVertexDesc, R
 /**
  * Return the similarity of two road graphs.
  */
-float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_connectivity, float w_angle) {
+float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadVertexDesc>& map1, RoadGraph* roads2, QMap<RoadVertexDesc, RoadVertexDesc>& map2, float w_connectivity, float w_angle, float w_length) {
 	float score = 0.0f;
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2983,6 +2983,11 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			// increase the score according to the difference in the angle of the edges.
 			float angle = diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt);
 			score += (M_PI - angle) / M_PI * w_angle;
+
+			// increase the score according to the length of the edges
+			RoadEdgeDesc e2 = getEdge(roads2, src2, tgt2);
+			float diff_len = roads1->graph[*ei]->getLength() - roads2->graph[e2]->getLength();
+			score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
 		}
 	}
 
@@ -3005,6 +3010,11 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			// increase the score according to the difference in the angle of the edges.
 			float angle = diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt);
 			score += (M_PI - angle) / M_PI * w_angle;
+
+			// increase the score according to the length of the edges
+			RoadEdgeDesc e1 = getEdge(roads1, src1, tgt1);
+			float diff_len = roads1->graph[e1]->getLength() - roads2->graph[*ei]->getLength();
+			score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
 		}
 	}
 
