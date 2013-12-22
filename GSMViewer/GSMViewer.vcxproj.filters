@@ -113,6 +113,9 @@
     <ClCompile Include="ArcArea.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TopNSearch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -190,6 +193,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ArcArea.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TopNSearch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
