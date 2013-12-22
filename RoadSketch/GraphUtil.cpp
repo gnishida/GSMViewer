@@ -4,6 +4,9 @@
 #include <qlist.h>
 #include <qmatrix.h>
 #include <qdebug.h>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/linestring.hpp>
 
 #ifndef M_PI
 #define M_PI	3.141592653
@@ -881,6 +884,28 @@ bool GraphUtil::isIntersect(RoadGraph* roads, std::vector<QVector2D>& polyLine1,
 	}
 
 	return false;
+}
+
+/**
+ * Simplify a polyline.
+ */
+std::vector<QVector2D> GraphUtil::simplifyPolyLine(std::vector<QVector2D>& polyLine, float threshold) {
+	std::vector<QVector2D> ret;
+	
+	typedef boost::geometry::model::d2::point_xy<double> xy;
+	boost::geometry::model::linestring<xy> line;
+	for (int i = 0; i < polyLine.size(); i++) {
+		line.push_back(xy(polyLine[i].x(), polyLine[i].y()));
+	}
+
+	boost::geometry::model::linestring<xy> simplified;
+	boost::geometry::simplify(line, simplified, threshold);
+
+	for (int i = 0; i < simplified.size(); i++) {
+		ret.push_back(QVector2D(simplified[i].x(), simplified[i].y()));
+	}
+
+	return ret;
 }
 
 /**

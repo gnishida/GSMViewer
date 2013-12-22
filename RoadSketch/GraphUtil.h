@@ -73,6 +73,7 @@ public:
 	static bool hasCloseEdge(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2, float angle_threshold = 0.3f);
 	static bool isIntersect(RoadGraph* roads, std::vector<QVector2D>& polyLine);
 	static bool isIntersect(RoadGraph* roads, std::vector<QVector2D>& polyLine1, std::vector<QVector2D>& polyLine2);
+	static std::vector<QVector2D> simplifyPolyLine(std::vector<QVector2D>& polyLine, float threshold);
 
 	// File I/O
 	static void loadRoads(RoadGraph* roads, QString filename, int roadType = 7);
