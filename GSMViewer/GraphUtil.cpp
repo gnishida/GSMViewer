@@ -278,7 +278,7 @@ std::vector<RoadVertexDesc> GraphUtil::getVertices(RoadGraph* roads, bool onlyVa
 void GraphUtil::removeIsolatedVertices(RoadGraph* roads, bool onlyValidVertex) {
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
-		if (!roads->graph[*vi]->valid) continue;
+		if (onlyValidVertex && !roads->graph[*vi]->valid) continue;
 
 		if (getDegree(roads, *vi, onlyValidVertex) == 0) {
 			roads->graph[*vi]->valid = false;
@@ -895,6 +895,20 @@ std::vector<QVector2D> GraphUtil::simplifyPolyLine(std::vector<QVector2D>& polyL
 	}
 
 	return ret;
+}
+
+/**
+ * Remove the short edges.
+ */
+void GraphUtil::removeShortEdges(RoadGraph* roads, float threshold) {
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
+		if (roads->graph[*ei]->getLength() <= threshold) {
+			roads->graph[*ei]->valid = false;
+		}
+	}
 }
 
 /**
