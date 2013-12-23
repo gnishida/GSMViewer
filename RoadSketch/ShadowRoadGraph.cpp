@@ -29,6 +29,9 @@ void ShadowRoadGraph::generateMesh() {
 		color.setRed((int)((233 - 148) * ratio + 148));
 		color.setGreen((int)((229 - 148) * ratio + 148));
 		color.setBlue((int)((220 - 148) * ratio + 148));
+		if (edge->fullyPaired) {
+			color = QColor(255, 0, 0);
+		}
 
 		Renderable renderable(GL_LINE_STRIP, 1.0f);
 		addMeshFromEdge(&renderable, edge, color, 0.0f);

@@ -16,6 +16,8 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	//roadDB = new RoadGraphDatabase("osm/example1.gsm");
 	//roadDB = new RoadGraphDatabase("osm/3x3/paris.gsm");
 	roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
+	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/round.gsm");
+	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/sketch_match3.gsm");
 
 	// set up the camera
 	camera = new Camera();
@@ -92,24 +94,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 
 	if (mode == MODE_SKETCH) {
 		sketch->finalizeLine(camera->dz * 0.01f, camera->dz * 0.03f);
-		/*
-		sketch->graph[sketch->currentEdge]->polyLine = GraphUtil::simplifyPolyLine(sketch->graph[sketch->currentEdge]->polyLine, camera->dz * 0.01f);
-
-		RoadVertexDesc v_desc;
-		if (GraphUtil::getVertex(sketch, sketch->currentVertex, camera->dz * 0.03f, v_desc)) {
-			// if there is a vertex close to it, snap it to the vertex
-			GraphUtil::snapVertex(sketch, sketch->currentVertex, v_desc);
-		} else {
-			RoadEdgeDesc e_desc;
-			if (GraphUtil::getEdge(sketch, sketch->currentVertex, camera->dz * 0.03f, e_desc)) {
-				// if there is an edge close to it, snap it onto the edge
-				v_desc = GraphUtil::splitEdge(sketch, e_desc, sketch->graph[sketch->currentVertex]->pt);
-				GraphUtil::snapVertex(sketch, sketch->currentVertex, v_desc);
-			}
-		}
-		GraphUtil::planarify(sketch);
-		sketch->setModified();
-		*/
 
 		// search similar roads
 		roadDB->findSimilarRoads(sketch, 1, shadowRoads);

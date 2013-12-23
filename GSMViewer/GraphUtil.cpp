@@ -1760,6 +1760,8 @@ void GraphUtil::clean(RoadGraph* roads) {
 
 	roads->clear();
 
+	removeIsolatedVertices(temp);
+
 	QMap<RoadVertexDesc, RoadVertexDesc> conv;
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(temp->graph); vi != vend; ++vi) {
@@ -1788,6 +1790,10 @@ void GraphUtil::clean(RoadGraph* roads) {
 		std::pair<RoadEdgeDesc, bool> edge_pair = boost::add_edge(new_src, new_tgt, roads->graph);
 		roads->graph[edge_pair.first] = new_e;
 	}
+
+	delete temp;
+
+	roads->setModified();
 }
 
 /**
@@ -2965,19 +2971,23 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			RoadVertexDesc src2 = map1[src1];
 			RoadVertexDesc tgt2 = map1[tgt1];
 
+			if (!hasEdge(roads2, src2, tgt2)) continue;
+
 			// increase the score
 			//score += roads1->graph[*ei]->importance;
 			score += w_connectivity;
 
 			// increase the score according to the difference in the angle of the edges.
-			float angle = diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt);
-			score += (M_PI - angle) / M_PI * w_angle;
+			float angle_ratio = (M_PI / 2.0f - diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt)) / M_PI * 2.0f;
+			if (angle_ratio > 0.0f) {
+				score += angle_ratio * w_angle;
+			}
 
 			// increase the score according to the length of the edges
-			if (hasEdge(roads2, src2, tgt2)) {
-				RoadEdgeDesc e2 = getEdge(roads2, src2, tgt2);
-				float diff_len = fabs(roads1->graph[*ei]->getLength() - roads2->graph[e2]->getLength());
-				score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
+			RoadEdgeDesc e2 = getEdge(roads2, src2, tgt2);
+			float len_ratio = roads1->graph[*ei]->getLength() / roads2->graph[e2]->getLength();
+			if (len_ratio > 0.3333f && len_ratio < 3.0f) {
+				score += w_length;
 			}
 		}
 	}
@@ -2994,19 +3004,23 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			RoadVertexDesc src1 = map2[src2];
 			RoadVertexDesc tgt1 = map2[tgt2];
 
+			if (!hasEdge(roads1, src1, tgt1)) continue;
+
 			// increase the score
 			//score += roads2->graph[*ei]->importance;
 			score += w_connectivity;
 
 			// increase the score according to the difference in the angle of the edges.
-			float angle = diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt);
-			score += (M_PI - angle) / M_PI * w_angle;
+			float angle_ratio = (M_PI / 2.0f - diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt)) / M_PI * 2.0f;
+			if (angle_ratio > 0.0f) {
+				score += angle_ratio * w_angle;
+			}
 
 			// increase the score according to the length of the edges
-			if (hasEdge(roads1, src1, tgt1)) {
-				RoadEdgeDesc e1 = getEdge(roads1, src1, tgt1);
-				float diff_len = fabs(roads1->graph[e1]->getLength() - roads2->graph[*ei]->getLength());
-				score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
+			RoadEdgeDesc e1 = getEdge(roads1, src1, tgt1);
+			float len_ratio = roads1->graph[e1]->getLength() / roads2->graph[*ei]->getLength();
+			if (len_ratio > 0.3333f && len_ratio < 3.0f) {
+				score += w_length;
 			}
 		}
 	}

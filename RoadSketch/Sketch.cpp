@@ -103,18 +103,23 @@ void Sketch::addPointToLine(const QVector2D& pt) {
 void Sketch::finalizeLine(float simplify_threshold, float snap_threshold) {
 	graph[currentEdge]->polyLine = GraphUtil::simplifyPolyLine(graph[currentEdge]->polyLine, simplify_threshold);
 
-	RoadVertexDesc v_desc;
-	if (GraphUtil::getVertex(this, currentVertex, snap_threshold, v_desc)) {
-		// if there is a vertex close to it, snap it to the vertex
-		GraphUtil::snapVertex(this, currentVertex, v_desc);
-	} else {
-		RoadEdgeDesc e_desc;
-		if (GraphUtil::getEdge(this, currentVertex, snap_threshold, e_desc)) {
-			// if there is an edge close to it, snap it onto the edge
-			v_desc = GraphUtil::splitEdge(this, e_desc, graph[currentVertex]->pt);
+	if (graph[currentEdge]->getLength() > snap_threshold) {
+		RoadVertexDesc v_desc;
+		if (GraphUtil::getVertex(this, currentVertex, snap_threshold, v_desc)) {
+			// if there is a vertex close to it, snap it to the vertex
 			GraphUtil::snapVertex(this, currentVertex, v_desc);
+		} else {
+			RoadEdgeDesc e_desc;
+			if (GraphUtil::getEdge(this, currentVertex, snap_threshold, e_desc)) {
+				// if there is an edge close to it, snap it onto the edge
+				v_desc = GraphUtil::splitEdge(this, e_desc, graph[currentVertex]->pt);
+				GraphUtil::snapVertex(this, currentVertex, v_desc);
+			}
 		}
+		GraphUtil::planarify(this);
+	} else {
+		graph[currentEdge]->valid = false;
 	}
-	GraphUtil::planarify(this);
+
 	setModified();
 }

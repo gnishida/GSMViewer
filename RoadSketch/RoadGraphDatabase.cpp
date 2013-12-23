@@ -42,11 +42,16 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		// Find the matching
 		QMap<RoadVertexDesc, RoadVertexDesc> map1;
 		QMap<RoadVertexDesc, RoadVertexDesc> map2;
-		GraphUtil::findCorrespondence(roads1, &tree1, this->roads, tree2, false, 1.0f, map1, map2);
+		GraphUtil::findCorrespondence(roads1, &tree1, this->roads, tree2, false, 0.75f, map1, map2);
 
 		// Compute the similarity
 		float similarity = GraphUtil::computeSimilarity(roads1, map1, this->roads, map2, 1.0f, 1.0f, 1.0f);
 		search.add(similarity, it.key());
+
+		if (similarity > max_similarity) {
+			min_tree2 = tree2;
+			max_similarity = similarity;
+		}
 
 		// clear the "fullyPaired" flags
 		RoadEdgeIter ei, eend;
@@ -70,6 +75,8 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		QMap<RoadVertexDesc, RoadVertexDesc> map1;
 		QMap<RoadVertexDesc, RoadVertexDesc> map2;
 		GraphUtil::findCorrespondence(roads1, &tree1, r2, tree2, false, 0.75f, map1, map2);
+
+		float similarity = GraphUtil::computeSimilarity(roads1, map1, r2, map2, 1.0f, 1.0f, 1.0f);
 		
 		// define the offset
 		QVector2D translation = roads1->graph[root1]->pt - r2->graph[root2]->pt;
