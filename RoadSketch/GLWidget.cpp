@@ -14,15 +14,16 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 
 	sketch = new Sketch();
 	//roadDB = new RoadGraphDatabase("osm/example1.gsm");
-	roadDB = new RoadGraphDatabase("osm/3x3/madrid.gsm");
+	//roadDB = new RoadGraphDatabase("osm/3x3/paris.gsm");
+	roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
 
 	// set up the camera
 	camera = new Camera();
 	camera->setLookAt(0.0f, 0.0f, 0.0f);
-	camera->setTranslation(0.0f, 0.0f, MAX_Z);
+	camera->setTranslation(0.0f, 0.0f, MIN_Z);
 
 	// initialize the width and others
-	sketch->setZ(MAX_Z);
+	sketch->setZ(MIN_Z);
 
 	mode = MODE_DEFAULT;
 }
@@ -58,7 +59,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 	mouseTo2D(e->x(), e->y(), &last2DPos);
 	if (e->buttons() & Qt::LeftButton) {
 		RoadVertexDesc v1_desc;
-		if (!GraphUtil::getVertex(sketch, last2DPos, camera->dz * 0.1f, v1_desc)) {
+		if (!GraphUtil::getVertex(sketch, last2DPos, camera->dz * 0.03f, v1_desc)) {
 			RoadVertex* v1 = new RoadVertex(last2DPos);
 			v1_desc = boost::add_vertex(sketch->graph);
 			sketch->graph[v1_desc] = v1;
@@ -88,14 +89,15 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	if (mode == MODE_SKETCH) {
 		sketch->graph[sketch->currentEdge]->polyLine = GraphUtil::simplifyPolyLine(sketch->graph[sketch->currentEdge]->polyLine, camera->dz * 0.01f);
 		RoadVertexDesc desc;
-		if (GraphUtil::getVertex(sketch, sketch->graph[sketch->currentVertex]->pt, camera->dz * 0.1f, sketch->currentVertex, desc)) {
+		if (GraphUtil::getVertex(sketch, sketch->graph[sketch->currentVertex]->pt, camera->dz * 0.03f, sketch->currentVertex, desc)) {
+		//if (GraphUtil::getVertex(sketch, sketch->graph[sketch->currentVertex]->pt, camera->dz * 0.06f, desc)) {
 			GraphUtil::snapVertex(sketch, sketch->currentVertex, desc);
 		}
 		GraphUtil::planarify(sketch);
 		sketch->setModified();
 
 		// search similar roads
-		roadDB->findSimilarRoads(sketch, 5, shadowRoads);
+		roadDB->findSimilarRoads(sketch, 1, shadowRoads);
 
 		mode = MODE_DEFAULT;
 	}

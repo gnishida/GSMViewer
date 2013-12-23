@@ -2,7 +2,7 @@
 
 #include "RoadGraph.h"
 
-class ShadowRoadGraph : public RoadGraph {
+class ShadowRoadGraph {
 public:
 	RoadGraph* roads;
 

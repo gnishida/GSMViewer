@@ -97,6 +97,12 @@ void RoadGraphEditor::cut() {
 	clipBoard->copy(roads, *selectedArea);
 
 	GraphUtil::subtractRoads(roads, *selectedArea, true);
+
+	// clear the selected roads
+	if (selectedRoads != NULL) {
+		delete selectedRoads;
+		selectedRoads = NULL;
+	}
 }
 
 void RoadGraphEditor::copy() {

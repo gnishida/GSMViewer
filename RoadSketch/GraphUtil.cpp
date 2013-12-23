@@ -2985,9 +2985,11 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			score += (M_PI - angle) / M_PI * w_angle;
 
 			// increase the score according to the length of the edges
-			RoadEdgeDesc e2 = getEdge(roads2, src2, tgt2);
-			float diff_len = roads1->graph[*ei]->getLength() - roads2->graph[e2]->getLength();
-			score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
+			if (hasEdge(roads2, src2, tgt2)) {
+				RoadEdgeDesc e2 = getEdge(roads2, src2, tgt2);
+				float diff_len = roads1->graph[*ei]->getLength() - roads2->graph[e2]->getLength();
+				score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
+			}
 		}
 	}
 
@@ -3012,9 +3014,11 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			score += (M_PI - angle) / M_PI * w_angle;
 
 			// increase the score according to the length of the edges
-			RoadEdgeDesc e1 = getEdge(roads1, src1, tgt1);
-			float diff_len = roads1->graph[e1]->getLength() - roads2->graph[*ei]->getLength();
-			score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
+			if (hasEdge(roads1, src1, tgt1)) {
+				RoadEdgeDesc e1 = getEdge(roads1, src1, tgt1);
+				float diff_len = roads1->graph[e1]->getLength() - roads2->graph[*ei]->getLength();
+				score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
+			}
 		}
 	}
 
