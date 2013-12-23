@@ -79,9 +79,15 @@ void Sketch::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, QColor colo
 void Sketch::startLine(const QVector2D& pt, float snap_threshold) {
 	RoadVertexDesc v1_desc;
 	if (!GraphUtil::getVertex(this, pt, snap_threshold, v1_desc)) {
-		RoadVertex* v1 = new RoadVertex(pt);
-		v1_desc = boost::add_vertex(graph);
-		graph[v1_desc] = v1;
+		RoadEdgeDesc e_desc;
+		if (GraphUtil::getEdge(this, pt, snap_threshold, e_desc)) {
+			// if there is an edge close to it, snap it onto the edge
+			v1_desc = GraphUtil::splitEdge(this, e_desc, pt);
+		} else {
+			RoadVertex* v1 = new RoadVertex(pt);
+			v1_desc = boost::add_vertex(graph);
+			graph[v1_desc] = v1;
+		}
 	}
 
 	RoadVertex* v2 = new RoadVertex(pt);
