@@ -13,9 +13,9 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	this->mainWin = mainWin;
 
 	sketch = new Sketch();
-	roadDB = new RoadGraphDatabase("osm/example1.gsm");
+	//roadDB = new RoadGraphDatabase("osm/example1.gsm");
 	//roadDB = new RoadGraphDatabase("osm/3x3/paris.gsm");
-	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
+	roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
 
 	// set up the camera
 	camera = new Camera();
@@ -58,6 +58,9 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 	lastPos = e->pos();
 	mouseTo2D(e->x(), e->y(), &last2DPos);
 	if (e->buttons() & Qt::LeftButton) {
+
+		sketch->startLine(last2DPos, camera->dz * 0.03f);
+		/*
 		RoadVertexDesc v1_desc;
 		if (!GraphUtil::getVertex(sketch, last2DPos, camera->dz * 0.03f, v1_desc)) {
 			RoadVertex* v1 = new RoadVertex(last2DPos);
@@ -71,6 +74,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 
 		sketch->currentVertex = v2_desc;
 		sketch->currentEdge = GraphUtil::addEdge(sketch, v1_desc, v2_desc, 1, 1, false);
+		*/
 
 		mode = MODE_SKETCH;
 	} else {
@@ -87,6 +91,8 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	lastPos = e->pos();
 
 	if (mode == MODE_SKETCH) {
+		sketch->finalizeLine(camera->dz * 0.01f, camera->dz * 0.03f);
+		/*
 		sketch->graph[sketch->currentEdge]->polyLine = GraphUtil::simplifyPolyLine(sketch->graph[sketch->currentEdge]->polyLine, camera->dz * 0.01f);
 
 		RoadVertexDesc v_desc;
@@ -103,6 +109,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 		}
 		GraphUtil::planarify(sketch);
 		sketch->setModified();
+		*/
 
 		// search similar roads
 		roadDB->findSimilarRoads(sketch, 1, shadowRoads);
@@ -128,11 +135,14 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	float dy2D = pos.y() - last2DPos.y();
 
 	if (e->buttons() & Qt::LeftButton) {
+		sketch->addPointToLine(pos);
+		/*
 		if ((pos - sketch->graph[sketch->currentVertex]->pt).length() > 3.0f) {
 			sketch->graph[sketch->currentVertex]->pt = pos;
 			sketch->graph[sketch->currentEdge]->polyLine.push_back(pos);
 			sketch->setModified();
 		}
+		*/
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
 	} else if (e->buttons() & Qt::RightButton) { // Zoom the camera
@@ -229,7 +239,7 @@ void GLWidget::mouseTo2D(int x,int y, QVector2D *result) {
 
 	// retrieve the projected z-buffer of the origin
 	GLdouble origX, origY, origZ;
-	gluProject(0, 0, 0, modelview, projection, viewport, &origX, &origY, &origZ);
+	gluProject(0, 0, 1.0f, modelview, projection, viewport, &origX, &origY, &origZ);
 
 	// set up the projected point
 	GLfloat winX = (float)x;

@@ -1,4 +1,5 @@
 #include "Sketch.h"
+#include "GraphUtil.h"
 
 Sketch::Sketch() {
 	modified = true;
@@ -22,7 +23,7 @@ void Sketch::generateMesh() {
 		QColor color = QColor(0, 0, 255);
 
 		Renderable renderable(GL_LINE_STRIP, 3.0f);
-		addMeshFromEdge(&renderable, edge, color, 10.0f);
+		addMeshFromEdge(&renderable, edge, color, 1.0f);
 		renderables.push_back(renderable);
 	}
 
@@ -44,7 +45,7 @@ void Sketch::generateMesh() {
 
 		v.location[0] = graph[*vi]->pt.x();
 		v.location[1] = graph[*vi]->pt.y();
-		v.location[2] = 10.0f;
+		v.location[2] = 1.0f;
 		renderable.vertices.push_back(v);
 	}
 	renderables.push_back(renderable);
@@ -73,4 +74,47 @@ void Sketch::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, QColor colo
 
 		renderable->vertices.push_back(v);
 	}
+}
+
+void Sketch::startLine(const QVector2D& pt, float snap_threshold) {
+	RoadVertexDesc v1_desc;
+	if (!GraphUtil::getVertex(this, pt, snap_threshold, v1_desc)) {
+		RoadVertex* v1 = new RoadVertex(pt);
+		v1_desc = boost::add_vertex(graph);
+		graph[v1_desc] = v1;
+	}
+
+	RoadVertex* v2 = new RoadVertex(pt);
+	RoadVertexDesc v2_desc = boost::add_vertex(graph);
+	graph[v2_desc] = v2;
+
+	currentVertex = v2_desc;
+	currentEdge = GraphUtil::addEdge(this, v1_desc, v2_desc, 1, 1, false);
+}
+
+void Sketch::addPointToLine(const QVector2D& pt) {
+	if ((pt - graph[currentVertex]->pt).length() > 3.0f) {
+		graph[currentVertex]->pt = pt;
+		graph[currentEdge]->polyLine.push_back(pt);
+		setModified();
+	}
+}
+
+void Sketch::finalizeLine(float simplify_threshold, float snap_threshold) {
+	graph[currentEdge]->polyLine = GraphUtil::simplifyPolyLine(graph[currentEdge]->polyLine, simplify_threshold);
+
+	RoadVertexDesc v_desc;
+	if (GraphUtil::getVertex(this, currentVertex, snap_threshold, v_desc)) {
+		// if there is a vertex close to it, snap it to the vertex
+		GraphUtil::snapVertex(this, currentVertex, v_desc);
+	} else {
+		RoadEdgeDesc e_desc;
+		if (GraphUtil::getEdge(this, currentVertex, snap_threshold, e_desc)) {
+			// if there is an edge close to it, snap it onto the edge
+			v_desc = GraphUtil::splitEdge(this, e_desc, graph[currentVertex]->pt);
+			GraphUtil::snapVertex(this, currentVertex, v_desc);
+		}
+	}
+	GraphUtil::planarify(this);
+	setModified();
 }
