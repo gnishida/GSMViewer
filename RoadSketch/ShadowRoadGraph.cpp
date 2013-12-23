@@ -1,7 +1,8 @@
 #include "ShadowRoadGraph.h"
 
-ShadowRoadGraph::ShadowRoadGraph(RoadGraph* roads) {
+ShadowRoadGraph::ShadowRoadGraph(RoadGraph* roads, const QVector2D center) {
 	this->roads = roads;
+	this->center = center;
 }
 
 ShadowRoadGraph::~ShadowRoadGraph() {
@@ -19,11 +20,18 @@ void ShadowRoadGraph::generateMesh() {
 
 		RoadEdge* edge = roads->graph[*ei];
 
-		QColor color = QColor(196, 196, 196);
+		RoadVertexDesc src = boost::source(*ei, roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
 
-		Renderable renderable(GL_LINE_STRIP);
-		// draw the border of the road segment
-		addMeshFromEdge(&renderable, edge, roads->widthBase, color, 0.0f);
+		QColor color;
+		float ratio = ((roads->graph[src]->pt + roads->graph[tgt]->pt) / 2.0f - center).length() / 1000.0f;
+		if (ratio > 1.0f) ratio = 1.0f;
+		color.setRed((int)((233 - 148) * ratio + 148));
+		color.setGreen((int)((229 - 148) * ratio + 148));
+		color.setBlue((int)((220 - 148) * ratio + 148));
+
+		Renderable renderable(GL_LINE_STRIP, 1.0f);
+		addMeshFromEdge(&renderable, edge, color, 0.0f);
 
 		roads->renderables.push_back(renderable);
 	}
@@ -34,7 +42,7 @@ void ShadowRoadGraph::generateMesh() {
 /**
  * Add a mesh for the specified edge.
  */
-void ShadowRoadGraph::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, float width, QColor color, float height) {
+void ShadowRoadGraph::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, QColor color, float height) {
 	Vertex v;
 
 	v.color[0] = color.redF();

@@ -12,6 +12,6 @@ public:
 	~Sketch();
 
 	void generateMesh();
-	void addMeshFromEdge(Renderable* renderable, RoadEdge* edge, float widthBase, QColor color, float height);
+	void addMeshFromEdge(Renderable* renderable, RoadEdge* edge, QColor color, float height);
 };
 

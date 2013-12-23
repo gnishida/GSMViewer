@@ -31,15 +31,11 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 	// Find the central vertex in the sketch
 	RoadVertexDesc root1 = GraphUtil::getCentralVertex(roads1);
 
-	QVector2D center = roads1->graph[root1]->pt;
-	//center *= size / sketchCanvasSize;
-
 	// Create a tree
 	BFSTree tree1(roads1, root1);
 
 	float max_similarity = -1.0f;
 	BFSTree* min_tree2;
-	//RoadVertexDesc root2;
 	for (QMap<RoadVertexDesc, BFSTree*>::iterator it = trees.begin(); it != trees.end(); ++it) {
 		BFSTree* tree2 = it.value();
 
@@ -51,14 +47,6 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		// Compute the similarity
 		float similarity = GraphUtil::computeSimilarity(roads1, map1, this->roads, map2, 1.0f, 1.0f, 1.0f);
 		search.add(similarity, it.key());
-
-		/*
-		if (similarity > max_similarity) {
-			max_similarity = similarity;
-			min_tree2 = tree2;
-			root1 = it.key();
-		}
-		*/
 
 		// clear the "fullyPaired" flags
 		RoadEdgeIter ei, eend;
@@ -94,7 +82,7 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		GraphUtil::rotate(r2, -rotation, r2->graph[root2]->pt);
 		GraphUtil::translate(r2, translation);
 
-		results.push_back(new ShadowRoadGraph(r2));
+		results.push_back(new ShadowRoadGraph(r2, roads1->graph[root1]->pt));
 
 		// clear the "fullyPaired" flags
 		RoadEdgeIter ei, eend;

@@ -151,24 +151,9 @@ bool GraphUtil::getVertex(RoadGraph* roads, const QVector2D& pos, float threshol
  * Find the closest vertex from the specified vertex. 
  * If the closet vertex is within the threshold, return true. Otherwise, return false.
  */
-/*bool GraphUtil::getVertex(RoadGraph* roads, RoadVertexDesc v, float threshold, RoadVertexDesc& desc, bool onlyValidVertex) {
-	float min_dist = std::numeric_limits<float>::max();
-
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
-		if (onlyValidVertex && !roads->graph[*vi]->valid) continue;
-		if (*vi == v) continue;
-
-		float dist = (roads->graph[*vi]->getPt() - roads->graph[v]->pt).length();
-		if (dist < min_dist) {
-			min_dist = dist;
-			desc = *vi;
-		}
-	}
-
-	if (min_dist <= threshold) return true;
-	else return false;
-}*/
+bool GraphUtil::getVertex(RoadGraph* roads, RoadVertexDesc v, float threshold, RoadVertexDesc& desc, bool onlyValidVertex) {
+	return getVertex(roads, roads->graph[v]->pt, threshold, v, desc, onlyValidVertex);
+}
 
 /**
  * Find the closest vertex from the specified point. 
@@ -307,12 +292,16 @@ void GraphUtil::removeIsolatedVertices(RoadGraph* roads, bool onlyValidVertex) {
 void GraphUtil::snapVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v2) {
 	if (v1 == v2) return;
 
+	moveVertex(roads, v1, roads->graph[v2]->pt);
+
 	if (hasEdge(roads, v1, v2)) {
 		RoadEdgeDesc e = getEdge(roads, v1, v2);
-		roads->graph[e]->valid = false;
-	}
 
-	moveVertex(roads, v1, roads->graph[v2]->pt);
+		// if the edge is too short, remove it. (This might be contraversial...)
+		if (roads->graph[e]->getLength() < 1.0f) {
+			roads->graph[e]->valid = false;
+		}
+	}
 
 	// Snap all the outing edges from v1
 	RoadOutEdgeIter ei, eend;
@@ -324,8 +313,8 @@ void GraphUtil::snapVertex(RoadGraph* roads, RoadVertexDesc v1, RoadVertexDesc v
 		// invalidate the old edge
 		roads->graph[*ei]->valid = false;
 
-		if (v1b == v2) continue;
-		if (hasEdge(roads, v2, v1b)) continue;
+		//if (v1b == v2) continue;
+		if (v1b != v2 && hasEdge(roads, v2, v1b)) continue;
 		//if (hasCloseEdge(roads, v2, v1b)) continue;	// <-- In this case, snap the edge to the other instead of discard it.
 
 		// add a new edge
@@ -2987,7 +2976,7 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			// increase the score according to the length of the edges
 			if (hasEdge(roads2, src2, tgt2)) {
 				RoadEdgeDesc e2 = getEdge(roads2, src2, tgt2);
-				float diff_len = roads1->graph[*ei]->getLength() - roads2->graph[e2]->getLength();
+				float diff_len = fabs(roads1->graph[*ei]->getLength() - roads2->graph[e2]->getLength());
 				score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
 			}
 		}
@@ -3016,7 +3005,7 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			// increase the score according to the length of the edges
 			if (hasEdge(roads1, src1, tgt1)) {
 				RoadEdgeDesc e1 = getEdge(roads1, src1, tgt1);
-				float diff_len = roads1->graph[e1]->getLength() - roads2->graph[*ei]->getLength();
+				float diff_len = fabs(roads1->graph[e1]->getLength() - roads2->graph[*ei]->getLength());
 				score += 1.0f / w_length * expf(-1.0f / w_length * diff_len);
 			}
 		}
@@ -3261,6 +3250,8 @@ void GraphUtil::findCorrespondence(RoadGraph* roads1, AbstractForest* forest1, R
 			if (diffAngle(roads1->graph[child1]->pt - roads1->graph[parent1]->pt, roads2->graph[child2]->pt - roads2->graph[parent2]->pt) > threshold_angle) continue;
 
 			// update the matching
+			if (map1.contains(child1) || map2.contains(child2)) continue;
+
 			map1[child1] = child2;
 			map2[child2] = child1;
 

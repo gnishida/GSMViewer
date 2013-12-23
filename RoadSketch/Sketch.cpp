@@ -21,8 +21,8 @@ void Sketch::generateMesh() {
 
 		QColor color = QColor(0, 0, 255);
 
-		Renderable renderable(GL_LINE_STRIP);
-		addMeshFromEdge(&renderable, edge, widthBase, color, 10.0f);
+		Renderable renderable(GL_LINE_STRIP, 3.0f);
+		addMeshFromEdge(&renderable, edge, color, 10.0f);
 		renderables.push_back(renderable);
 	}
 
@@ -52,7 +52,7 @@ void Sketch::generateMesh() {
 	modified = false;
 }
 
-void Sketch::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, float width, QColor color, float height) {
+void Sketch::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, QColor color, float height) {
 	Vertex v;
 
 	v.color[0] = color.redF();
