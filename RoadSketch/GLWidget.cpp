@@ -15,7 +15,8 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	sketch = new Sketch();
 	//roadDB = new RoadGraphDatabase("osm/example1.gsm");
 	//roadDB = new RoadGraphDatabase("osm/3x3/paris.gsm");
-	roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
+	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
+	roadDB = new RoadGraphDatabase("osm/3x3_simplified/new-york.gsm");
 	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/round.gsm");
 	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/sketch_match3.gsm");
 

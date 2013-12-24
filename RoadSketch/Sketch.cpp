@@ -122,7 +122,9 @@ void Sketch::finalizeLine(float simplify_threshold, float snap_threshold) {
 				GraphUtil::snapVertex(this, currentVertex, v_desc);
 			}
 		}
+
 		GraphUtil::planarify(this);
+		GraphUtil::reduce(this);
 	} else {
 		graph[currentEdge]->valid = false;
 	}
