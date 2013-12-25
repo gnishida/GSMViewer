@@ -102,18 +102,18 @@ void RoadGraphRenderer::renderPolyline(std::vector<QVector2D>& polyline, float h
 	renderables.push_back(Renderable(GL_POINTS, 10.0f));
 	
 	Vertex v;
+	v.color[0] = 0.0f;
+	v.color[1] = 0.0f;
+	v.color[2] = 1.0f;
+	v.normal[0] = 0.0f;
+	v.normal[1] = 0.0f;
+	v.normal[2] = 1.0f;
 
 	// add lines
 	for (int i = 0; i < polyline.size(); i++) {
 		v.location[0] = polyline[i].x();
 		v.location[1] = polyline[i].y();
 		v.location[2] = height;
-		v.color[0] = 0.0f;
-		v.color[1] = 0.0f;
-		v.color[2] = 1.0f;
-		v.normal[0] = 0.0f;
-		v.normal[1] = 0.0f;
-		v.normal[2] = 1.0f;
 
 		renderables[0].vertices.push_back(v);
 		renderables[1].vertices.push_back(v);
@@ -124,3 +124,30 @@ void RoadGraphRenderer::renderPolyline(std::vector<QVector2D>& polyline, float h
 	}
 }
 
+void RoadGraphRenderer::renderVoronoiDiagram(RoadGraph& roads, float height) {
+	Renderable renderable(GL_LINES, 3.0f);
+
+	Vertex v;
+	v.color[0] = 0.0f;
+	v.color[1] = 0.7f;
+	v.color[2] = 0.7f;
+	v.normal[0] = 0.0f;
+	v.normal[1] = 0.0f;
+	v.normal[2] = 1.0f;
+
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads.graph); ei != eend; ++ei) {
+		if (!roads.graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads.graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads.graph);
+
+		v.location[0] = roads.graph[src]->pt.x();
+		v.location[1] = roads.graph[tgt]->pt.y();
+		v.location[2] = height;
+
+		renderable.vertices.push_back(v);
+	}
+
+	render(&renderable);
+}

@@ -62,6 +62,9 @@ void GLWidget::drawScene() {
 		editor->selectedRoads->generateMesh();
 		renderer->render(editor->selectedRoads->renderable);
 	}
+
+	// draw Voronoi diagram
+	renderer->renderVoronoiDiagram(editor->voronoiGraph, height);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////

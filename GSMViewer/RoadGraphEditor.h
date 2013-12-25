@@ -3,6 +3,35 @@
 #include "RoadGraph.h"
 #include "BBox.h"
 #include "ClipBoard.h"
+#include <boost/polygon/voronoi.hpp>
+
+class VoronoiVertex {
+public:
+	RoadGraph* roads;
+	RoadVertexDesc desc;
+
+public:
+	VoronoiVertex(RoadGraph* roads, RoadVertexDesc desc) {
+		this->roads = roads;
+		this->desc = desc;
+	}
+};
+
+namespace boost {
+namespace polygon {
+template <>
+struct geometry_concept<VoronoiVertex> { typedef point_concept type; };
+  
+template <>
+struct point_traits<VoronoiVertex> {
+	typedef int coordinate_type;
+   
+	static inline coordinate_type get(const VoronoiVertex& v, orientation_2d orient) {
+		return (orient == HORIZONTAL) ? v.roads->graph[v.desc]->pt.x() * 100 : v.roads->graph[v.desc]->pt.y() * 100;
+	}
+};
+}
+}
 
 class RoadGraphEditor {
 public:
@@ -22,6 +51,8 @@ public:
 	RoadGraph* selectedRoads;
 	RoadGraph* selectedRoadsOrig;
 	std::vector<RoadGraph*> interpolatedRoads;
+
+	RoadGraph voronoiGraph;
 
 	ClipBoard* clipBoard;
 
@@ -67,5 +98,8 @@ public:
 	void showInterpolatedRoads(int ratio);
 	void finalizeInterpolation(int ratio);
 	bool splitEdge(const QVector2D& pt);
+	void voronoi();
+	void voronoiCut();
+	void voronoiCut2();
 };
 

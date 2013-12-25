@@ -34,6 +34,8 @@ public slots:
 	void onCopy();
 	void onPaste();
 	void onDeleteEdge();
+	void onVoronoi();
+	void onVoronoiCut();
 	void onShowControlWidget();
 };
 

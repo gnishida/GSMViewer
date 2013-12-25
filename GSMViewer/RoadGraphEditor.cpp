@@ -1,7 +1,8 @@
-#include "RoadGraphEditor.h"
+﻿#include "RoadGraphEditor.h"
 #include "GraphUtil.h"
 #include "BFSTree.h"
 #include "ArcArea.h"
+#include <boost/polygon/voronoi.hpp>
 
 RoadGraphEditor::RoadGraphEditor() {
 	roads = new RoadGraph();
@@ -482,4 +483,216 @@ bool RoadGraphEditor::splitEdge(const QVector2D& pt) {
 	} else {
 		return false;
 	}
+}
+
+void RoadGraphEditor::voronoi() {
+	std::vector<VoronoiVertex> points;
+	QMap<int, RoadVertexDesc> conv;
+
+	int cell_index = 0;
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(roads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(selectedRoads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	// Construction of the Voronoi Diagram.
+	boost::polygon::voronoi_diagram<double> vd;
+	construct_voronoi(points.begin(), points.end(), &vd);
+
+	// create a voronoi edges
+	voronoiGraph.clear();
+	for (boost::polygon::voronoi_diagram<double>::const_edge_iterator it = vd.edges().begin(); it != vd.edges().end(); ++it) {
+		if (!it->is_primary()) continue;
+		if (it->is_infinite()) continue;
+
+		const boost::polygon::voronoi_diagram<double>::vertex_type* vertex0 = it->vertex0();
+		const boost::polygon::voronoi_diagram<double>::vertex_type* vertex1 = it->vertex1();
+
+		if (vertex0 != NULL && vertex1 != NULL) {
+			RoadVertex* v0 = new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f));
+			RoadVertexDesc v0_desc = boost::add_vertex(voronoiGraph.graph);
+			voronoiGraph.graph[v0_desc] = v0;
+
+			RoadVertex* v1 = new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f));
+			RoadVertexDesc v1_desc = boost::add_vertex(voronoiGraph.graph);
+			voronoiGraph.graph[v1_desc] = v1;
+
+			GraphUtil::addEdge(&voronoiGraph, v0_desc, v1_desc, 1, 1, false);
+		}
+	}
+}
+
+/**
+ * Voronoi図を使って、２つの道路網をうまく結合させる。
+ * 各エッジについて、２つの頂点がそれぞれ属するセルが隣接していない場合、そのエッジを無効にする。
+ * かなり、保守的なアルゴリズムだ。しかも、エッジを無効にするだけで、２つの道路網をつなぐエッジを追加していないので、
+ * あまり良くない。
+ */
+void RoadGraphEditor::voronoiCut() {
+	std::vector<VoronoiVertex> points;
+	QMap<int, RoadVertexDesc> conv;
+
+	int cell_index = 0;
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(roads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(selectedRoads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	// Construction of the Voronoi Diagram.
+	boost::polygon::voronoi_diagram<double> vd;
+	construct_voronoi(points.begin(), points.end(), &vd);
+
+	// for each cell, check the adjacent cells
+	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
+		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
+		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
+
+	    std::size_t cell_index = it->source_index();
+		VoronoiVertex v = points[cell_index];
+
+		// list up all the outing edges
+		QList<RoadVertexDesc> neighbors;
+		RoadOutEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
+			if (!v.roads->graph[*ei]->valid) continue;
+
+			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
+			neighbors.push_back(tgt);
+		}
+
+		// check if the neighbors are in the same road graph
+		do {
+			if (!edge->is_primary()) continue;
+		
+			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
+			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
+			int neighbor_index = neighbor_cell->source_index();
+			if (v.roads == points[neighbor_index].roads) {
+				neighbors.removeOne(points[neighbor_index].desc);
+			}	
+
+			edge = edge->next();
+		} while (edge != cell.incident_edge());
+
+		// for those neighbors which are in the different road graph, remove the corresponding edges
+		for (int i = 0; i < neighbors.size(); i++) {
+			RoadEdgeDesc e = GraphUtil::getEdge(v.roads, v.desc, neighbors[i]);
+			v.roads->graph[e]->valid = false;
+		}
+	}
+
+	roads->setModified();
+	selectedRoads->setModified();
+}
+
+/**
+ * Voronoi図を使って、２つの道路網をうまく結合させる。
+ * 各エッジについて、２つの頂点がそれぞれ属するセルが隣接していない場合、
+ * 1) 自陣に近い場合、周りの敵セルの頂点を全て無効にし、さらに、そこから出るエッジも無効にする。
+ * 2) 敵陣に近い場合、そのエッジを無効にする。
+ * エッジを無効にするだけで、２つの道路網をつなぐエッジを追加していない。
+ */
+void RoadGraphEditor::voronoiCut2() {
+	std::vector<VoronoiVertex> points;
+	QMap<int, RoadVertexDesc> conv;
+
+	// define the center of the roads
+	QVector2D center1 = roads->graph[GraphUtil::getCentralVertex(roads)]->pt;
+	QVector2D center2 = selectedRoads->graph[GraphUtil::getCentralVertex(selectedRoads)]->pt;
+
+	int cell_index = 0;
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(roads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(selectedRoads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	// Construction of the Voronoi Diagram.
+	boost::polygon::voronoi_diagram<double> vd;
+	construct_voronoi(points.begin(), points.end(), &vd);
+
+	// for each cell, check the adjacent cells
+	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
+		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
+		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
+
+	    std::size_t cell_index = it->source_index();
+		VoronoiVertex v = points[cell_index];
+
+		// list up all the outing edges
+		QList<RoadVertexDesc> neighbors;
+		RoadOutEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
+			if (!v.roads->graph[*ei]->valid) continue;
+
+			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
+			neighbors.push_back(tgt);
+		}
+
+		bool remove = false;
+		if (points[cell_index].roads == roads) {
+			float dist1 = (v.roads->graph[v.desc]->pt - center1).length();
+			float dist2 = (v.roads->graph[v.desc]->pt - center2).length();
+			if (dist1 > dist2) {
+				remove = true;
+			}
+		} else {
+			float dist1 = (v.roads->graph[v.desc]->pt - center2).length();
+			float dist2 = (v.roads->graph[v.desc]->pt - center1).length();
+			if (dist1 > dist2) {
+				remove = true;
+			}
+		}
+
+		// check if the neighbors are in the same road graph
+		do {
+			if (!edge->is_primary()) continue;
+		
+			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
+			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
+			int neighbor_index = neighbor_cell->source_index();
+			if (v.roads == points[neighbor_index].roads) {
+				neighbors.removeOne(v.desc);
+			} else {
+				if (!remove) {
+					
+					for (boost::tie(ei, eend) = boost::out_edges(points[neighbor_index].desc, points[neighbor_index].roads->graph); ei != eend; ++ei) {
+						//points[neighbor_index].roads->graph[*ei]->valid = false;
+					}
+					
+					//points[neighbor_index].roads->graph[points[neighbor_index].desc]->valid = false;
+				}
+			}
+
+			edge = edge->next();
+		} while (edge != cell.incident_edge());
+
+		// for those neighbors which are in the different road graph, 
+		for (int i = 0; i < neighbors.size(); i++) {
+			if (remove) {
+				RoadEdgeDesc e = GraphUtil::getEdge(points[cell_index].roads, points[cell_index].desc, neighbors[i]);
+				points[cell_index].roads->graph[e]->valid = false;
+			}
+		}
+	}
+
+	roads->setModified();
+	selectedRoads->setModified();
 }

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Mon Dec 23 14:56:43 2013
+** Created: Tue Dec 24 12:54:12 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -39,12 +39,15 @@ public:
     QAction *actionCopy;
     QAction *actionPaste;
     QAction *actionOpenToAdd;
+    QAction *actionVoronoi;
+    QAction *actionVoronoiCut;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuWindow;
     QMenu *menuEdit;
     QMenu *menuSelect;
+    QMenu *menuTool;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -102,6 +105,10 @@ public:
         actionPaste->setIcon(icon7);
         actionOpenToAdd = new QAction(MainWindow);
         actionOpenToAdd->setObjectName(QString::fromUtf8("actionOpenToAdd"));
+        actionVoronoi = new QAction(MainWindow);
+        actionVoronoi->setObjectName(QString::fromUtf8("actionVoronoi"));
+        actionVoronoiCut = new QAction(MainWindow);
+        actionVoronoiCut->setObjectName(QString::fromUtf8("actionVoronoiCut"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         MainWindow->setCentralWidget(centralWidget);
@@ -116,6 +123,8 @@ public:
         menuEdit->setObjectName(QString::fromUtf8("menuEdit"));
         menuSelect = new QMenu(menuBar);
         menuSelect->setObjectName(QString::fromUtf8("menuSelect"));
+        menuTool = new QMenu(menuBar);
+        menuTool->setObjectName(QString::fromUtf8("menuTool"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -128,6 +137,7 @@ public:
         menuBar->addAction(menuSelect->menuAction());
         menuBar->addAction(menuEdit->menuAction());
         menuBar->addAction(menuWindow->menuAction());
+        menuBar->addAction(menuTool->menuAction());
         menuFile->addAction(actionNew);
         menuFile->addAction(actionOpen);
         menuFile->addAction(actionOpenToAdd);
@@ -143,6 +153,8 @@ public:
         menuEdit->addAction(actionPaste);
         menuEdit->addAction(actionDeleteEdge);
         menuSelect->addAction(actionSelectAll);
+        menuTool->addAction(actionVoronoi);
+        menuTool->addAction(actionVoronoiCut);
 
         retranslateUi(MainWindow);
 
@@ -176,10 +188,13 @@ public:
         actionPaste->setText(QApplication::translate("MainWindow", "Paste", 0, QApplication::UnicodeUTF8));
         actionPaste->setShortcut(QApplication::translate("MainWindow", "Ctrl+V", 0, QApplication::UnicodeUTF8));
         actionOpenToAdd->setText(QApplication::translate("MainWindow", "Open To Add", 0, QApplication::UnicodeUTF8));
+        actionVoronoi->setText(QApplication::translate("MainWindow", "Voronoi", 0, QApplication::UnicodeUTF8));
+        actionVoronoiCut->setText(QApplication::translate("MainWindow", "Voronoi Cut", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
         menuWindow->setTitle(QApplication::translate("MainWindow", "Window", 0, QApplication::UnicodeUTF8));
         menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));
         menuSelect->setTitle(QApplication::translate("MainWindow", "Select", 0, QApplication::UnicodeUTF8));
+        menuTool->setTitle(QApplication::translate("MainWindow", "Tool", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

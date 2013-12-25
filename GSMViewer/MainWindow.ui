@@ -64,10 +64,18 @@
     </property>
     <addaction name="actionSelectAll"/>
    </widget>
+   <widget class="QMenu" name="menuTool">
+    <property name="title">
+     <string>Tool</string>
+    </property>
+    <addaction name="actionVoronoi"/>
+    <addaction name="actionVoronoiCut"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSelect"/>
    <addaction name="menuEdit"/>
    <addaction name="menuWindow"/>
+   <addaction name="menuTool"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -198,6 +206,16 @@
   <action name="actionOpenToAdd">
    <property name="text">
     <string>Open To Add</string>
+   </property>
+  </action>
+  <action name="actionVoronoi">
+   <property name="text">
+    <string>Voronoi</string>
+   </property>
+  </action>
+  <action name="actionVoronoiCut">
+   <property name="text">
+    <string>Voronoi Cut</string>
    </property>
   </action>
  </widget>

@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	connect(ui.actionCopy, SIGNAL(triggered()), this, SLOT(onCopy()));
 	connect(ui.actionPaste, SIGNAL(triggered()), this, SLOT(onPaste()));
 	connect(ui.actionDeleteEdge, SIGNAL(triggered()), this, SLOT(onDeleteEdge()));
+	connect(ui.actionVoronoi, SIGNAL(triggered()), this, SLOT(onVoronoi()));
+	connect(ui.actionVoronoiCut, SIGNAL(triggered()), this, SLOT(onVoronoiCut()));
 	connect(ui.actionControlWidget, SIGNAL(triggered()), this, SLOT(onShowControlWidget()));
 
 	// setup the GL widget
@@ -130,6 +132,14 @@ void MainWindow::onDeleteEdge() {
 	qDebug() << "onDeleteEdge";
 	glWidget->editor->deleteEdge();
 	glWidget->updateGL();
+}
+
+void MainWindow::onVoronoi() {
+	glWidget->editor->voronoi();
+}
+
+void MainWindow::onVoronoiCut() {
+	glWidget->editor->voronoiCut2();
 }
 
 void MainWindow::onShowControlWidget() {
