@@ -619,6 +619,8 @@ void RoadGraphEditor::voronoiCut2() {
 		conv[cell_index] = *vi;
 	}
 
+	qDebug() << cell_index;
+
 	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
 		points.push_back(VoronoiVertex(selectedRoads, *vi));
 		conv[cell_index] = *vi;
@@ -636,63 +638,68 @@ void RoadGraphEditor::voronoiCut2() {
 	    std::size_t cell_index = it->source_index();
 		VoronoiVertex v = points[cell_index];
 
-		// list up all the outing edges
-		QList<RoadVertexDesc> neighbors;
-		RoadOutEdgeIter ei, eend;
-		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
-			if (!v.roads->graph[*ei]->valid) continue;
-
-			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
-			neighbors.push_back(tgt);
-		}
-
-		bool remove = false;
-		if (points[cell_index].roads == roads) {
-			float dist1 = (v.roads->graph[v.desc]->pt - center1).length();
-			float dist2 = (v.roads->graph[v.desc]->pt - center2).length();
-			if (dist1 > dist2) {
-				remove = true;
-			}
-		} else {
-			float dist1 = (v.roads->graph[v.desc]->pt - center2).length();
-			float dist2 = (v.roads->graph[v.desc]->pt - center1).length();
-			if (dist1 > dist2) {
-				remove = true;
-			}
-		}
+		bool withinTerritory = isWithinTerritory(roads, center1, selectedRoads, center2, v);
 
 		// check if the neighbors are in the same road graph
+		bool adjacentToEnemy = false;
 		do {
 			if (!edge->is_primary()) continue;
 		
 			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
 			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
 			int neighbor_index = neighbor_cell->source_index();
-			if (v.roads == points[neighbor_index].roads) {
-				neighbors.removeOne(v.desc);
-			} else {
-				if (!remove) {
-					
-					for (boost::tie(ei, eend) = boost::out_edges(points[neighbor_index].desc, points[neighbor_index].roads->graph); ei != eend; ++ei) {
-						//points[neighbor_index].roads->graph[*ei]->valid = false;
-					}
-					
-					//points[neighbor_index].roads->graph[points[neighbor_index].desc]->valid = false;
-				}
+			if (v.roads != points[neighbor_index].roads) {
+				adjacentToEnemy = true;
+				break;
 			}
 
 			edge = edge->next();
 		} while (edge != cell.incident_edge());
 
-		// for those neighbors which are in the different road graph, 
-		for (int i = 0; i < neighbors.size(); i++) {
-			if (remove) {
-				RoadEdgeDesc e = GraphUtil::getEdge(points[cell_index].roads, points[cell_index].desc, neighbors[i]);
-				points[cell_index].roads->graph[e]->valid = false;
+		// if this cell is far away from the center of the road and is adjacent to the enemy cells,
+		// remove the edge if both vertices are outside the territory.
+		if (!withinTerritory && adjacentToEnemy) {
+			// for each outing edge
+			RoadOutEdgeIter ei, eend;
+			for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
+				if (!v.roads->graph[*ei]->valid) continue;
+
+				RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
+				
+				// if both the vertices is outside the teritory, remove this edge
+				if (!isWithinTerritory(roads, center1, selectedRoads, center2, v) &&
+					!isWithinTerritory(roads, center1, selectedRoads, center2, VoronoiVertex(v.roads, tgt))) {
+					v.roads->graph[*ei]->valid = false;
+					v.roads->graph[v.desc]->valid = false;
+					continue;
+				}
+
+				// if only v.desc is outside the teritory, find the closest vertex from neighbors[i], and snap v.desc to it.
+				if (v.roads == roads) {
+					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(selectedRoads, v.roads->graph[tgt]->pt);
+					GraphUtil::moveVertex(v.roads, v.desc, selectedRoads->graph[snap_v_desc]->pt);
+				} else {
+					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(roads, v.roads->graph[tgt]->pt);
+					GraphUtil::moveVertex(v.roads, v.desc, roads->graph[snap_v_desc]->pt);
+				}
 			}
 		}
 	}
 
 	roads->setModified();
 	selectedRoads->setModified();
+}
+
+bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v) {
+	if (v.roads == roads1) {
+		float dist1 = (v.roads->graph[v.desc]->pt - center1).length();
+		float dist2 = (v.roads->graph[v.desc]->pt - center2).length();
+		if (dist1 <= dist2) return true;
+		else return false;
+	} else {
+		float dist1 = (v.roads->graph[v.desc]->pt - center2).length();
+		float dist2 = (v.roads->graph[v.desc]->pt - center1).length();
+		if (dist1 <= dist2) return true;
+		else return false;
+	}
 }

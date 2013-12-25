@@ -101,5 +101,6 @@ public:
 	void voronoi();
 	void voronoiCut();
 	void voronoiCut2();
+	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& pt);
 };
 
