@@ -21,7 +21,8 @@ RoadGraphEditor::~RoadGraphEditor() {
 void RoadGraphEditor::clear() {
 	roads->clear();
 
-	mode = MODE_DEFAULT;
+	mode = MODE_BASIC;
+
 	selectedVertex = NULL;
 	selectedEdge = NULL;
 	movingVertex = NULL;
@@ -69,7 +70,7 @@ void RoadGraphEditor::openToAddRoad(QString filename) {
 	((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->maxPt.y() + selectedArea->dy() * 0.1f);
 	*/
 
-	mode = MODE_AREA_SELECTED;
+	mode = MODE_BASIC_AREA_SELECTED;
 
 }
 
@@ -89,7 +90,7 @@ void RoadGraphEditor::undo() {
 }
 
 void RoadGraphEditor::cut() {
-	if (mode != MODE_AREA_SELECTED) return;
+	if (mode != MODE_BASIC_AREA_SELECTED) return;
 	if (selectedArea == NULL) return;
 
 	history.push_back(GraphUtil::copyRoads(roads));
@@ -107,7 +108,7 @@ void RoadGraphEditor::cut() {
 }
 
 void RoadGraphEditor::copy() {
-	if (mode != MODE_AREA_SELECTED) return;
+	if (mode != MODE_BASIC_AREA_SELECTED) return;
 	if (selectedArea == NULL) return;
 
 	// extract the roads within the area, and put it into the clipboard.
@@ -139,7 +140,7 @@ void RoadGraphEditor::paste() {
 	((BBox*)selectedArea)->maxPt.setX(((BBox*)selectedArea)->maxPt.x() + selectedArea->dx() * 0.1f);
 	((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->maxPt.y() + selectedArea->dy() * 0.1f);
 
-	mode = MODE_AREA_SELECTED;
+	mode = MODE_BASIC_AREA_SELECTED;
 }
 
 bool RoadGraphEditor::deleteEdge() {
@@ -178,7 +179,7 @@ void RoadGraphEditor::startArea(const QVector2D& pt) {
 	selectedArea = new BBox();
 	((BBox*)selectedArea)->addPoint(pt);
 
-	mode = MODE_DEFINING_AREA;
+	mode = MODE_BASIC_DEFINING_AREA;
 }
 
 void RoadGraphEditor::updateArea(const QVector2D& pt) {
@@ -200,7 +201,7 @@ void RoadGraphEditor::finalizeArea() {
 
 	// if the box is just a single point, cancel the selection.
 	if (((BBox*)selectedArea)->maxPt.x() == ((BBox*)selectedArea)->minPt.x() && ((BBox*)selectedArea)->maxPt.y() == ((BBox*)selectedArea)->minPt.y()) {
-		mode = MODE_DEFAULT;
+		mode = MODE_BASIC;
 	} else {
 		history.push_back(GraphUtil::copyRoads(roads));
 
@@ -217,7 +218,7 @@ void RoadGraphEditor::finalizeArea() {
 		// subtract the area from the roads
 		GraphUtil::subtractRoads(roads, *selectedArea, true);
 
-		mode = MODE_AREA_SELECTED;
+		mode = MODE_BASIC_AREA_SELECTED;
 	}
 }
 
@@ -227,7 +228,7 @@ void RoadGraphEditor::resizeAreaBR(const QVector2D& pt) {
 }
 
 void RoadGraphEditor::startDistortingArea() {
-	mode = MODE_DISTORTING_AREA;
+	mode = MODE_BASIC_DISTORTING_AREA;
 
 	QVector2D leftPt(((BBox*)selectedArea)->minPt.x(), ((BBox*)selectedArea)->midPt().y());
 	QVector2D rightPt(((BBox*)selectedArea)->maxPt.x(), ((BBox*)selectedArea)->midPt().y());
@@ -244,7 +245,7 @@ void RoadGraphEditor::startDistortingArea() {
 }
 
 void RoadGraphEditor::distortArea(float dx, float dy) {
-	if (mode != MODE_DISTORTING_AREA) return;
+	if (mode != MODE_BASIC_DISTORTING_AREA) return;
 	if (selectedArea == NULL) return;
 
 	((ArcArea*)selectedArea)->radius += dx * 50.0f;
@@ -262,11 +263,11 @@ void RoadGraphEditor::finalizeDistortArea() {
 		selectedRoadsOrig = NULL;
 	}
 
-	mode = MODE_AREA_SELECTED;
+	mode = MODE_BASIC_AREA_SELECTED;
 }
 
 void RoadGraphEditor::moveArea(float dx, float dy) {
-	if (mode != MODE_AREA_SELECTED) return;
+	if (mode != MODE_BASIC_AREA_SELECTED) return;
 
 	selectedArea->translate(dx, dy);
 
@@ -289,7 +290,7 @@ bool RoadGraphEditor::selectVertex(const QVector2D& pt) {
 	selectedEdge = NULL;
 
 	// update the mode
-	mode = MODE_VERTEX_SELECTED;
+	mode = MODE_BASIC_VERTEX_SELECTED;
 
 	return true;
 }
@@ -309,7 +310,7 @@ bool RoadGraphEditor::selectEdge(const QVector2D& pt) {
 	// clear the selction for other items
 	selectedVertex = NULL;
 
-	mode = MODE_EDGE_SELECTED;
+	mode = MODE_BASIC_EDGE_SELECTED;
 
 	return true;
 }
@@ -368,7 +369,7 @@ void RoadGraphEditor::unselectRoads() {
 		selectedRoads = NULL;
 	}
 
-	mode = MODE_DEFAULT;
+	mode = MODE_BASIC;
 }
 
 /**
@@ -382,7 +383,7 @@ void RoadGraphEditor::connectRoads() {
 		selectedRoads = NULL;
 	}
 
-	mode = MODE_DEFAULT;
+	mode = MODE_BASIC;
 }
 
 /**
@@ -456,7 +457,7 @@ void RoadGraphEditor::interpolate() {
 		GraphUtil::subtractRoads(roads, *selectedArea, true);
 	}
 
-	mode = MODE_AREA_SELECTED;
+	mode = MODE_BASIC_AREA_SELECTED;
 }
 
 void RoadGraphEditor::showInterpolatedRoads(int ratio) {
@@ -472,7 +473,7 @@ void RoadGraphEditor::finalizeInterpolation(int ratio) {
 	}
 	clearInterpolatedRoads();
 
-	mode = MODE_DEFAULT;
+	mode = MODE_BASIC;
 }
 
 bool RoadGraphEditor::splitEdge(const QVector2D& pt) {
@@ -702,4 +703,8 @@ bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, const QVector2D& cent
 		if (dist1 <= dist2) return true;
 		else return false;
 	}
+}
+
+void RoadGraphEditor::finalizeSketchLine(float simplify_threshold, float snap_threshold) {
+	sketch.finalizeLine(simplify_threshold, snap_threshold);
 }

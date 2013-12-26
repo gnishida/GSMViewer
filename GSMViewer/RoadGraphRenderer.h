@@ -11,7 +11,8 @@ public:
 public:
 	RoadGraphRenderer();
 
-	void render(Renderable* renderable);
+	void render(std::vector<RenderablePtr>& renderables);
+	void renderOne(RenderablePtr renderable);
 
 	void renderArea(const AbstractArea& area, float height);
 	void renderPoint(const QVector2D& pt, float height);

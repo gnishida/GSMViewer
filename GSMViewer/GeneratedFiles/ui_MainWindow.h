@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Tue Dec 24 12:54:12 2013
+** Created: Thu Dec 26 13:15:15 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -41,6 +41,9 @@ public:
     QAction *actionOpenToAdd;
     QAction *actionVoronoi;
     QAction *actionVoronoiCut;
+    QAction *actionModeBasic;
+    QAction *actionModeLayer;
+    QAction *actionModeSketch;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -48,6 +51,7 @@ public:
     QMenu *menuEdit;
     QMenu *menuSelect;
     QMenu *menuTool;
+    QMenu *menuMode;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -109,6 +113,15 @@ public:
         actionVoronoi->setObjectName(QString::fromUtf8("actionVoronoi"));
         actionVoronoiCut = new QAction(MainWindow);
         actionVoronoiCut->setObjectName(QString::fromUtf8("actionVoronoiCut"));
+        actionModeBasic = new QAction(MainWindow);
+        actionModeBasic->setObjectName(QString::fromUtf8("actionModeBasic"));
+        actionModeBasic->setCheckable(true);
+        actionModeLayer = new QAction(MainWindow);
+        actionModeLayer->setObjectName(QString::fromUtf8("actionModeLayer"));
+        actionModeLayer->setCheckable(true);
+        actionModeSketch = new QAction(MainWindow);
+        actionModeSketch->setObjectName(QString::fromUtf8("actionModeSketch"));
+        actionModeSketch->setCheckable(true);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         MainWindow->setCentralWidget(centralWidget);
@@ -125,6 +138,8 @@ public:
         menuSelect->setObjectName(QString::fromUtf8("menuSelect"));
         menuTool = new QMenu(menuBar);
         menuTool->setObjectName(QString::fromUtf8("menuTool"));
+        menuMode = new QMenu(menuBar);
+        menuMode->setObjectName(QString::fromUtf8("menuMode"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -134,10 +149,11 @@ public:
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
+        menuBar->addAction(menuMode->menuAction());
         menuBar->addAction(menuSelect->menuAction());
         menuBar->addAction(menuEdit->menuAction());
-        menuBar->addAction(menuWindow->menuAction());
         menuBar->addAction(menuTool->menuAction());
+        menuBar->addAction(menuWindow->menuAction());
         menuFile->addAction(actionNew);
         menuFile->addAction(actionOpen);
         menuFile->addAction(actionOpenToAdd);
@@ -155,6 +171,9 @@ public:
         menuSelect->addAction(actionSelectAll);
         menuTool->addAction(actionVoronoi);
         menuTool->addAction(actionVoronoiCut);
+        menuMode->addAction(actionModeBasic);
+        menuMode->addAction(actionModeLayer);
+        menuMode->addAction(actionModeSketch);
 
         retranslateUi(MainWindow);
 
@@ -190,11 +209,15 @@ public:
         actionOpenToAdd->setText(QApplication::translate("MainWindow", "Open To Add", 0, QApplication::UnicodeUTF8));
         actionVoronoi->setText(QApplication::translate("MainWindow", "Voronoi", 0, QApplication::UnicodeUTF8));
         actionVoronoiCut->setText(QApplication::translate("MainWindow", "Voronoi Cut", 0, QApplication::UnicodeUTF8));
+        actionModeBasic->setText(QApplication::translate("MainWindow", "Basic", 0, QApplication::UnicodeUTF8));
+        actionModeLayer->setText(QApplication::translate("MainWindow", "Graph", 0, QApplication::UnicodeUTF8));
+        actionModeSketch->setText(QApplication::translate("MainWindow", "Sketch", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
         menuWindow->setTitle(QApplication::translate("MainWindow", "Window", 0, QApplication::UnicodeUTF8));
         menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));
         menuSelect->setTitle(QApplication::translate("MainWindow", "Select", 0, QApplication::UnicodeUTF8));
         menuTool->setTitle(QApplication::translate("MainWindow", "Tool", 0, QApplication::UnicodeUTF8));
+        menuMode->setTitle(QApplication::translate("MainWindow", "Mode", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

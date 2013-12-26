@@ -36,13 +36,13 @@ GLWidget::~GLWidget() {
 void GLWidget::drawScene() {
 	// draw the road graph
 	editor->roads->generateMesh();
-	renderer->render(editor->roads->renderable);
+	renderer->render(editor->roads->renderables);
 
 	// define the height for other items
 	float height = (float)((int)(camera->dz * 0.012f)) * 0.1f * 1.5f;
 
 	// draw the selected area
-	if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA || editor->mode == RoadGraphEditor::MODE_AREA_SELECTED || editor->mode == RoadGraphEditor::MODE_RESIZING_AREA_BR || editor->mode == RoadGraphEditor::MODE_DISTORTING_AREA) {
+	if (editor->mode == RoadGraphEditor::MODE_BASIC_DEFINING_AREA || editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED || editor->mode == RoadGraphEditor::MODE_BASIC_RESIZING_AREA_BR || editor->mode == RoadGraphEditor::MODE_BASIC_DISTORTING_AREA) {
 		renderer->renderArea(*editor->selectedArea, height);
 	}
 
@@ -60,8 +60,12 @@ void GLWidget::drawScene() {
 	if (editor->selectedRoads != NULL) {
 		editor->selectedRoads->setZ(camera->dz);
 		editor->selectedRoads->generateMesh();
-		renderer->render(editor->selectedRoads->renderable);
+		renderer->render(editor->selectedRoads->renderables);
 	}
+
+	// draw the sketch
+	editor->sketch.generateMesh();
+	renderer->render(editor->sketch.renderables);
 
 	// draw Voronoi diagram
 	renderer->renderVoronoiDiagram(editor->voronoiGraph, height);
@@ -124,18 +128,19 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 	if (e->buttons() & Qt::LeftButton) {
 		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
-		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && editor->selectedArea->hitTestResizingPoint(last2DPos)) {
-			editor->mode = RoadGraphEditor::MODE_RESIZING_AREA_BR;
-		} else if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && editor->selectedArea->hitTestDistortionPoint(last2DPos)) {
-			editor->startDistortingArea();
-		} else if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED && editor->selectedArea->hitTest(last2DPos)) {
-			editor->mode = RoadGraphEditor::MODE_AREA_SELECTED;
-		} else {
-			if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
-				// merge the selected roads to the others
+		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
+			editor->sketch.startLine(last2DPos, camera->dz * 0.03f);
+		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
+			if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
+				editor->mode = RoadGraphEditor::MODE_BASIC_RESIZING_AREA_BR;
+			} else if (editor->selectedArea->hitTestDistortionPoint(last2DPos)) {
+				editor->startDistortingArea();
+			} else if (editor->selectedArea->hitTest(last2DPos)) {
+				// do nothing
+			} else {
 				editor->unselectRoads();
 			}
-
+		} else {
 			if (keyXPressed) {
 				editor->splitEdge(last2DPos);
 			}
@@ -147,10 +152,10 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 				// if neither a vertex nor a edge is selected, then the selection mode starts
 				editor->startArea(last2DPos);
 			}
-		}
 
-		mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
-		mainWin->controlWidget->setRoadEdge(editor->selectedEdge);
+			mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
+			mainWin->controlWidget->setRoadEdge(editor->selectedEdge);
+		}
 	}
 
 	mainWin->ui.statusBar->showMessage(QString("MODE: %1").arg(editor->mode));
@@ -162,16 +167,21 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-	if (editor->mode == RoadGraphEditor::MODE_VERTEX_SELECTED) {
+	if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
+		editor->finalizeSketchLine(camera->dz * 0.01f, camera->dz * 0.03f);
+
+		// search similar roads
+		//roadDB->findSimilarRoads(sketch, 1, shadowRoads);
+	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED) {
 		if (controlPressed) {
 			float snap_threshold = camera->dz * 0.03f;
 			editor->stopMovingSelectedVertex(snap_threshold);
 		} else {
 			editor->stopMovingSelectedVertex();
 		}
-	} else if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA) {
+	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_DEFINING_AREA) {
 		editor->finalizeArea();
-	} else if (editor->mode == RoadGraphEditor::MODE_DISTORTING_AREA) {
+	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_DISTORTING_AREA) {
 		editor->finalizeDistortArea();
 	}
 
@@ -196,9 +206,11 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	last2DPos = pos;
 
 	if (e->buttons() & Qt::LeftButton) {
-		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
+		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
+			editor->sketch.addPointToLine(pos);
+		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
 			editor->moveArea(dx2D, dy2D);
-		} else if (editor->mode == RoadGraphEditor::MODE_VERTEX_SELECTED) {
+		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED) {
 			if (controlPressed) {
 				float snap_threshold = camera->dz * 0.03f;
 
@@ -208,12 +220,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 				// move the selected vertex
 				editor->moveSelectedVertex(last2DPos);
 			}
-		} else if (editor->mode == RoadGraphEditor::MODE_DEFINING_AREA) {
+		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_DEFINING_AREA) {
 			// update the selection box
 			editor->updateArea(last2DPos);
-		} else if (editor->mode == editor->MODE_DISTORTING_AREA) {
+		} else if (editor->mode == editor->MODE_BASIC_DISTORTING_AREA) {
 			editor->distortArea(dx, dy);
-		} else if (editor->mode == editor->MODE_RESIZING_AREA_BR) {
+		} else if (editor->mode == editor->MODE_BASIC_RESIZING_AREA_BR) {
 			editor->resizeAreaBR(last2DPos);
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera

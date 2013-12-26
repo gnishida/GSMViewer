@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RoadGraph.h"
+#include "Sketch.h"
 #include "BBox.h"
 #include "ClipBoard.h"
 #include <boost/polygon/voronoi.hpp>
@@ -35,7 +36,24 @@ struct point_traits<VoronoiVertex> {
 
 class RoadGraphEditor {
 public:
-	static enum { MODE_DEFAULT = 0, MODE_VERTEX_SELECTED, MODE_EDGE_SELECTED, MODE_DEFINING_AREA, MODE_AREA_SELECTED, MODE_DISTORTING_AREA, MODE_RESIZING_AREA_BR };
+	static enum {
+		MODE_BASIC = 0,
+		MODE_BASIC_VERTEX_SELECTED,
+		MODE_BASIC_EDGE_SELECTED,
+		MODE_BASIC_DEFINING_AREA,
+		MODE_BASIC_AREA_SELECTED,
+		MODE_BASIC_RESIZING_AREA_BR,
+		MODE_BASIC_DISTORTING_AREA,
+
+		MODE_LAYER,
+		MODE_LAYER_SELECTED,
+		MODE_LAYER_MOVING,
+		MODE_LAYER_ROTATING,
+		MODE_LAYER_DISTORTING,
+		MODE_LAYER_SCALING,
+
+		MODE_SKETCH
+	};
 
 public:
 	RoadGraph* roads;
@@ -51,6 +69,8 @@ public:
 	RoadGraph* selectedRoads;
 	RoadGraph* selectedRoadsOrig;
 	std::vector<RoadGraph*> interpolatedRoads;
+
+	Sketch sketch;
 
 	RoadGraph voronoiGraph;
 
@@ -102,5 +122,8 @@ public:
 	void voronoiCut();
 	void voronoiCut2();
 	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& pt);
+
+	// Sketch
+	void finalizeSketchLine(float simplify_threshold, float snap_threshold);
 };
 

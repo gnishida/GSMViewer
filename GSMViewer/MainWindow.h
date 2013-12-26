@@ -28,6 +28,9 @@ public slots:
 	void onOpen();
 	void onOpenToAdd();
 	void onSave();
+	void onModeBasic();
+	void onModeLayer();
+	void onModeSketch();
 	void onSelectAll();
 	void onUndo();
 	void onCut();

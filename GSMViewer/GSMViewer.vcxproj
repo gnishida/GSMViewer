@@ -173,6 +173,7 @@
     <ClCompile Include="RoadGraphEditor.cpp" />
     <ClCompile Include="RoadGraphRenderer.cpp" />
     <ClCompile Include="RoadVertex.cpp" />
+    <ClCompile Include="Sketch.cpp" />
     <ClCompile Include="TopNSearch.cpp" />
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
@@ -256,6 +257,7 @@
     <ClInclude Include="RoadGraph.h" />
     <ClInclude Include="RoadGraphRenderer.h" />
     <ClInclude Include="RoadVertex.h" />
+    <ClInclude Include="Sketch.h" />
     <ClInclude Include="TopNSearch.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>

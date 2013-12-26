@@ -26,7 +26,7 @@ class RoadGraph {
 public:
 	BGLGraph graph;
 	bool modified;
-	Renderable* renderable;
+	std::vector<RenderablePtr> renderables;
 
 	// for rendering (These variables should be updated via setZ() function only!!
 	float highwayHeight;
@@ -40,7 +40,7 @@ public:
 	~RoadGraph();
 
 	void generateMesh();
-	void RoadGraph::addMeshFromEdge(Renderable* renderable, RoadEdge* edge, float widthBase, QColor color, float height);
+	void RoadGraph::addMeshFromEdge(RenderablePtr renderable, RoadEdge* edge, float widthBase, QColor color, float height);
 	//Renderable generateVertexMesh(RoadVertex* vertex);
 	//std::vector<Renderable> generateEdgeMesh(RoadEdge* edge);
 

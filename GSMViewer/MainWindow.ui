@@ -71,11 +71,20 @@
     <addaction name="actionVoronoi"/>
     <addaction name="actionVoronoiCut"/>
    </widget>
+   <widget class="QMenu" name="menuMode">
+    <property name="title">
+     <string>Mode</string>
+    </property>
+    <addaction name="actionModeBasic"/>
+    <addaction name="actionModeLayer"/>
+    <addaction name="actionModeSketch"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuMode"/>
    <addaction name="menuSelect"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuWindow"/>
    <addaction name="menuTool"/>
+   <addaction name="menuWindow"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -216,6 +225,30 @@
   <action name="actionVoronoiCut">
    <property name="text">
     <string>Voronoi Cut</string>
+   </property>
+  </action>
+  <action name="actionModeBasic">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Basic</string>
+   </property>
+  </action>
+  <action name="actionModeLayer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Graph</string>
+   </property>
+  </action>
+  <action name="actionModeSketch">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sketch</string>
    </property>
   </action>
  </widget>

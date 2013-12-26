@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QtOpenGL>
+#include <boost/shared_ptr.hpp>
 
 typedef struct {
 	float location[3];
@@ -24,3 +25,4 @@ public:
 	void addQuad(QVector3D p0, QVector3D p1, QVector3D p2, QVector3D p3, QVector3D n, QColor color);
 };
 
+typedef boost::shared_ptr<Renderable> RenderablePtr;

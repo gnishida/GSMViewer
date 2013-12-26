@@ -2234,7 +2234,7 @@ void GraphUtil::distort(RoadGraph* roads, RoadGraph* orig_roads, ArcArea* area) 
 
 		RoadEdgeDesc e = getEdge(roads, src, tgt);
 
-		for (int i = 0; i < orig_roads->graph[*ei]->polyLine.size(); i++) {
+		for (int i = 0; i < orig_roads->graph[*ei]->polyLine.size() - 1; i++) {
 			roads->graph[e]->polyLine[i] = area->deform(orig_roads->graph[*ei]->polyLine[i]);
 		}
 	}
