@@ -39,6 +39,7 @@ public:
 	static enum {
 		MODE_BASIC = 0,
 		MODE_BASIC_VERTEX_SELECTED,
+		MODE_BASIC_VERTEX_MOVING,
 		MODE_BASIC_EDGE_SELECTED,
 		MODE_BASIC_DEFINING_AREA,
 		MODE_BASIC_AREA_SELECTED,
@@ -77,7 +78,6 @@ public:
 	ClipBoard* clipBoard;
 
 	std::vector<RoadGraph*> history;
-	RoadVertexPtr movingVertex;
 
 public:
 	RoadGraphEditor();
@@ -108,10 +108,14 @@ public:
 	void moveArea(float dx, float dy);
 	bool selectVertex(const QVector2D& pt);
 	bool selectEdge(const QVector2D& pt);
-	void moveSelectedVertex(const QVector2D& pt);
-	void moveSelectedVertex(const QVector2D& pt, float snap_threshold);
-	void stopMovingSelectedVertex();
-	void stopMovingSelectedVertex(float snap_threshold);
+
+	// MODE_BASIC_VERTEX_SELECTED | MODE_BASIC_VERTEX_MOVING
+	void startMovingVertex();
+	void moveVertex(const QVector2D& pt);
+	void moveVertex(const QVector2D& pt, float snap_threshold);
+	void stopMovingVertex();
+	void stopMovingVertex(float snap_threshold);
+
 	void unselectRoads();
 	void connectRoads();
 	void interpolate();

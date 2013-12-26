@@ -175,9 +175,9 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED) {
 		if (controlPressed) {
 			float snap_threshold = camera->dz * 0.03f;
-			editor->stopMovingSelectedVertex(snap_threshold);
+			editor->stopMovingVertex(snap_threshold);
 		} else {
-			editor->stopMovingSelectedVertex();
+			editor->stopMovingVertex();
 		}
 	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_DEFINING_AREA) {
 		editor->finalizeArea();
@@ -206,27 +206,36 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	last2DPos = pos;
 
 	if (e->buttons() & Qt::LeftButton) {
-		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
+		switch (editor->mode) {
+		case RoadGraphEditor::MODE_SKETCH:
 			editor->sketch.addPointToLine(pos);
-		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
+			break;
+		case RoadGraphEditor::MODE_BASIC_AREA_SELECTED:
 			editor->moveArea(dx2D, dy2D);
-		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED) {
+			break;
+		case RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED:
+			editor->startMovingVertex();
+		case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:
 			if (controlPressed) {
 				float snap_threshold = camera->dz * 0.03f;
 
 				// move the selected vertex
-				editor->moveSelectedVertex(last2DPos, snap_threshold);
+				editor->moveVertex(last2DPos, snap_threshold);
 			} else {
 				// move the selected vertex
-				editor->moveSelectedVertex(last2DPos);
+				editor->moveVertex(last2DPos);
 			}
-		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_DEFINING_AREA) {
+			break;
+		case RoadGraphEditor::MODE_BASIC_DEFINING_AREA:
 			// update the selection box
 			editor->updateArea(last2DPos);
-		} else if (editor->mode == editor->MODE_BASIC_DISTORTING_AREA) {
+			break;
+		case editor->MODE_BASIC_DISTORTING_AREA:
 			editor->distortArea(dx, dy);
-		} else if (editor->mode == editor->MODE_BASIC_RESIZING_AREA_BR) {
+			break;
+		case editor->MODE_BASIC_RESIZING_AREA_BR:
 			editor->resizeAreaBR(last2DPos);
+			break;
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);

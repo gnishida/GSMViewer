@@ -25,7 +25,6 @@ void RoadGraphEditor::clear() {
 
 	selectedVertex = NULL;
 	selectedEdge = NULL;
-	movingVertex = NULL;
 	selectedRoads = NULL;
 	selectedRoadsOrig = NULL;
 	selectedArea = NULL;
@@ -315,25 +314,21 @@ bool RoadGraphEditor::selectEdge(const QVector2D& pt) {
 	return true;
 }
 
-void RoadGraphEditor::moveSelectedVertex(const QVector2D& pt) {
-	if (roads == NULL) return;
+void RoadGraphEditor::startMovingVertex() {
+	history.push_back(GraphUtil::copyRoads(roads));
 
-	if (movingVertex == NULL) {
-		history.push_back(GraphUtil::copyRoads(roads));
-		movingVertex = selectedVertex;
-	}
+	mode = MODE_BASIC_VERTEX_MOVING;
+}
+
+void RoadGraphEditor::moveVertex(const QVector2D& pt) {
+	if (roads == NULL) return;
 	
 	GraphUtil::moveVertex(roads, selectedVertexDesc, pt);
 }
 
-void RoadGraphEditor::moveSelectedVertex(const QVector2D& pt, float snap_threshold) {
+void RoadGraphEditor::moveVertex(const QVector2D& pt, float snap_threshold) {
 	if (roads == NULL) return;
 
-	if (movingVertex == NULL) {
-		history.push_back(GraphUtil::copyRoads(roads));
-		movingVertex = selectedVertex;
-	}
-	
 	// if there is a vertex close to this point, snap to it.
 	RoadVertexDesc desc;
 	if (GraphUtil::getVertex(roads, pt, snap_threshold, selectedVertexDesc, desc)) {
@@ -343,20 +338,15 @@ void RoadGraphEditor::moveSelectedVertex(const QVector2D& pt, float snap_thresho
 	}
 }
 
-void RoadGraphEditor::stopMovingSelectedVertex() {
-	movingVertex = NULL;
+void RoadGraphEditor::stopMovingVertex() {
 }
 
-void RoadGraphEditor::stopMovingSelectedVertex(float snap_threshold) {
-	if (movingVertex != NULL) {
-		// if there is a vertex close to this point, snap to it.
-		RoadVertexDesc desc;
-		if (GraphUtil::getVertex(roads, roads->graph[selectedVertexDesc]->pt, snap_threshold, selectedVertexDesc, desc)) {
-			GraphUtil::snapVertex(roads, selectedVertexDesc, desc);
-		}
+void RoadGraphEditor::stopMovingVertex(float snap_threshold) {
+	// if there is a vertex close to this point, snap to it.
+	RoadVertexDesc desc;
+	if (GraphUtil::getVertex(roads, roads->graph[selectedVertexDesc]->pt, snap_threshold, selectedVertexDesc, desc)) {
+		GraphUtil::snapVertex(roads, selectedVertexDesc, desc);
 	}
-
-	movingVertex = NULL;
 }
 
 /**
