@@ -1,6 +1,7 @@
 #pragma once
 
 #include <qvector2d.h>
+#include <boost/shared_ptr.hpp>
 
 class RoadVertex {
 public:
@@ -15,3 +16,4 @@ public:
 	const QVector2D& getPt() const;
 };
 
+typedef boost::shared_ptr<RoadVertex> RoadVertexPtr;

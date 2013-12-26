@@ -2,6 +2,7 @@
 
 #include <qvector3d.h>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 class RoadEdge {
 public:
@@ -29,3 +30,4 @@ public:
 	bool containsPoint(const QVector2D &pos, float widthPerLane, int& index);
 };
 
+typedef boost::shared_ptr<RoadEdge> RoadEdgePtr;

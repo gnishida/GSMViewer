@@ -29,7 +29,7 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	hide();
 }
 
-void ControlWidget::setRoadVertex(RoadVertexDesc vertexDesc, RoadVertex* selectedVertex) {
+void ControlWidget::setRoadVertex(RoadVertexDesc vertexDesc, RoadVertexPtr selectedVertex) {
 	QString desc("");
 	QString location("");
 	QString neighbors("");
@@ -57,7 +57,7 @@ void ControlWidget::setRoadVertex(RoadVertexDesc vertexDesc, RoadVertex* selecte
 /**
  * Display the selected edge information.
  */
-void ControlWidget::setRoadEdge(RoadEdge* selectedEdge) {
+void ControlWidget::setRoadEdge(RoadEdgePtr selectedEdge) {
 	QString type("");
 	QString numLanes("");
 	QString oneWay("");

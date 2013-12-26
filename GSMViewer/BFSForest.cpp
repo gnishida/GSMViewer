@@ -38,7 +38,7 @@ void BFSForest::buildForest(int maxDepth) {
 		// If the src node is already used as a seed
 		if (seeds.contains(src)) {
 			// copy the src vertex
-			RoadVertex* v = new RoadVertex(roads->graph[src]->pt);
+			RoadVertexPtr v = RoadVertexPtr(new RoadVertex(roads->graph[src]->pt));
 			RoadVertexDesc new_src = boost::add_vertex(roads->graph);
 			roads->graph[new_src] = v;
 
@@ -54,7 +54,7 @@ void BFSForest::buildForest(int maxDepth) {
 		// If the tgt node is already used as a seed
 		if (seeds.contains(tgt)) {
 			// copy the tgt vertex
-			RoadVertex* v = new RoadVertex(roads->graph[tgt]->pt);
+			RoadVertexPtr v = RoadVertexPtr(new RoadVertex(roads->graph[tgt]->pt));
 			RoadVertexDesc new_tgt = boost::add_vertex(roads->graph);
 			roads->graph[new_tgt] = v;
 

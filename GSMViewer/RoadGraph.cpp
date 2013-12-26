@@ -27,7 +27,7 @@ void RoadGraph::generateMesh() {
 	for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei) {
 		if (!graph[*ei]->valid) continue;
 
-		RoadEdge* edge = graph[*ei];
+		RoadEdgePtr edge = graph[*ei];
 
 		QColor color, bColor;
 		float height;
@@ -63,7 +63,7 @@ void RoadGraph::generateMesh() {
 /**
  * Add a mesh for the specified edge.
  */
-void RoadGraph::addMeshFromEdge(RenderablePtr renderable, RoadEdge* edge, float widthBase, QColor color, float height) {
+void RoadGraph::addMeshFromEdge(RenderablePtr renderable, RoadEdgePtr edge, float widthBase, QColor color, float height) {
 	Vertex v;
 
 	// define the width of the road segment
@@ -140,18 +140,6 @@ void RoadGraph::setModified() {
 }
 
 void RoadGraph::clear() {
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi) {
-		RoadVertex* v = graph[*vi];
-		delete v;
-	}
-
-	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei) {
-		RoadEdge* edge = graph[*ei];
-		delete edge;
-	}
-
 	graph.clear();
 
 	modified = true;
@@ -250,13 +238,13 @@ MoreImportantEdge::MoreImportantEdge(RoadGraph* roads) {
 
 //bool MoreImportantEdge::operator()(const int& left, const int& right) const {
 bool MoreImportantEdge::operator()(const RoadEdgeDesc& left, const RoadEdgeDesc& right) const {
-	RoadEdge* e1 = roads->graph[left];
-	RoadEdge* e2 = roads->graph[right];
+	RoadEdgePtr e1 = roads->graph[left];
+	RoadEdgePtr e2 = roads->graph[right];
 
 	return e1->importance > e2->importance;
 }
 
-void RoadGraph::load(FILE* fp, int roadType) {
+/*void RoadGraph::load(FILE* fp, int roadType) {
 	clear();
 
 	QMap<uint, RoadVertexDesc> idToDesc;
@@ -273,7 +261,7 @@ void RoadGraph::load(FILE* fp, int roadType) {
 		fread(&x, sizeof(float), 1, fp);
 		fread(&y, sizeof(float), 1, fp);
 
-		RoadVertex* vertex = new RoadVertex(QVector2D(x, y));
+		RoadVertexPtr vertex = new RoadVertex(QVector2D(x, y));
 
 		RoadVertexDesc desc = boost::add_vertex(graph);
 		graph[desc] = vertex;
@@ -321,4 +309,4 @@ void RoadGraph::load(FILE* fp, int roadType) {
 	}
 
 	modified = true;
-}
+}*/

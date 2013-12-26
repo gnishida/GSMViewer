@@ -11,10 +11,11 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
 #include <boost/graph/graph_utility.hpp>
+#include <boost/shared_ptr.hpp>
 
 using namespace boost;
 
-typedef adjacency_list<vecS, vecS, undirectedS, RoadVertex*, RoadEdge*> BGLGraph;
+typedef adjacency_list<vecS, vecS, undirectedS, RoadVertexPtr, RoadEdgePtr> BGLGraph;
 typedef graph_traits<BGLGraph>::vertex_descriptor RoadVertexDesc;
 typedef graph_traits<BGLGraph>::edge_descriptor RoadEdgeDesc;
 typedef graph_traits<BGLGraph>::vertex_iterator RoadVertexIter;
@@ -40,9 +41,7 @@ public:
 	~RoadGraph();
 
 	void generateMesh();
-	void RoadGraph::addMeshFromEdge(RenderablePtr renderable, RoadEdge* edge, float widthBase, QColor color, float height);
-	//Renderable generateVertexMesh(RoadVertex* vertex);
-	//std::vector<Renderable> generateEdgeMesh(RoadEdge* edge);
+	void RoadGraph::addMeshFromEdge(RenderablePtr renderable, RoadEdgePtr edge, float widthBase, QColor color, float height);
 
 	bool getModified();
 	void setModified();
@@ -51,7 +50,7 @@ public:
 
 	QList<RoadEdgeDesc> getOrderedEdgesByImportance();
 
-	void load(FILE* fp, int roadType);
+	//void load(FILE* fp, int roadType);
 };
 
 class LessWeight {
@@ -73,3 +72,5 @@ public:
 
 	bool operator()(const RoadEdgeDesc& left, const RoadEdgeDesc& right) const;
 };
+
+typedef boost::shared_ptr<RoadGraph> RoadGraphPtr;

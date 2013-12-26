@@ -18,8 +18,8 @@ private:
 public:
 	ControlWidget(MainWindow* mainWin);
 
-	void setRoadVertex(RoadVertexDesc vertexDesc, RoadVertex* selectedVertex);
-	void setRoadEdge(RoadEdge* selectedEdge);
+	void setRoadVertex(RoadVertexDesc vertexDesc, RoadVertexPtr selectedVertex);
+	void setRoadEdge(RoadEdgePtr selectedEdge);
 
 public slots:
 	void clean();

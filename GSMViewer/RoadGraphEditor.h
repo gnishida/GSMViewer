@@ -61,9 +61,9 @@ public:
 	int mode;
 
 	AbstractArea* selectedArea;				// the selected area
-	RoadVertex* selectedVertex;
+	RoadVertexPtr selectedVertex;
 	RoadVertexDesc selectedVertexDesc;
-	RoadEdge* selectedEdge;
+	RoadEdgePtr selectedEdge;
 	RoadEdgeDesc selectedEdgeDesc;
 
 	RoadGraph* selectedRoads;
@@ -77,7 +77,7 @@ public:
 	ClipBoard* clipBoard;
 
 	std::vector<RoadGraph*> history;
-	RoadVertex* movingVertex;
+	RoadVertexPtr movingVertex;
 
 public:
 	RoadGraphEditor();

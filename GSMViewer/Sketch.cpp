@@ -18,7 +18,7 @@ void Sketch::generateMesh() {
 	for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei) {
 		if (!graph[*ei]->valid) continue;
 
-		RoadEdge* edge = graph[*ei];
+		RoadEdgePtr edge = graph[*ei];
 
 		QColor color = QColor(0, 0, 255);
 
@@ -53,7 +53,7 @@ void Sketch::generateMesh() {
 	modified = false;
 }
 
-void Sketch::addMeshFromEdge(RenderablePtr renderable, RoadEdge* edge, QColor color, float height) {
+void Sketch::addMeshFromEdge(RenderablePtr renderable, RoadEdgePtr edge, const QColor& color, float height) {
 	Vertex v;
 
 	v.color[0] = color.redF();
@@ -84,13 +84,13 @@ void Sketch::startLine(const QVector2D& pt, float snap_threshold) {
 			// if there is an edge close to it, snap it onto the edge
 			v1_desc = GraphUtil::splitEdge(this, e_desc, pt);
 		} else {
-			RoadVertex* v1 = new RoadVertex(pt);
+			RoadVertexPtr v1 = RoadVertexPtr(new RoadVertex(pt));
 			v1_desc = boost::add_vertex(graph);
 			graph[v1_desc] = v1;
 		}
 	}
 
-	RoadVertex* v2 = new RoadVertex(pt);
+	RoadVertexPtr v2 = RoadVertexPtr(new RoadVertex(pt));
 	RoadVertexDesc v2_desc = boost::add_vertex(graph);
 	graph[v2_desc] = v2;
 

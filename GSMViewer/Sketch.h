@@ -12,7 +12,7 @@ public:
 	~Sketch();
 
 	void generateMesh();
-	void addMeshFromEdge(RenderablePtr renderable, RoadEdge* edge, QColor color, float height);
+	void addMeshFromEdge(RenderablePtr renderable, RoadEdgePtr edge, const QColor& color, float height);
 
 	void startLine(const QVector2D& pt, float snap_threshold);
 	void addPointToLine(const QVector2D& pt);

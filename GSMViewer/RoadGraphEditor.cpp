@@ -516,11 +516,11 @@ void RoadGraphEditor::voronoi() {
 		const boost::polygon::voronoi_diagram<double>::vertex_type* vertex1 = it->vertex1();
 
 		if (vertex0 != NULL && vertex1 != NULL) {
-			RoadVertex* v0 = new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f));
+			RoadVertexPtr v0 = RoadVertexPtr(new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f)));
 			RoadVertexDesc v0_desc = boost::add_vertex(voronoiGraph.graph);
 			voronoiGraph.graph[v0_desc] = v0;
 
-			RoadVertex* v1 = new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f));
+			RoadVertexPtr v1 = RoadVertexPtr(new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f)));
 			RoadVertexDesc v1_desc = boost::add_vertex(voronoiGraph.graph);
 			voronoiGraph.graph[v1_desc] = v1;
 
