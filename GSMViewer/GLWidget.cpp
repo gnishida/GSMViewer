@@ -18,10 +18,10 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// set up the camera
 	camera = new Camera();
 	camera->setLookAt(0.0f, 0.0f, 0.0f);
-	camera->setTranslation(0.0f, 0.0f, MAX_Z);
+	camera->setTranslation(0.0f, 0.0f, MIN_Z);
 
 	// initialize the width and others
-	editor->roads->setZ(MAX_Z);
+	editor->roads->setZ(MIN_Z);
 
 	// initialize the key status
 	shiftPressed = false;
@@ -67,6 +67,12 @@ void GLWidget::drawScene() {
 	editor->sketch.generateMesh();
 	renderer->render(editor->sketch.renderables);
 
+	// draw the shadow roads
+	for (int i = 0; i < editor->shadowRoads.size(); i++) {
+		editor->shadowRoads[i]->generateMesh();
+		renderer->render(editor->shadowRoads[i]->roads->renderables);
+	}
+
 	// draw Voronoi diagram
 	renderer->renderVoronoiDiagram(editor->voronoiGraph, height);
 }
@@ -93,6 +99,13 @@ void GLWidget::keyPressEvent(QKeyEvent *e) {
 		break;
 	case Qt::Key_X:
 		keyXPressed = true;
+		break;
+	case Qt::Key_1:
+	case Qt::Key_Enter:
+		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
+			editor->instanciateShadowRoads();
+			updateGL();
+		}
 		break;
 	}
 }
@@ -129,7 +142,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
 		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
-			editor->sketch.startLine(last2DPos, camera->dz * 0.03f);
+			editor->startSketchLine(last2DPos, camera->dz * 0.03f);
 		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
 			if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
 				editor->mode = RoadGraphEditor::MODE_BASIC_RESIZING_AREA_BR;
@@ -167,11 +180,8 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-	if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
+	if (editor->mode == RoadGraphEditor::MODE_SKETCH_SKETCHING) {
 		editor->finalizeSketchLine(camera->dz * 0.01f, camera->dz * 0.03f);
-
-		// search similar roads
-		//roadDB->findSimilarRoads(sketch, 1, shadowRoads);
 	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED) {
 		if (controlPressed) {
 			float snap_threshold = camera->dz * 0.03f;
@@ -207,7 +217,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 
 	if (e->buttons() & Qt::LeftButton) {
 		switch (editor->mode) {
-		case RoadGraphEditor::MODE_SKETCH:
+		case RoadGraphEditor::MODE_SKETCH_SKETCHING:
 			editor->sketch.addPointToLine(pos);
 			break;
 		case RoadGraphEditor::MODE_BASIC_AREA_SELECTED:

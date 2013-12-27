@@ -4,6 +4,8 @@
 #include "Sketch.h"
 #include "BBox.h"
 #include "ClipBoard.h"
+#include "RoadGraphDatabase.h"
+#include "ShadowRoadGraph.h"
 #include <boost/polygon/voronoi.hpp>
 
 class VoronoiVertex {
@@ -53,7 +55,8 @@ public:
 		MODE_LAYER_DISTORTING,
 		MODE_LAYER_SCALING,
 
-		MODE_SKETCH
+		MODE_SKETCH,
+		MODE_SKETCH_SKETCHING,
 	};
 
 public:
@@ -72,10 +75,12 @@ public:
 	std::vector<RoadGraph*> interpolatedRoads;
 
 	Sketch sketch;
+	RoadGraphDatabase* roadDB;
+	QList<ShadowRoadGraph*> shadowRoads;
 
 	RoadGraph voronoiGraph;
 
-	ClipBoard* clipBoard;
+	ClipBoard clipBoard;
 
 	std::vector<RoadGraph*> history;
 
@@ -128,6 +133,8 @@ public:
 	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& pt);
 
 	// Sketch
+	void startSketchLine(const QVector2D& pt, float snap_threshold);
 	void finalizeSketchLine(float simplify_threshold, float snap_threshold);
+	void instanciateShadowRoads();
 };
 

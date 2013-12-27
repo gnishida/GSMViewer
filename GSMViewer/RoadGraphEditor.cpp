@@ -6,7 +6,7 @@
 
 RoadGraphEditor::RoadGraphEditor() {
 	roads = new RoadGraph();
-	clipBoard = new ClipBoard();
+	roadDB = new RoadGraphDatabase("osm/3x3_simplified/new-york.gsm");
 
 	clear();
 }
@@ -29,7 +29,7 @@ void RoadGraphEditor::clear() {
 	selectedRoadsOrig = NULL;
 	selectedArea = NULL;
 	clearInterpolatedRoads();
-	clipBoard->clear();
+	clipBoard.clear();
 
 	for (int i = 0; i < history.size(); i++) {
 		delete history[i];
@@ -95,7 +95,7 @@ void RoadGraphEditor::cut() {
 	history.push_back(GraphUtil::copyRoads(roads));
 
 	// extract the roads within the area, and put it into the clipboard.
-	clipBoard->copy(roads, *selectedArea);
+	clipBoard.copy(roads, *selectedArea);
 
 	GraphUtil::subtractRoads(roads, *selectedArea, true);
 
@@ -111,16 +111,16 @@ void RoadGraphEditor::copy() {
 	if (selectedArea == NULL) return;
 
 	// extract the roads within the area, and put it into the clipboard.
-	clipBoard->copy(roads, *selectedArea);
+	clipBoard.copy(roads, *selectedArea);
 }
 
 void RoadGraphEditor::paste() {
-	if (clipBoard->empty()) return;
+	if (clipBoard.empty()) return;
 
 	if (selectedRoads != NULL) {
 		delete selectedRoads;
 	}
-	selectedRoads = clipBoard->paste();
+	selectedRoads = clipBoard.paste();
 
 	// update the bbox according to the paseted roads
 	if (selectedArea != NULL) {
@@ -695,6 +695,31 @@ bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, const QVector2D& cent
 	}
 }
 
+void RoadGraphEditor::startSketchLine(const QVector2D& pt, float snap_threshold) {
+	sketch.startLine(pt, snap_threshold);
+
+	mode = MODE_SKETCH_SKETCHING;
+}
+
 void RoadGraphEditor::finalizeSketchLine(float simplify_threshold, float snap_threshold) {
 	sketch.finalizeLine(simplify_threshold, snap_threshold);
+
+	roadDB->findSimilarRoads(&sketch, 1, shadowRoads);
+
+	mode = MODE_SKETCH;
+}
+
+void RoadGraphEditor::instanciateShadowRoads() {
+	GraphUtil::copyRoads(shadowRoads[0]->roads, selectedRoads);
+	
+	// clear the sketch
+	sketch.clear();
+
+	// clear the shadow roads
+	for (int i = 0; i < shadowRoads.size(); i++) {
+		delete shadowRoads[i];
+	}
+	shadowRoads.clear();
+
+	mode = MODE_BASIC_AREA_SELECTED;
 }

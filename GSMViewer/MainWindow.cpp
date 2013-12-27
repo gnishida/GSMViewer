@@ -4,6 +4,9 @@
 MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
 
+	// setup UI
+	ui.actionModeBasic->setChecked(true);
+
 	// setup the docking widgets
 	controlWidget = new ControlWidget(this);
 
@@ -56,7 +59,7 @@ void MainWindow::onMenuEdit() {
 	ui.actionUndo->setDisabled(glWidget->editor->history.empty());
 	ui.actionCut->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED);
 	ui.actionCopy->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED);
-	ui.actionPaste->setDisabled(glWidget->editor->clipBoard->empty());
+	ui.actionPaste->setDisabled(glWidget->editor->clipBoard.empty());
 	ui.actionDeleteEdge->setDisabled(glWidget->editor->selectedEdge == NULL);
 }
 
@@ -108,14 +111,26 @@ void MainWindow::onSave() {
 
 void MainWindow::onModeBasic() {
 	glWidget->editor->mode = RoadGraphEditor::MODE_BASIC;
+
+	ui.actionModeBasic->setChecked(true);
+	ui.actionModeLayer->setChecked(false);
+	ui.actionModeSketch->setChecked(false);
 }
 
 void MainWindow::onModeLayer() {
 	glWidget->editor->mode = RoadGraphEditor::MODE_LAYER;
+
+	ui.actionModeBasic->setChecked(false);
+	ui.actionModeLayer->setChecked(true);
+	ui.actionModeSketch->setChecked(false);
 }
 
 void MainWindow::onModeSketch() {
 	glWidget->editor->mode = RoadGraphEditor::MODE_SKETCH;
+
+	ui.actionModeBasic->setChecked(false);
+	ui.actionModeLayer->setChecked(false);
+	ui.actionModeSketch->setChecked(true);
 }
 
 void MainWindow::onSelectAll() {
