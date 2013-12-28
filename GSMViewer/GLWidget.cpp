@@ -114,8 +114,17 @@ void GLWidget::showStatusMessage() {
 	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR:
 		strMode = "MODE_BASIC_AREA_RESIZING_BR";
 		break;
-	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING:
-		strMode = "MODE_BASIC_AREA_DISTORTING";
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_TL:
+		strMode = "MODE_BASIC_AREA_DISTORTING_TL";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_TR:
+		strMode = "MODE_BASIC_AREA_DISTORTING_TR";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_BL:
+		strMode = "MODE_BASIC_AREA_DISTORTING_BL";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_BR:
+		strMode = "MODE_BASIC_AREA_DISTORTING_BR";
 		break;
 	}
 
@@ -191,8 +200,8 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED || editor->mode == RoadGraphEditor::MODE_BASIC_AREA_MOVING) {
 			/*if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
 				editor->startResizingArea(RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR);
-			} else*/ if (editor->selectedArea->hitTestDistortionPoint(last2DPos)) {
-				editor->startDistortingArea();
+			} else*/ if (editor->selectedArea->hitTestResizingPoint(last2DPos) && keyXPressed) {
+				editor->startDistortingArea(RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_BR);
 			} else if (editor->selectedArea->hitTest(last2DPos)) {
 				editor->startMovingArea();
 			} else {
@@ -252,7 +261,10 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	case RoadGraphEditor::MODE_BASIC_DEFINING_AREA:
 		editor->finalizeArea();
 		break;
-	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING:
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_TL:
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_TR:
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_BL:
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_BR:
 		editor->stopDistortingArea();
 		break;
 	}
@@ -300,21 +312,18 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 			// update the selection box
 			editor->updateArea(last2DPos);
 			break;
-		case editor->MODE_BASIC_AREA_DISTORTING:
-			editor->distortArea(dx, dy);
+		case editor->MODE_BASIC_AREA_DISTORTING_TL:
+		case editor->MODE_BASIC_AREA_DISTORTING_TR:
+		case editor->MODE_BASIC_AREA_DISTORTING_BL:
+		case editor->MODE_BASIC_AREA_DISTORTING_BR:
+			editor->distortArea(last2DPos);
 			break;
 		/*
 		case editor->MODE_BASIC_AREA_RESIZING_TL:
-			editor->resizeArea(last2DPos, AbstractArea::RESIZING_TOP_LEFT);
-			break;
 		case editor->MODE_BASIC_AREA_RESIZING_TR:
-			editor->resizeArea(last2DPos, AbstractArea::RESIZING_TOP_RIGHT);
-			break;
 		case editor->MODE_BASIC_AREA_RESIZING_BL:
-			editor->resizeArea(last2DPos, AbstractArea::RESIZING_BOTTOM_LEFT);
-			break;
 		case editor->MODE_BASIC_AREA_RESIZING_BR:
-			editor->resizeArea(last2DPos, AbstractArea::RESIZING_BOTTOM_RIGHT);
+			editor->resizeArea(last2DPos);
 			break;
 		*/
 		}

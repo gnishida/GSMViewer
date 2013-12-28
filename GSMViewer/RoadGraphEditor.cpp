@@ -239,29 +239,47 @@ void RoadGraphEditor::finalizeArea() {
 	}
 }
 
-void RoadGraphEditor::startDistortingArea() {
-	mode = MODE_BASIC_AREA_DISTORTING;
+void RoadGraphEditor::startDistortingArea(int type) {
+	mode = type;
 
 	QVector2D leftPt(((BBox*)selectedArea)->minPt.x(), ((BBox*)selectedArea)->midPt().y());
 	QVector2D rightPt(((BBox*)selectedArea)->maxPt.x(), ((BBox*)selectedArea)->midPt().y());
 	float arc_len = selectedArea->dy();
-
 	delete selectedArea;
-	selectedArea = new ArcArea(leftPt, rightPt, 10000.0f, arc_len);
 
-	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
-}
-
-void RoadGraphEditor::distortArea(float dx, float dy) {
-	// define the ArcArea
-	((ArcArea*)selectedArea)->radius += dx * 50.0f;
-	if (((ArcArea*)selectedArea)->radius < 1000.0f) {
-		((ArcArea*)selectedArea)->radius = 1000.0f;
+	switch (mode) {
+	case MODE_BASIC_AREA_DISTORTING_TL:
+		selectedArea = new ArcArea(leftPt, rightPt, 10000.0f, arc_len);
+		selectedArea->resizingType = AbstractArea::RESIZING_TOP_LEFT;
+		break;
+	case MODE_BASIC_AREA_DISTORTING_TR:
+		selectedArea = new ArcArea(leftPt, rightPt, -10000.0f, arc_len);
+		selectedArea->resizingType = AbstractArea::RESIZING_TOP_RIGHT;
+		break;
+	case MODE_BASIC_AREA_DISTORTING_BL:
+		selectedArea = new ArcArea(leftPt, rightPt, 10000.0f, arc_len);
+		selectedArea->resizingType = AbstractArea::RESIZING_BOTTOM_LEFT;
+		break;
+	case MODE_BASIC_AREA_DISTORTING_BR:
+		selectedArea = new ArcArea(leftPt, rightPt, -10000.0f, arc_len);
+		selectedArea->resizingType = AbstractArea::RESIZING_BOTTOM_RIGHT;
+		break;
 	}
-	((ArcArea*)selectedArea)->arc_len += dy * 15.0f;
 
 	// copy the roads from the original
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
+	
+	// distort the roads
+	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
+}
+
+void RoadGraphEditor::distortArea(const QVector2D& pt) {
+	selectedArea->resize(pt);
+
+	// copy the roads from the original
+	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
+
+	// distort the roads
 	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 }
 
@@ -308,13 +326,28 @@ void RoadGraphEditor::stopMovingArea() {
  */
 void RoadGraphEditor::startResizingArea(int type) {
 	mode = type;
+
+	switch (mode) {
+	case MODE_BASIC_AREA_DISTORTING_TL:
+		selectedArea->resizingType = AbstractArea::RESIZING_TOP_LEFT;
+		break;
+	case MODE_BASIC_AREA_DISTORTING_TR:
+		selectedArea->resizingType = AbstractArea::RESIZING_TOP_RIGHT;
+		break;
+	case MODE_BASIC_AREA_DISTORTING_BL:
+		selectedArea->resizingType = AbstractArea::RESIZING_BOTTOM_LEFT;
+		break;
+	case MODE_BASIC_AREA_DISTORTING_BR:
+		selectedArea->resizingType = AbstractArea::RESIZING_BOTTOM_RIGHT;
+		break;
+	}
 }
 
 /**
  * 選択エリアをリサイズ中
  */
-void RoadGraphEditor::resizeArea(const QVector2D& pt, int type) {
-	selectedArea->resize(pt, type);
+void RoadGraphEditor::resizeArea(const QVector2D& pt) {
+	selectedArea->resize(pt);
 }
 
 /**

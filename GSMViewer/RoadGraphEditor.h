@@ -50,7 +50,10 @@ public:
 		MODE_BASIC_AREA_RESIZING_TR,
 		MODE_BASIC_AREA_RESIZING_BL,
 		MODE_BASIC_AREA_RESIZING_BR,
-		MODE_BASIC_AREA_DISTORTING,
+		MODE_BASIC_AREA_DISTORTING_TL,
+		MODE_BASIC_AREA_DISTORTING_TR,
+		MODE_BASIC_AREA_DISTORTING_BL,
+		MODE_BASIC_AREA_DISTORTING_BR,
 
 		MODE_LAYER,
 		MODE_LAYER_SELECTED,
@@ -61,6 +64,13 @@ public:
 
 		MODE_SKETCH,
 		MODE_SKETCH_SKETCHING,
+	};
+
+	static enum {
+		RESIZING_TOP_LEFT = 0,
+		RESIZING_TOP_RIGHT,
+		RESIZING_BOTTOM_LEFT,
+		RESIZING_BOTTOM_RIGHT
 	};
 
 public:
@@ -115,8 +125,8 @@ public:
 	void finalizeArea();
 
 	// MODE_BASIC_AREA_DISTORTING
-	void startDistortingArea();
-	void distortArea(float dx, float dy);
+	void startDistortingArea(int type);
+	void distortArea(const QVector2D& pt);
 	void stopDistortingArea();
 
 	// MODE_BASIC_AREA_MOVING
@@ -126,7 +136,7 @@ public:
 
 	// MODE_BASIC_AREA_RESIZING_XX
 	void startResizingArea(int type);
-	void resizeArea(const QVector2D& pt, int type);
+	void resizeArea(const QVector2D& pt);
 	void stopResizingArea();
 
 	bool selectVertex(const QVector2D& pt);

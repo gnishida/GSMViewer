@@ -19,12 +19,10 @@ public:
 	float dx() const;
 	float dy() const;
 	void translate(float x, float y);
-	void resize(const QVector2D& pt, int type);
+	void resize(const QVector2D& pt);
 	bool hitTest(const QVector2D& pt) const;
-	bool hitTestDistortionPoint(const QVector2D& pt) const;
 	bool hitTestResizingPoint(const QVector2D& pt) const;
 	std::vector<QVector2D> polyline() const;
-	QVector2D distortionPt() const;
 	QVector2D deform(const QVector2D& pt) const;
 };
 

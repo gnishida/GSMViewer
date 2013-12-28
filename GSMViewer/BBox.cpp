@@ -44,8 +44,8 @@ void BBox::translate(float x, float y) {
 	maxPt.setY(maxPt.y() + y);
 }
 
-void BBox::resize(const QVector2D& pt, int type) {
-	switch (type) {
+void BBox::resize(const QVector2D& pt) {
+	switch (resizingType) {
 	case RESIZING_TOP_LEFT:
 		minPt.setX(pt.x());
 		maxPt.setY(pt.y());
@@ -65,8 +65,24 @@ void BBox::resize(const QVector2D& pt, int type) {
 	}
 }
 
-QVector2D BBox::distortionPt() const {
-	return QVector2D(midPt().x(), minPt.y());
+std::vector<QVector2D> BBox::polyline() const {
+	std::vector<QVector2D> ret;
+
+	ret.push_back(minPt);
+	ret.push_back(QVector2D(maxPt.x(), minPt.y()));
+	ret.push_back(maxPt);
+	ret.push_back(QVector2D(minPt.x(), maxPt.y()));
+
+	return ret;
+}
+
+bool BBox::hitTest(const QVector2D& pt) const {
+	if (pt.x() < minPt.x() - dx() * 0.1f) return false;
+	if (pt.y() < minPt.y() - dy() * 0.1f) return false;
+	if (pt.x() > maxPt.x() + dx() * 0.1f) return false;
+	if (pt.y() > maxPt.y() + dy() * 0.1f) return false;
+
+	return true;
 }
 
 bool BBox::contains(const QVector2D &pt) const {

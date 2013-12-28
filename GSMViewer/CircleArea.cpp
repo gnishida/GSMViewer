@@ -40,8 +40,8 @@ void CircleArea::translate(float x, float y) {
 	maxPt.setY(maxPt.y() + y);
 }
 
-void CircleArea::resize(const QVector2D& pt, int type) {
-	switch (type) {
+void CircleArea::resize(const QVector2D& pt) {
+	switch (resizingType) {
 	case RESIZING_TOP_LEFT:
 		minPt.setX(pt.x());
 		maxPt.setY(pt.y());
@@ -68,11 +68,6 @@ bool CircleArea::hitTest(const QVector2D& pt) const {
 	else return false;
 }
 
-bool CircleArea::hitTestDistortionPoint(const QVector2D& pt) const {
-	if (fabs(pt.x() - center.x()) < dx() * 0.1f && fabs(pt.y() - center.y() + radius) < dy() * 0.1f) return true;
-	else return false;
-}
-
 bool CircleArea::hitTestResizingPoint(const QVector2D& pt) const {
 	if (fabs(pt.x() - center.x() - radius) < dx() * 0.1f && fabs(pt.y() - center.y() + radius) < dy() * 0.1f) return true;
 	else return false;
@@ -90,6 +85,3 @@ std::vector<QVector2D> CircleArea::polyline() const {
 	return ret;
 }
 
-QVector2D CircleArea::distortionPt() const {
-	return QVector2D(center.x(), center.y() - radius);
-}
