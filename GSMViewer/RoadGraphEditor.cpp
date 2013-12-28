@@ -6,6 +6,9 @@
 
 RoadGraphEditor::RoadGraphEditor() {
 	roads = new RoadGraph();
+	roadsOrig = new RoadGraph();
+	selectedRoads = new RoadGraph();
+	selectedRoadsOrig = new RoadGraph();
 	roadDB = new RoadGraphDatabase("osm/3x3_simplified/new-york.gsm");
 
 	clear();
@@ -25,8 +28,6 @@ void RoadGraphEditor::clear() {
 
 	selectedVertex = NULL;
 	selectedEdge = NULL;
-	selectedRoads = NULL;
-	selectedRoadsOrig = NULL;
 	selectedArea = NULL;
 	clearInterpolatedRoads();
 	clipBoard.clear();
@@ -52,7 +53,6 @@ void RoadGraphEditor::openRoad(QString filename) {
 }
 
 void RoadGraphEditor::openToAddRoad(QString filename) {
-	if (selectedRoads == NULL) selectedRoads = new RoadGraph();
 	GraphUtil::loadRoads(selectedRoads, filename, 7);
 
 	// update the bbox according to the loaded roads
@@ -69,8 +69,11 @@ void RoadGraphEditor::openToAddRoad(QString filename) {
 	((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->maxPt.y() + selectedArea->dy() * 0.1f);
 	*/
 
-	mode = MODE_BASIC_AREA_SELECTED;
+	// backup the road graph
+	GraphUtil::copyRoads(roads, roadsOrig);
+	GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
 
+	mode = MODE_BASIC_AREA_SELECTED;
 }
 
 void RoadGraphEditor::saveRoad(QString filename) {
@@ -100,10 +103,8 @@ void RoadGraphEditor::cut() {
 	GraphUtil::subtractRoads(roads, *selectedArea, true);
 
 	// clear the selected roads
-	if (selectedRoads != NULL) {
-		delete selectedRoads;
-		selectedRoads = NULL;
-	}
+	selectedRoads->clear();
+	selectedRoadsOrig->clear();
 }
 
 void RoadGraphEditor::copy() {
@@ -117,21 +118,21 @@ void RoadGraphEditor::copy() {
 void RoadGraphEditor::paste() {
 	if (clipBoard.empty()) return;
 
-	if (selectedRoads != NULL) {
-		delete selectedRoads;
-	}
-	selectedRoads = clipBoard.paste();
+	delete selectedRoadsOrig;
+	selectedRoadsOrig = clipBoard.paste();
 
 	// update the bbox according to the paseted roads
 	if (selectedArea != NULL) {
 		delete selectedArea;
 	}
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig));
 
 	// move the pasted roads to the center of the screen (to be updated!!!)
-	GraphUtil::translate(selectedRoads, selectedArea->midPt() * -1.0f);
+	GraphUtil::translate(selectedRoadsOrig, selectedArea->midPt() * -1.0f);
 	delete selectedArea;
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig));
+
+	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 
 	// inflate the bbox a little so that all the vertices are completely within the bbox.
 	((BBox*)selectedArea)->minPt.setX(((BBox*)selectedArea)->minPt.x() - selectedArea->dx() * 0.1f);
@@ -171,8 +172,20 @@ void RoadGraphEditor::removeShortDeadend(float threshold) {
 void RoadGraphEditor::selectAll() {
 	if (selectedArea != NULL) delete selectedArea;
 	selectedArea = new BBox(GraphUtil::getAABoundingBox(roads));
+
+	GraphUtil::copyRoads(roads, selectedRoads);
+	roads->clear();
+
+	// backup the road graph
+	GraphUtil::copyRoads(roads, roadsOrig);
+	GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
+
+	mode = MODE_BASIC_AREA_SELECTED;
 }
 
+/**
+ * 選択エリアを選択開始
+ */
 void RoadGraphEditor::startArea(const QVector2D& pt) {
 	if (selectedArea != NULL) delete selectedArea;
 	selectedArea = new BBox();
@@ -181,11 +194,17 @@ void RoadGraphEditor::startArea(const QVector2D& pt) {
 	mode = MODE_BASIC_DEFINING_AREA;
 }
 
+/**
+ * 選択エリアを選択中
+ */
 void RoadGraphEditor::updateArea(const QVector2D& pt) {
 	((BBox*)selectedArea)->maxPt.setX(pt.x());
 	((BBox*)selectedArea)->minPt.setY(pt.y());
 }
 
+/**
+ * 選択エリアが確定した瞬間
+ */
 void RoadGraphEditor::finalizeArea() {
 	if (((BBox*)selectedArea)->maxPt.x() < ((BBox*)selectedArea)->minPt.x()) {
 		float x = ((BBox*)selectedArea)->maxPt.x();
@@ -204,30 +223,24 @@ void RoadGraphEditor::finalizeArea() {
 	} else {
 		history.push_back(GraphUtil::copyRoads(roads));
 
-		if (selectedRoads != NULL) {
-			delete selectedRoads;
-			selectedRoads = NULL;
-		}
-
-		// copy the roads in the area to "selectedRoads"
-		selectedRoads = GraphUtil::copyRoads(roads);
+		// 選択エリア内の道路セグメントを、"selectedRoads"にコピーする
+		GraphUtil::copyRoads(roads, selectedRoads);
 		GraphUtil::extractRoads(selectedRoads, *selectedArea, true);
 		GraphUtil::clean(selectedRoads);
 
-		// subtract the area from the roads
+		// "roads"からは、選択エリアの分を削除する
 		GraphUtil::subtractRoads(roads, *selectedArea, true);
+
+		// backup the road graph
+		GraphUtil::copyRoads(roads, roadsOrig);
+		GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
 
 		mode = MODE_BASIC_AREA_SELECTED;
 	}
 }
 
-void RoadGraphEditor::resizeAreaBR(const QVector2D& pt) {
-	((BBox*)selectedArea)->maxPt.setX(pt.x());
-	((BBox*)selectedArea)->minPt.setY(pt.y());
-}
-
 void RoadGraphEditor::startDistortingArea() {
-	mode = MODE_BASIC_DISTORTING_AREA;
+	mode = MODE_BASIC_AREA_DISTORTING;
 
 	QVector2D leftPt(((BBox*)selectedArea)->minPt.x(), ((BBox*)selectedArea)->midPt().y());
 	QVector2D rightPt(((BBox*)selectedArea)->maxPt.x(), ((BBox*)selectedArea)->midPt().y());
@@ -236,41 +249,79 @@ void RoadGraphEditor::startDistortingArea() {
 	delete selectedArea;
 	selectedArea = new ArcArea(leftPt, rightPt, 10000.0f, arc_len);
 
-	// save the original roads
-	if (selectedRoadsOrig != NULL) delete selectedRoadsOrig;
-	selectedRoadsOrig = GraphUtil::copyRoads(selectedRoads);
-
-	GraphUtil::distort(selectedRoads, selectedRoadsOrig, (ArcArea*)selectedArea);
+	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 }
 
 void RoadGraphEditor::distortArea(float dx, float dy) {
-	if (mode != MODE_BASIC_DISTORTING_AREA) return;
-	if (selectedArea == NULL) return;
-
+	// define the ArcArea
 	((ArcArea*)selectedArea)->radius += dx * 50.0f;
 	if (((ArcArea*)selectedArea)->radius < 1000.0f) {
 		((ArcArea*)selectedArea)->radius = 1000.0f;
 	}
 	((ArcArea*)selectedArea)->arc_len += dy * 15.0f;
 
-	GraphUtil::distort(selectedRoads, selectedRoadsOrig, (ArcArea*)selectedArea);
+	// copy the roads from the original
+	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
+	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 }
 
-void RoadGraphEditor::finalizeDistortArea() {
-	if (selectedRoadsOrig != NULL) {
-		delete selectedRoadsOrig;
-		selectedRoadsOrig = NULL;
-	}
+void RoadGraphEditor::stopDistortingArea() {
+	GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
 
 	mode = MODE_BASIC_AREA_SELECTED;
 }
 
-void RoadGraphEditor::moveArea(float dx, float dy) {
-	if (mode != MODE_BASIC_AREA_SELECTED) return;
+/**
+ * 選択エリアを移動開始
+ */
+void RoadGraphEditor::startMovingArea() {
+	history.push_back(GraphUtil::copyRoads(roads));
 
+	mode = MODE_BASIC_AREA_MOVING;
+}
+
+/**
+ * 選択エリアを移動中
+ * 選択エリアは、既存道路網のInterpolationする
+ */
+void RoadGraphEditor::moveArea(float dx, float dy) {
 	selectedArea->translate(dx, dy);
 
-	GraphUtil::translate(selectedRoads, QVector2D(dx, dy));
+	GraphUtil::translate(selectedRoadsOrig, QVector2D(dx, dy));
+
+	// copy back from the original
+	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
+	GraphUtil::copyRoads(roadsOrig, roads);
+
+	voronoiCut2();
+}
+
+/**
+ * 選択エリアを移動終了
+ */
+void RoadGraphEditor::stopMovingArea() {
+	mode = MODE_BASIC_AREA_SELECTED;
+}
+
+/**
+ * 選択エリアをリサイズ開始
+ */
+void RoadGraphEditor::startResizingArea(int type) {
+	mode = type;
+}
+
+/**
+ * 選択エリアをリサイズ中
+ */
+void RoadGraphEditor::resizeArea(const QVector2D& pt, int type) {
+	selectedArea->resize(pt, type);
+}
+
+/**
+ * 選択エリアをリサイズ終了
+ */
+void RoadGraphEditor::stopResizingArea() {
+	mode = MODE_BASIC_AREA_SELECTED;
 }
 
 bool RoadGraphEditor::selectVertex(const QVector2D& pt) {
@@ -339,6 +390,7 @@ void RoadGraphEditor::moveVertex(const QVector2D& pt, float snap_threshold) {
 }
 
 void RoadGraphEditor::stopMovingVertex() {
+	mode = MODE_BASIC_VERTEX_SELECTED;
 }
 
 void RoadGraphEditor::stopMovingVertex(float snap_threshold) {
@@ -353,11 +405,9 @@ void RoadGraphEditor::stopMovingVertex(float snap_threshold) {
  * Merge the selected roads to the actual roads.
  */
 void RoadGraphEditor::unselectRoads() {
-	if (selectedRoads != NULL) {
-		GraphUtil::mergeRoads(roads, selectedRoads);
-		delete selectedRoads;
-		selectedRoads = NULL;
-	}
+	GraphUtil::mergeRoads(roads, selectedRoads);
+	selectedRoads->clear();
+	selectedRoadsOrig->clear();
 
 	mode = MODE_BASIC;
 }
@@ -367,11 +417,9 @@ void RoadGraphEditor::unselectRoads() {
  * By tring to connect the selected roads to the other as much as possible, the resulting roads hopefully look natural.
  */
 void RoadGraphEditor::connectRoads() {
-	if (selectedRoads != NULL) {
-		GraphUtil::connectRoads(roads, selectedRoads, 60.0f);
-		delete selectedRoads;
-		selectedRoads = NULL;
-	}
+	GraphUtil::connectRoads(roads, selectedRoads, 60.0f);
+	selectedRoads->clear();
+	selectedRoadsOrig->clear();
 
 	mode = MODE_BASIC;
 }
@@ -380,72 +428,70 @@ void RoadGraphEditor::connectRoads() {
  * Interpolate the selected roads and the actual roads.
  */
 void RoadGraphEditor::interpolate() {
-	if (selectedRoads != NULL) {
-		BBox bbox1 = GraphUtil::getAABoundingBox(roads);
-		BBox bbox2 = GraphUtil::getAABoundingBox(selectedRoads);
+	BBox bbox1 = GraphUtil::getAABoundingBox(roads);
+	BBox bbox2 = GraphUtil::getAABoundingBox(selectedRoadsOrig);
 
-		// if there is no intersection between two road graphs, connect two graphs instead.
-		if (!bbox1.overlapsWithBBoxXY(bbox2)) {
-			connectRoads();
-			return;
-		}
-
-		RoadGraph* roads1 = GraphUtil::copyRoads(roads);
-		GraphUtil::extractRoads(roads1, *selectedArea, true);
-		GraphUtil::clean(roads1);
-
-		// if there is no edge in the actual roads within the area, connect two graphs instead.
-		if (GraphUtil::getNumEdges(roads1) == 0) {
-			connectRoads();
-			return;
-		}
-
-		// define the roots
-		RoadVertexDesc root1 = GraphUtil::getVertex(roads1, bbox2.midPt());
-		RoadVertexDesc root2 = GraphUtil::getVertex(selectedRoads, bbox2.midPt());
-
-		// build trees
-		BFSTree tree1(roads1, root1);
-		BFSTree tree2(selectedRoads, root2);
-
-		// find matching
-		QMap<RoadVertexDesc, RoadVertexDesc> map1;
-		QMap<RoadVertexDesc, RoadVertexDesc> map2;
-		GraphUtil::findCorrespondence(roads1, &tree1, selectedRoads, &tree2, true, 1.5f, map1, map2);
-
-		// clear the interpolated roads
-		clearInterpolatedRoads();
-
-		for (int i = 0; i <= 20; i++) {
-			float ratio = (float)i / 20.0f;
-
-			// interpolate
-			RoadGraph* temp = GraphUtil::interpolate(roads1, selectedRoads, map1, 1 - ratio);
-			interpolatedRoads.push_back(temp);
-
-			// clear the "fullyPaired" flag of "roads1"
-			RoadEdgeIter ei, eend;
-			for (boost::tie(ei, eend) = boost::edges(roads1->graph); ei != eend; ++ei) {
-				roads1->graph[*ei]->fullyPaired = false;
-			}
-
-			// clear the "fullyPaired" flag of "selectedRoads"
-			for (boost::tie(ei, eend) = boost::edges(selectedRoads->graph); ei != eend; ++ei) {
-				selectedRoads->graph[*ei]->fullyPaired = false;
-			}
-		}
-
-		// delete temporary roads
-		delete roads1;
-
-		// clear the selected roads
-		delete selectedRoads;
-
-		selectedRoads = interpolatedRoads[0];
-
-		// subtract the area from the roads
-		GraphUtil::subtractRoads(roads, *selectedArea, true);
+	// if there is no intersection between two road graphs, connect two graphs instead.
+	if (!bbox1.overlapsWithBBoxXY(bbox2)) {
+		connectRoads();
+		return;
 	}
+
+	RoadGraph* roads1 = GraphUtil::copyRoads(roads);
+	GraphUtil::extractRoads(roads1, *selectedArea, true);
+	GraphUtil::clean(roads1);
+
+	// if there is no edge in the actual roads within the area, connect two graphs instead.
+	if (GraphUtil::getNumEdges(roads1) == 0) {
+		connectRoads();
+		return;
+	}
+
+	// define the roots
+	RoadVertexDesc root1 = GraphUtil::getVertex(roads1, bbox2.midPt());
+	RoadVertexDesc root2 = GraphUtil::getVertex(selectedRoadsOrig, bbox2.midPt());
+
+	// build trees
+	BFSTree tree1(roads1, root1);
+	BFSTree tree2(selectedRoadsOrig, root2);
+
+	// find matching
+	QMap<RoadVertexDesc, RoadVertexDesc> map1;
+	QMap<RoadVertexDesc, RoadVertexDesc> map2;
+	GraphUtil::findCorrespondence(roads1, &tree1, selectedRoadsOrig, &tree2, true, 1.5f, map1, map2);
+
+	// clear the interpolated roads
+	clearInterpolatedRoads();
+
+	for (int i = 0; i <= 20; i++) {
+		float ratio = (float)i / 20.0f;
+
+		// interpolate
+		RoadGraph* temp = GraphUtil::interpolate(roads1, selectedRoadsOrig, map1, 1 - ratio);
+		interpolatedRoads.push_back(temp);
+
+		// clear the "fullyPaired" flag of "roads1"
+		RoadEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(roads1->graph); ei != eend; ++ei) {
+			roads1->graph[*ei]->fullyPaired = false;
+		}
+
+		// clear the "fullyPaired" flag of "selectedRoads"
+		for (boost::tie(ei, eend) = boost::edges(selectedRoadsOrig->graph); ei != eend; ++ei) {
+			selectedRoadsOrig->graph[*ei]->fullyPaired = false;
+		}
+	}
+
+	// delete temporary roads
+	delete roads1;
+
+	// clear the selected roads
+	delete selectedRoads;
+
+	selectedRoads = interpolatedRoads[0];
+
+	// subtract the area from the roads
+	GraphUtil::subtractRoads(roads, *selectedArea, true);
 
 	mode = MODE_BASIC_AREA_SELECTED;
 }
@@ -458,10 +504,11 @@ void RoadGraphEditor::showInterpolatedRoads(int ratio) {
 }
 
 void RoadGraphEditor::finalizeInterpolation(int ratio) {
-	if (selectedRoads != NULL) {
-		GraphUtil::mergeRoads(roads, selectedRoads);
-	}
+	GraphUtil::mergeRoads(roads, selectedRoads);
 	clearInterpolatedRoads();
+
+	selectedRoads = new RoadGraph();
+	selectedRoadsOrig->clear();
 
 	mode = MODE_BASIC;
 }
@@ -476,6 +523,9 @@ bool RoadGraphEditor::splitEdge(const QVector2D& pt) {
 	}
 }
 
+/**
+ * Based on the existing road graph and the selected road graph, build a voronoi diagram.
+ */
 void RoadGraphEditor::voronoi() {
 	std::vector<VoronoiVertex> points;
 	QMap<int, RoadVertexDesc> conv;
@@ -487,8 +537,8 @@ void RoadGraphEditor::voronoi() {
 		conv[cell_index] = *vi;
 	}
 
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(selectedRoads, *vi));
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoadsOrig->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(selectedRoadsOrig, *vi));
 		conv[cell_index] = *vi;
 	}
 
@@ -526,6 +576,9 @@ void RoadGraphEditor::voronoi() {
  * あまり良くない。
  */
 void RoadGraphEditor::voronoiCut() {
+	// copy the road graph
+	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
+
 	std::vector<VoronoiVertex> points;
 	QMap<int, RoadVertexDesc> conv;
 
@@ -591,11 +644,14 @@ void RoadGraphEditor::voronoiCut() {
 /**
  * Voronoi図を使って、２つの道路網をうまく結合させる。
  * 各エッジについて、２つの頂点がそれぞれ属するセルが隣接していない場合、
- * 1) 自陣に近い場合、周りの敵セルの頂点を全て無効にし、さらに、そこから出るエッジも無効にする。
- * 2) 敵陣に近い場合、そのエッジを無効にする。
- * エッジを無効にするだけで、２つの道路網をつなぐエッジを追加していない。
+ * 1) 敵陣に近い場合、両端の頂点が共に敵陣の中なら、そのエッジを無効にする。
+ * 2) 片方の頂点だけ敵陣の中なら、その頂点を敵陣の近接頂点にスナップする。
  */
 void RoadGraphEditor::voronoiCut2() {
+	// check if there is at least one vertex
+	if (GraphUtil::getNumVertices(roads) == 0) return;
+	if (GraphUtil::getNumVertices(selectedRoads) == 0) return;
+	
 	std::vector<VoronoiVertex> points;
 	QMap<int, RoadVertexDesc> conv;
 
@@ -710,7 +766,12 @@ void RoadGraphEditor::finalizeSketchLine(float simplify_threshold, float snap_th
 }
 
 void RoadGraphEditor::instanciateShadowRoads() {
-	GraphUtil::copyRoads(shadowRoads[0]->roads, selectedRoads);
+	GraphUtil::copyRoads(shadowRoads[0]->roads, selectedRoadsOrig);
+
+	if (selectedArea != NULL) {
+		delete selectedArea;
+	}
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig));
 	
 	// clear the sketch
 	sketch.clear();

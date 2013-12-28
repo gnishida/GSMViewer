@@ -1126,6 +1126,8 @@ void GraphUtil::copyRoads(RoadGraph* roads1, RoadGraph* roads2) {
 		std::pair<RoadEdgeDesc, bool> edge_pair = boost::add_edge(new_src, new_tgt, roads2->graph);
 		roads2->graph[edge_pair.first] = new_e;
 	}
+
+	roads2->setModified();
 }
 
 /**
@@ -2199,7 +2201,7 @@ void GraphUtil::rotate(RoadGraph* roads, float theta, const QVector2D& rotationC
 /**
  * Translate the road graph.
  */
-void GraphUtil::translate(RoadGraph* roads, QVector2D offset) {
+void GraphUtil::translate(RoadGraph* roads, const QVector2D& offset) {
 	// Translate vertices
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
@@ -2217,24 +2219,62 @@ void GraphUtil::translate(RoadGraph* roads, QVector2D offset) {
 	roads->setModified();
 }
 
-void GraphUtil::distort(RoadGraph* roads, RoadGraph* orig_roads, ArcArea* area) {
+/**
+ * Scale the road graph
+ */
+void GraphUtil::scale(RoadGraph* roads, const BBox& bbox1, const BBox& bbox2) {
+	float scaleX = bbox2.dx() / bbox1.dx();
+	float scaleY = bbox2.dy() / bbox1.dy();
+
+	// Translate vertices
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
+		QVector2D vec = roads->graph[*vi]->pt - bbox1.minPt;
+		float x = vec.x() * scaleX + bbox2.minPt.x();
+		float y = vec.y() * scaleY + bbox2.minPt.y();
+		roads->graph[*vi]->pt.setX(x);
+		roads->graph[*vi]->pt.setY(y);
+	}
+
+	// Translate edges
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		for (int i = 0; i < roads->graph[*ei]->polyLine.size(); i++) {
+			QVector2D vec = roads->graph[*ei]->polyLine[i] - bbox1.minPt;
+			float x = vec.x() * scaleX + bbox2.minPt.x();
+			float y = vec.y() * scaleY + bbox2.minPt.y();
+
+			roads->graph[*ei]->polyLine[i].setX(x);
+			roads->graph[*ei]->polyLine[i].setY(y);
+		}
+	}
+
+	roads->setModified();
+}
+
+/**
+ * Distort the road graph
+ */
+void GraphUtil::distort(RoadGraph* roads, ArcArea* area) {
 	// distort the roads
 	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(orig_roads->graph); vi != vend; ++vi) {
-		roads->graph[*vi]->pt = area->deform(orig_roads->graph[*vi]->pt);
-		//moveVertex(roads, *vi, area->deform(orig_roads->graph[*vi]->pt));
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
+		roads->graph[*vi]->pt = area->deform(roads->graph[*vi]->pt);
 	}
 	
 	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(orig_roads->graph); ei != eend; ++ei) {
-		RoadVertexDesc src = boost::source(*ei, orig_roads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, orig_roads->graph);
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		std::vector<QVector2D> polyline;
 
-		RoadEdgeDesc e = getEdge(roads, src, tgt);
-
-		for (int i = 0; i < orig_roads->graph[*ei]->polyLine.size() - 1; i++) {
-			roads->graph[e]->polyLine[i] = area->deform(orig_roads->graph[*ei]->polyLine[i]);
+		for (int i = 0; i < roads->graph[*ei]->polyLine.size() - 1; i++) {
+			QVector2D vec = roads->graph[*ei]->polyLine[i + 1] - roads->graph[*ei]->polyLine[i];
+			float length = vec.length();
+			for (int j = 0; j < length; j += 3.0f) {
+				polyline.push_back(area->deform(roads->graph[*ei]->polyLine[i] + vec * (float)j / length));
+			}
 		}
+
+		roads->graph[*ei]->polyLine = polyline;
 	}
 
 	roads->setModified();

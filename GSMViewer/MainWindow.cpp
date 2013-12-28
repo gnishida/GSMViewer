@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	controlWidget = new ControlWidget(this);
 
 	// register the menu's "AboutToShow" handlers
+	connect(ui.menuMode, SIGNAL(aboutToShow()), this, SLOT(onMenuMode()));
 	connect(ui.menuEdit, SIGNAL(aboutToShow()), this, SLOT(onMenuEdit()));
 
 	// register the menu's action handlers
@@ -55,6 +56,12 @@ void MainWindow::keyReleaseEvent(QKeyEvent* e) {
 	glWidget->keyReleaseEvent(e);
 }
 
+void MainWindow::onMenuMode() {
+	ui.actionModeBasic->setChecked(glWidget->editor->mode == RoadGraphEditor::MODE_BASIC);
+	ui.actionModeLayer->setChecked(glWidget->editor->mode == RoadGraphEditor::MODE_LAYER);
+	ui.actionModeSketch->setChecked(glWidget->editor->mode == RoadGraphEditor::MODE_SKETCH);
+}
+
 void MainWindow::onMenuEdit() {
 	ui.actionUndo->setDisabled(glWidget->editor->history.empty());
 	ui.actionCut->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED);
@@ -92,6 +99,7 @@ void MainWindow::onOpenToAdd() {
 
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 	glWidget->editor->openToAddRoad(filename);
+	glWidget->showStatusMessage();
 	glWidget->updateGL();
 	QApplication::restoreOverrideCursor();
 }

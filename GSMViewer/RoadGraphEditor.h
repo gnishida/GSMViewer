@@ -45,8 +45,12 @@ public:
 		MODE_BASIC_EDGE_SELECTED,
 		MODE_BASIC_DEFINING_AREA,
 		MODE_BASIC_AREA_SELECTED,
-		MODE_BASIC_RESIZING_AREA_BR,
-		MODE_BASIC_DISTORTING_AREA,
+		MODE_BASIC_AREA_MOVING,
+		MODE_BASIC_AREA_RESIZING_TL,
+		MODE_BASIC_AREA_RESIZING_TR,
+		MODE_BASIC_AREA_RESIZING_BL,
+		MODE_BASIC_AREA_RESIZING_BR,
+		MODE_BASIC_AREA_DISTORTING,
 
 		MODE_LAYER,
 		MODE_LAYER_SELECTED,
@@ -61,6 +65,7 @@ public:
 
 public:
 	RoadGraph* roads;
+	RoadGraph* roadsOrig;
 
 	int mode;
 
@@ -103,14 +108,27 @@ public:
 	void removeShortDeadend(float threshold);
 
 	void selectAll();
+
+	// MODE_BASIC DEFINING_AREA
 	void startArea(const QVector2D& pt);
 	void updateArea(const QVector2D& pt);
 	void finalizeArea();
-	void resizeAreaBR(const QVector2D& pt);
+
+	// MODE_BASIC_AREA_DISTORTING
 	void startDistortingArea();
 	void distortArea(float dx, float dy);
-	void finalizeDistortArea();
+	void stopDistortingArea();
+
+	// MODE_BASIC_AREA_MOVING
+	void startMovingArea();
 	void moveArea(float dx, float dy);
+	void stopMovingArea();
+
+	// MODE_BASIC_AREA_RESIZING_XX
+	void startResizingArea(int type);
+	void resizeArea(const QVector2D& pt, int type);
+	void stopResizingArea();
+
 	bool selectVertex(const QVector2D& pt);
 	bool selectEdge(const QVector2D& pt);
 
@@ -127,6 +145,8 @@ public:
 	void showInterpolatedRoads(int ratio);
 	void finalizeInterpolation(int ratio);
 	bool splitEdge(const QVector2D& pt);
+
+	// Voronoi
 	void voronoi();
 	void voronoiCut();
 	void voronoiCut2();

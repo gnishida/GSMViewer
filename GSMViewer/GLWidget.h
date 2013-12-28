@@ -33,6 +33,7 @@ public:
 	~GLWidget();
 
 	void drawScene();
+	void showStatusMessage();
 
 public:
 	void keyPressEvent(QKeyEvent* e);

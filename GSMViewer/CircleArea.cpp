@@ -4,6 +4,11 @@
 CircleArea::CircleArea(const QVector2D& center, float radius) {
 	this->center = center;
 	this->radius = radius;
+
+	minPt.setX(center.x() - radius);
+	minPt.setY(center.y() - radius);
+	maxPt.setX(center.x() + radius);
+	maxPt.setY(center.y() + radius);
 }
 
 CircleArea::~CircleArea() {
@@ -29,6 +34,33 @@ float CircleArea::dy() const {
 void CircleArea::translate(float x, float y) {
 	center.setX(center.x() + x);
 	center.setX(center.y() + y);
+	minPt.setX(minPt.x() + x);
+	minPt.setY(minPt.y() + y);
+	maxPt.setX(maxPt.x() + x);
+	maxPt.setY(maxPt.y() + y);
+}
+
+void CircleArea::resize(const QVector2D& pt, int type) {
+	switch (type) {
+	case RESIZING_TOP_LEFT:
+		minPt.setX(pt.x());
+		maxPt.setY(pt.y());
+		break;
+	case RESIZING_TOP_RIGHT:
+		maxPt.setX(pt.x());
+		maxPt.setY(pt.y());
+		break;
+	case RESIZING_BOTTOM_LEFT:
+		minPt.setX(pt.x());
+		minPt.setY(pt.y());
+		break;
+	case RESIZING_BOTTOM_RIGHT:
+		maxPt.setX(pt.x());
+		minPt.setY(pt.y());
+		break;
+	}
+
+	center = (minPt + maxPt) / 2.0f;
 }
 
 bool CircleArea::hitTest(const QVector2D& pt) const {

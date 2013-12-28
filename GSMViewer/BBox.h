@@ -52,12 +52,8 @@ public:
 		return maxPt.y() - minPt.y();
 	}
 
-	inline void translate(float x, float y) {
-		minPt.setX(minPt.x() + x);
-		minPt.setY(minPt.y() + y);
-		maxPt.setX(maxPt.x() + x);
-		maxPt.setY(maxPt.y() + y);
-	}
+	void translate(float x, float y);
+	void resize(const QVector2D& pt, int type);
 
 	bool hitTest(const QVector2D& pt) const {
 		if (pt.x() < minPt.x() - dx() * 0.1f) return false;
@@ -89,25 +85,7 @@ public:
 		return ret;
 	}
 
-	virtual QVector2D distortionPt() const {
-		return QVector2D(midPt().x(), minPt.y());
-	}
-
-	inline void recalculate(const std::vector<QVector2D>& vertices) {
-		minPt.setX(FLT_MAX);
-		minPt.setY(FLT_MAX);
-		maxPt.setX(-FLT_MAX);
-		maxPt.setY(-FLT_MAX);
-
-		for (size_t i = 0; i < vertices.size(); ++i) {
-			if (vertices[i].x() < minPt.x()) { minPt.setX(vertices[i].x()); }
-			if (vertices[i].y() < minPt.y()) { minPt.setY(vertices[i].y()); }
-
-			if (vertices[i].x() > maxPt.x()) { maxPt.setX(vertices[i].x()); }
-			if (vertices[i].y() > maxPt.y()) { maxPt.setY(vertices[i].y()); }
-		}
-	}
-
+	QVector2D distortionPt() const;
 	bool contains(const QVector2D &pt) const;
 };
 

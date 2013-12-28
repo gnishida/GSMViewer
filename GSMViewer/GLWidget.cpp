@@ -42,7 +42,7 @@ void GLWidget::drawScene() {
 	float height = (float)((int)(camera->dz * 0.012f)) * 0.1f * 1.5f;
 
 	// draw the selected area
-	if (editor->mode == RoadGraphEditor::MODE_BASIC_DEFINING_AREA || editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED || editor->mode == RoadGraphEditor::MODE_BASIC_RESIZING_AREA_BR || editor->mode == RoadGraphEditor::MODE_BASIC_DISTORTING_AREA) {
+	if (editor->selectedArea != NULL) {
 		renderer->renderArea(*editor->selectedArea, height);
 	}
 
@@ -75,6 +75,51 @@ void GLWidget::drawScene() {
 
 	// draw Voronoi diagram
 	renderer->renderVoronoiDiagram(editor->voronoiGraph, height);
+}
+
+void GLWidget::showStatusMessage() {
+	QString strMode;
+
+	switch (editor->mode) {
+	case RoadGraphEditor::MODE_BASIC:
+		strMode = "MODE_BASIC";
+		break;
+	case RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED:
+		strMode = "MODE_BASIC_VERTEX_SELECTED";
+		break;
+	case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:
+		strMode = "MODE_BASIC_VERTEX_MOVING";
+		break;
+	case RoadGraphEditor::MODE_BASIC_EDGE_SELECTED:
+		strMode = "MODE_BASIC_EDGE_SELECTED";
+		break;
+	case RoadGraphEditor::MODE_BASIC_DEFINING_AREA:
+		strMode = "MODE_BASIC_DEFINING_AREA";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_SELECTED:
+		strMode = "MODE_BASIC_AREA_SELECTED";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_MOVING:
+		strMode = "MODE_BASIC_AREA_MOVING";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_TL:
+		strMode = "MODE_BASIC_AREA_RESIZING_TL";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_TR:
+		strMode = "MODE_BASIC_AREA_RESIZING_TR";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BL:
+		strMode = "MODE_BASIC_AREA_RESIZING_BL";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR:
+		strMode = "MODE_BASIC_AREA_RESIZING_BR";
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING:
+		strMode = "MODE_BASIC_AREA_DISTORTING";
+		break;
+	}
+
+	mainWin->ui.statusBar->showMessage("MODE: " + strMode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,13 +188,13 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 
 		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
 			editor->startSketchLine(last2DPos, camera->dz * 0.03f);
-		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
-			if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
-				editor->mode = RoadGraphEditor::MODE_BASIC_RESIZING_AREA_BR;
-			} else if (editor->selectedArea->hitTestDistortionPoint(last2DPos)) {
+		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED || editor->mode == RoadGraphEditor::MODE_BASIC_AREA_MOVING) {
+			/*if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
+				editor->startResizingArea(RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR);
+			} else*/ if (editor->selectedArea->hitTestDistortionPoint(last2DPos)) {
 				editor->startDistortingArea();
 			} else if (editor->selectedArea->hitTest(last2DPos)) {
-				// do nothing
+				editor->startMovingArea();
 			} else {
 				editor->unselectRoads();
 			}
@@ -160,6 +205,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 
 			// if the vertex is close to the point, the vertex is selected
 			if (editor->selectVertex(last2DPos)) {
+				editor->startMovingVertex();
 			} else if (editor->selectEdge(last2DPos)) {				
 			} else {
 				// if neither a vertex nor a edge is selected, then the selection mode starts
@@ -171,7 +217,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 		}
 	}
 
-	mainWin->ui.statusBar->showMessage(QString("MODE: %1").arg(editor->mode));
+	showStatusMessage();
 }
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
@@ -180,24 +226,40 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 	
 	lastPos = e->pos();
 
-	if (editor->mode == RoadGraphEditor::MODE_SKETCH_SKETCHING) {
+	switch (editor->mode) {
+	case RoadGraphEditor::MODE_SKETCH_SKETCHING:
 		editor->finalizeSketchLine(camera->dz * 0.01f, camera->dz * 0.03f);
-	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED) {
+		break;
+	case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:
 		if (controlPressed) {
 			float snap_threshold = camera->dz * 0.03f;
 			editor->stopMovingVertex(snap_threshold);
 		} else {
 			editor->stopMovingVertex();
 		}
-	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_DEFINING_AREA) {
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_MOVING:
+		editor->stopMovingArea();
+		break;
+	/*
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_TL:
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_TR:
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BL:
+	case RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR:
+		editor->stopResizingArea();
+		break;
+	*/
+	case RoadGraphEditor::MODE_BASIC_DEFINING_AREA:
 		editor->finalizeArea();
-	} else if (editor->mode == RoadGraphEditor::MODE_BASIC_DISTORTING_AREA) {
-		editor->finalizeDistortArea();
+		break;
+	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING:
+		editor->stopDistortingArea();
+		break;
 	}
 
 	e->ignore();
 
-	mainWin->ui.statusBar->showMessage(QString("MODE: %1").arg(editor->mode));
+	showStatusMessage();
 
 	setCursor(Qt::ArrowCursor);
 	updateGL();
@@ -220,11 +282,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 		case RoadGraphEditor::MODE_SKETCH_SKETCHING:
 			editor->sketch.addPointToLine(pos);
 			break;
-		case RoadGraphEditor::MODE_BASIC_AREA_SELECTED:
+		case RoadGraphEditor::MODE_BASIC_AREA_MOVING:
 			editor->moveArea(dx2D, dy2D);
 			break;
-		case RoadGraphEditor::MODE_BASIC_VERTEX_SELECTED:
-			editor->startMovingVertex();
 		case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:
 			if (controlPressed) {
 				float snap_threshold = camera->dz * 0.03f;
@@ -240,12 +300,23 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 			// update the selection box
 			editor->updateArea(last2DPos);
 			break;
-		case editor->MODE_BASIC_DISTORTING_AREA:
+		case editor->MODE_BASIC_AREA_DISTORTING:
 			editor->distortArea(dx, dy);
 			break;
-		case editor->MODE_BASIC_RESIZING_AREA_BR:
-			editor->resizeAreaBR(last2DPos);
+		/*
+		case editor->MODE_BASIC_AREA_RESIZING_TL:
+			editor->resizeArea(last2DPos, AbstractArea::RESIZING_TOP_LEFT);
 			break;
+		case editor->MODE_BASIC_AREA_RESIZING_TR:
+			editor->resizeArea(last2DPos, AbstractArea::RESIZING_TOP_RIGHT);
+			break;
+		case editor->MODE_BASIC_AREA_RESIZING_BL:
+			editor->resizeArea(last2DPos, AbstractArea::RESIZING_BOTTOM_LEFT);
+			break;
+		case editor->MODE_BASIC_AREA_RESIZING_BR:
+			editor->resizeArea(last2DPos, AbstractArea::RESIZING_BOTTOM_RIGHT);
+			break;
+		*/
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
@@ -265,7 +336,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	}
 
 	last2DPos = pos;
-	mainWin->ui.statusBar->showMessage(QString("MODE: %1").arg(editor->mode));
+	showStatusMessage();
 
 	updateGL();
 }

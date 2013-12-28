@@ -1,4 +1,4 @@
-#include "ArcArea.h"
+﻿#include "ArcArea.h"
 
 ArcArea::ArcArea(const QVector2D& leftPt, const QVector2D& rightPt, float radius, float arc_len) {
 	this->leftPt = leftPt;
@@ -47,6 +47,27 @@ void ArcArea::translate(float x, float y) {
 	leftPt.setY(leftPt.y() + y);
 	rightPt.setX(rightPt.x() + x);
 	rightPt.setY(rightPt.y() + y);
+}
+
+void ArcArea::resize(const QVector2D& pt, int type) {
+	switch (type) {
+	case RESIZING_TOP_LEFT:
+		leftPt.setX(pt.x());
+		arc_len = (leftPt.y() - pt.y()) * 2.0f;
+		break;
+	case RESIZING_TOP_RIGHT:
+		rightPt.setX(pt.x());
+		arc_len = (leftPt.y() - pt.y()) * 2.0f;
+		break;
+	case RESIZING_BOTTOM_LEFT:
+		leftPt.setX(pt.x());
+		arc_len = (pt.y() - leftPt.y()) * 2.0f;
+		break;
+	case RESIZING_BOTTOM_RIGHT:
+		rightPt.setX(pt.x());
+		arc_len = (pt.y() - leftPt.y()) * 2.0f;
+		break;
+	}
 }
 
 bool ArcArea::hitTest(const QVector2D& pt) const {
@@ -131,6 +152,9 @@ QVector2D ArcArea::distortionPt() const {
 	return distortionPt;
 }
 
+/**
+ * 与えられた点を、このArcAreaに基づいて変形する。
+ */
 QVector2D ArcArea::deform(const QVector2D& pt) const {
 	// compute the center of the arc
 	QVector2D center = (leftPt + rightPt) / 2.0f;
@@ -142,7 +166,7 @@ QVector2D ArcArea::deform(const QVector2D& pt) const {
 	// compute the radian
 	float rad = arc_len / radius;
 
-	int n = 8;
+	int n = 24;
 
 	// locate the cell in which the point resides.
 	int u = (pt.x() - leftPt.x()) * (float)n / width;
@@ -169,3 +193,4 @@ QVector2D ArcArea::deform(const QVector2D& pt) const {
 
 	return pt3;
 }
+

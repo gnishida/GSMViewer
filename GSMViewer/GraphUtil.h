@@ -113,8 +113,9 @@ public:
 	static bool planarifyOne(RoadGraph* roads);
 	static void skeltonize(RoadGraph* roads);
 	static void rotate(RoadGraph* roads, float theta, const QVector2D& rotationCenter = QVector2D(0, 0));
-	static void translate(RoadGraph* roads, QVector2D offset);
-	static void distort(RoadGraph* roads, RoadGraph* orig_roads, ArcArea* area);
+	static void translate(RoadGraph* roads, const QVector2D& offset);
+	static void scale(RoadGraph* roads, const BBox& bbox1, const BBox& bbox2);
+	static void distort(RoadGraph* roads, ArcArea* area);
 	static RoadGraph* convertToGridNetwork(RoadGraph* roads, RoadVertexDesc start);
 	static RoadGraph* approximateToGridNetwork(RoadGraph* roads, float cellLength, QVector2D orig);
 	static void scaleToBBox(RoadGraph* roads, BBox& area);

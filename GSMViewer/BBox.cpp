@@ -37,6 +37,38 @@ void BBox::addPoint(const QVector2D& newPt) {
 	maxPt.setY(qMax(maxPt.y(), newPt.y()));
 }
 
+void BBox::translate(float x, float y) {
+	minPt.setX(minPt.x() + x);
+	minPt.setY(minPt.y() + y);
+	maxPt.setX(maxPt.x() + x);
+	maxPt.setY(maxPt.y() + y);
+}
+
+void BBox::resize(const QVector2D& pt, int type) {
+	switch (type) {
+	case RESIZING_TOP_LEFT:
+		minPt.setX(pt.x());
+		maxPt.setY(pt.y());
+		break;
+	case RESIZING_TOP_RIGHT:
+		maxPt.setX(pt.x());
+		maxPt.setY(pt.y());
+		break;
+	case RESIZING_BOTTOM_LEFT:
+		minPt.setX(pt.x());
+		minPt.setY(pt.y());
+		break;
+	case RESIZING_BOTTOM_RIGHT:
+		maxPt.setX(pt.x());
+		minPt.setY(pt.y());
+		break;
+	}
+}
+
+QVector2D BBox::distortionPt() const {
+	return QVector2D(midPt().x(), minPt.y());
+}
+
 bool BBox::contains(const QVector2D &pt) const {
 	if (pt.x() < minPt.x() || pt.y() < minPt.y()) return false;
 	if (pt.x() > maxPt.x() || pt.y() > maxPt.y()) return false;

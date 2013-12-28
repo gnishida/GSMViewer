@@ -23,6 +23,7 @@ protected:
 	void keyReleaseEvent(QKeyEvent* e);
 
 public slots:
+	void onMenuMode();
 	void onMenuEdit();
 	void onNew();
 	void onOpen();

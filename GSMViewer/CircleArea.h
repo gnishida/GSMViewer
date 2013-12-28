@@ -5,6 +5,8 @@
 
 class CircleArea : public AbstractArea {
 private:
+	QVector2D minPt;
+	QVector2D maxPt;
 	QVector2D center;
 	float radius;
 
@@ -17,6 +19,7 @@ public:
 	float dx() const;
 	float dy() const;
 	void translate(float x, float y);
+	void resize(const QVector2D& pt, int type);
 	bool hitTest(const QVector2D& pt) const;
 	bool hitTestDistortionPoint(const QVector2D& pt) const;
 	bool hitTestResizingPoint(const QVector2D& pt) const;
