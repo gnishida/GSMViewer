@@ -67,13 +67,6 @@ public:
 		MODE_SKETCH_SKETCHING,
 	};
 
-	static enum {
-		RESIZING_TOP_LEFT = 0,
-		RESIZING_TOP_RIGHT,
-		RESIZING_BOTTOM_LEFT,
-		RESIZING_BOTTOM_RIGHT
-	};
-
 public:
 	RoadGraph* roads;
 	RoadGraph* roadsOrig;
@@ -165,9 +158,10 @@ public:
 	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v);
 	bool isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2, const VoronoiVertex& v);
 
-	// Sketch
-	void startSketchLine(const QVector2D& pt, float snap_threshold);
-	void finalizeSketchLine(float simplify_threshold, float snap_threshold);
+	// MODE_SKETCH | MODE_SKETCHING
+	void startSketching(const QVector2D& pt, float snap_threshold);
+	void sketching(const QVector2D& pt);
+	void stopSketching(float simplify_threshold, float snap_threshold);
 	void instanciateShadowRoads();
 };
 

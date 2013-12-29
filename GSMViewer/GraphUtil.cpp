@@ -3159,21 +3159,25 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			if (!hasEdge(roads2, src2, tgt2)) continue;
 
 			// increase the score
-			//score += roads1->graph[*ei]->importance;
 			score += w_connectivity;
 
 			// increase the score according to the difference in the angle of the edges.
-			float angle_ratio = (M_PI / 2.0f - diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt)) / M_PI * 2.0f;
+			/*float angle_ratio = (M_PI / 2.0f - diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt)) / M_PI * 2.0f;
 			if (angle_ratio > 0.0f) {
 				score += angle_ratio * w_angle;
-			}
+			}*/
+			float angle_diff = diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt);
+			score += expf(-angle_diff) * w_angle;
 
 			// increase the score according to the length of the edges
 			RoadEdgeDesc e2 = getEdge(roads2, src2, tgt2);
 			float len_ratio = roads1->graph[*ei]->getLength() / roads2->graph[e2]->getLength();
+			/*
 			if (len_ratio > 0.3333f && len_ratio < 3.0f) {
 				score += w_length;
-			}
+			}*/
+			if (len_ratio < 1.0f) len_ratio = 1.0f / len_ratio;
+			score += expf(1.0f - len_ratio) * w_length;
 		}
 	}
 
@@ -3192,21 +3196,28 @@ float GraphUtil::computeSimilarity(RoadGraph* roads1, QMap<RoadVertexDesc, RoadV
 			if (!hasEdge(roads1, src1, tgt1)) continue;
 
 			// increase the score
-			//score += roads2->graph[*ei]->importance;
 			score += w_connectivity;
 
 			// increase the score according to the difference in the angle of the edges.
+			/*
 			float angle_ratio = (M_PI / 2.0f - diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt)) / M_PI * 2.0f;
 			if (angle_ratio > 0.0f) {
 				score += angle_ratio * w_angle;
 			}
+			*/
+			float angle_diff = diffAngle(roads1->graph[tgt1]->pt - roads1->graph[src1]->pt, roads2->graph[tgt2]->pt - roads2->graph[src2]->pt);
+			score += expf(-angle_diff) * w_angle;
 
 			// increase the score according to the length of the edges
 			RoadEdgeDesc e1 = getEdge(roads1, src1, tgt1);
 			float len_ratio = roads1->graph[e1]->getLength() / roads2->graph[*ei]->getLength();
+			/*
 			if (len_ratio > 0.3333f && len_ratio < 3.0f) {
 				score += w_length;
 			}
+			*/
+			if (len_ratio < 1.0f) len_ratio = 1.0f / len_ratio;
+			score += expf(1.0f - len_ratio) * w_length;
 		}
 	}
 
@@ -3448,15 +3459,14 @@ void GraphUtil::findCorrespondence(RoadGraph* roads1, AbstractForest* forest1, R
 			// if the difference in angle is too large, skip this pair.
 			if (diffAngle(roads1->graph[child1]->pt - roads1->graph[parent1]->pt, roads2->graph[child2]->pt - roads2->graph[parent2]->pt) > threshold_angle) continue;
 
-			// update the matching
-			if (map1.contains(child1) || map2.contains(child2)) continue;
-
-			map1[child1] = child2;
-			map2[child2] = child1;
-
 			// set fullyPaired flags
 			roads1->graph[getEdge(roads1, parent1, child1)]->fullyPaired = true;
 			roads2->graph[getEdge(roads2, parent2, child2)]->fullyPaired = true;
+
+			// update the matching
+			if (map1.contains(child1) || map2.contains(child2)) continue;
+			map1[child1] = child2;
+			map2[child2] = child1;
 
 			seeds1.push_back(child1);
 			seeds2.push_back(child2);

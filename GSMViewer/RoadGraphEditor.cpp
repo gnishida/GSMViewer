@@ -2,6 +2,7 @@
 #include "GraphUtil.h"
 #include "BFSTree.h"
 #include "ArcArea.h"
+#include "CircleArea.h"
 #include <boost/polygon/voronoi.hpp>
 
 RoadGraphEditor::RoadGraphEditor() {
@@ -9,7 +10,8 @@ RoadGraphEditor::RoadGraphEditor() {
 	roadsOrig = new RoadGraph();
 	selectedRoads = new RoadGraph();
 	selectedRoadsOrig = new RoadGraph();
-	roadDB = new RoadGraphDatabase("osm/3x3_simplified/new-york.gsm");
+	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/new-york.gsm");
+	roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
 
 	clear();
 }
@@ -31,6 +33,7 @@ void RoadGraphEditor::clear() {
 	selectedArea = NULL;
 	clearInterpolatedRoads();
 	clipBoard.clear();
+	sketch.clear();
 
 	for (int i = 0; i < history.size(); i++) {
 		delete history[i];
@@ -892,13 +895,26 @@ bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, co
 	}
 }
 
-void RoadGraphEditor::startSketchLine(const QVector2D& pt, float snap_threshold) {
+/**
+ * スケッチ開始
+ */
+void RoadGraphEditor::startSketching(const QVector2D& pt, float snap_threshold) {
 	sketch.startLine(pt, snap_threshold);
 
 	mode = MODE_SKETCH_SKETCHING;
 }
 
-void RoadGraphEditor::finalizeSketchLine(float simplify_threshold, float snap_threshold) {
+/**
+ * スケッチ中
+ */
+void RoadGraphEditor::sketching(const QVector2D& pt) {
+	sketch.addPointToLine(pt);
+}
+
+/**
+ * スケッチ終了
+ */
+void RoadGraphEditor::stopSketching(float simplify_threshold, float snap_threshold) {
 	sketch.finalizeLine(simplify_threshold, snap_threshold);
 
 	roadDB->findSimilarRoads(&sketch, 1, shadowRoads);
@@ -906,13 +922,18 @@ void RoadGraphEditor::finalizeSketchLine(float simplify_threshold, float snap_th
 	mode = MODE_SKETCH;
 }
 
+/**
+ * シャドー道路を確定する
+ */
 void RoadGraphEditor::instanciateShadowRoads() {
-	GraphUtil::copyRoads(shadowRoads[0]->roads, selectedRoadsOrig);
+	GraphUtil::copyRoads(shadowRoads[0]->roads, selectedRoads);
 
 	if (selectedArea != NULL) {
 		delete selectedArea;
 	}
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig));
+	//selectedArea = new CircleArea(shadowRoads[0]->center, 1000.0f);
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
+	//GraphUtil::extractRoads2(selectedRoads, *selectedArea);
 	
 	// clear the sketch
 	sketch.clear();
@@ -922,6 +943,10 @@ void RoadGraphEditor::instanciateShadowRoads() {
 		delete shadowRoads[i];
 	}
 	shadowRoads.clear();
+
+	// backup the road graph
+	GraphUtil::copyRoads(roads, roadsOrig);
+	GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
 
 	mode = MODE_BASIC_AREA_SELECTED;
 }

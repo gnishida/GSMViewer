@@ -132,6 +132,12 @@ void GLWidget::showStatusMessage() {
 	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_BR:
 		strMode = "MODE_BASIC_AREA_DISTORTING_BR";
 		break;
+	case RoadGraphEditor::MODE_SKETCH:
+		strMode = "MODE_SKETCH";
+		break;
+	case RoadGraphEditor::MODE_SKETCH_SKETCHING:
+		strMode = "MODE_SKETCHING";
+		break;
 	}
 
 	mainWin->ui.statusBar->showMessage("MODE: " + strMode);
@@ -202,7 +208,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
 		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
-			editor->startSketchLine(last2DPos, camera->dz * 0.03f);
+			editor->startSketching(last2DPos, camera->dz * 0.03f);
 		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
 			/*if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
 				editor->startResizingArea(RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR);
@@ -243,7 +249,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 
 	switch (editor->mode) {
 	case RoadGraphEditor::MODE_SKETCH_SKETCHING:
-		editor->finalizeSketchLine(camera->dz * 0.01f, camera->dz * 0.03f);
+		editor->stopSketching(camera->dz * 0.01f, camera->dz * 0.03f);
 		break;
 	case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:
 		if (controlPressed) {
@@ -298,7 +304,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	if (e->buttons() & Qt::LeftButton) {
 		switch (editor->mode) {
 		case RoadGraphEditor::MODE_SKETCH_SKETCHING:
-			editor->sketch.addPointToLine(pos);
+			editor->sketching(pos);
 			break;
 		case RoadGraphEditor::MODE_BASIC_AREA_MOVING:
 			editor->moveArea(dx2D, dy2D);
