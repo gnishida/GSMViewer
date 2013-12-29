@@ -23,6 +23,8 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// initialize the width and others
 	editor->roads->setZ(MIN_Z);
 
+	showArea = false;
+
 	// initialize the key status
 	shiftPressed = false;
 	controlPressed = false;
@@ -73,8 +75,12 @@ void GLWidget::drawScene() {
 		renderer->render(editor->shadowRoads[i]->roads->renderables);
 	}
 
+	if (showArea) {
+		renderer->renderDenseArea(*editor->selectedArea, height);
+	}
+
 	// draw Voronoi diagram
-	renderer->renderVoronoiDiagram(editor->voronoiGraph, height);
+	renderer->renderVoronoiDiagram(editor->voronoiDiagram, height);
 }
 
 void GLWidget::showStatusMessage() {
@@ -197,7 +203,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 
 		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
 			editor->startSketchLine(last2DPos, camera->dz * 0.03f);
-		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED || editor->mode == RoadGraphEditor::MODE_BASIC_AREA_MOVING) {
+		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
 			/*if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
 				editor->startResizingArea(RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR);
 			} else*/ if (editor->selectedArea->hitTestResizingPoint(last2DPos) && keyXPressed) {
@@ -218,7 +224,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 			} else if (editor->selectEdge(last2DPos)) {				
 			} else {
 				// if neither a vertex nor a edge is selected, then the selection mode starts
-				editor->startArea(last2DPos);
+				editor->startDefiningArea(last2DPos);
 			}
 
 			mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
@@ -259,7 +265,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 		break;
 	*/
 	case RoadGraphEditor::MODE_BASIC_DEFINING_AREA:
-		editor->finalizeArea();
+		editor->stopDefiningArea();
 		break;
 	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_TL:
 	case RoadGraphEditor::MODE_BASIC_AREA_DISTORTING_TR:
@@ -310,7 +316,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 			break;
 		case RoadGraphEditor::MODE_BASIC_DEFINING_AREA:
 			// update the selection box
-			editor->updateArea(last2DPos);
+			editor->defineArea(last2DPos);
 			break;
 		case editor->MODE_BASIC_AREA_DISTORTING_TL:
 		case editor->MODE_BASIC_AREA_DISTORTING_TR:

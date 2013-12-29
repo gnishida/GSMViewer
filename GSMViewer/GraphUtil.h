@@ -39,6 +39,7 @@ public:
 	static int getNumConnectedVertices(RoadGraph* roads, RoadVertexDesc start, bool onlyValidVertex = true);
 	static RoadVertexDesc getVertex(RoadGraph* roads, int index, bool onlyValidVertex = true);
 	static RoadVertexDesc getVertex(RoadGraph* roads, const QVector2D& pt, bool onlyValidVertex = true);
+	static RoadVertexDesc getVertex(RoadGraph* roads, const QVector2D& pt, float angle, float angle_threshold, bool onlyValidVertex = true);
 	static bool getVertex(RoadGraph* roads, const QVector2D& pos, float threshold, RoadVertexDesc& desc, bool onlyValidVertex = true);
 	static bool getVertex(RoadGraph* roads, RoadVertexDesc v, float threshold, RoadVertexDesc& desc, bool onlyValidVertex = true);
 	static bool getVertex(RoadGraph* roads, QVector2D pos, float threshold, RoadVertexDesc ignore, RoadVertexDesc& desc, bool onlyValidVertex = true);
@@ -75,6 +76,7 @@ public:
 	static bool isIntersect(RoadGraph* roads, std::vector<QVector2D>& polyLine1, std::vector<QVector2D>& polyLine2);
 	static std::vector<QVector2D> simplifyPolyLine(std::vector<QVector2D>& polyLine, float threshold);
 	static void removeShortEdges(RoadGraph* roads, float threshold);
+	static std::vector<QVector2D> finerEdge(RoadGraph* roads, RoadEdgeDesc e, float step = 1.0f);
 
 	// File I/O
 	static void loadRoads(RoadGraph* roads, QString filename, int roadType = 7);
@@ -91,7 +93,9 @@ public:
 	static float extractMajorRoad(RoadGraph* roads, RoadEdgeDesc root, QList<RoadEdgeDesc>& path);
 	static void extractRoads(RoadGraph* roads, int roadType = 7);
 	static void extractRoads(RoadGraph* roads, const AbstractArea& area, bool strict, int roadType = 7);
+	static void extractRoads2(RoadGraph* roads, const AbstractArea& area, int roadType = 7);
 	static void subtractRoads(RoadGraph* roads, const AbstractArea& area, bool strict);
+	static void subtractRoads2(RoadGraph* roads, const AbstractArea& area);
 
 	// Connectivity related functions
 	static std::vector<RoadVertexDesc> getNeighbors(RoadGraph* roads, RoadVertexDesc v, bool onlyValidVertex = true);

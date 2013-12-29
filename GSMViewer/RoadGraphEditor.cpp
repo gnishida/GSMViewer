@@ -100,7 +100,7 @@ void RoadGraphEditor::cut() {
 	// extract the roads within the area, and put it into the clipboard.
 	clipBoard.copy(roads, *selectedArea);
 
-	GraphUtil::subtractRoads(roads, *selectedArea, true);
+	GraphUtil::subtractRoads2(roads, *selectedArea);
 
 	// clear the selected roads
 	selectedRoads->clear();
@@ -186,7 +186,7 @@ void RoadGraphEditor::selectAll() {
 /**
  * 選択エリアを選択開始
  */
-void RoadGraphEditor::startArea(const QVector2D& pt) {
+void RoadGraphEditor::startDefiningArea(const QVector2D& pt) {
 	if (selectedArea != NULL) delete selectedArea;
 	selectedArea = new BBox();
 	((BBox*)selectedArea)->addPoint(pt);
@@ -197,7 +197,7 @@ void RoadGraphEditor::startArea(const QVector2D& pt) {
 /**
  * 選択エリアを選択中
  */
-void RoadGraphEditor::updateArea(const QVector2D& pt) {
+void RoadGraphEditor::defineArea(const QVector2D& pt) {
 	((BBox*)selectedArea)->maxPt.setX(pt.x());
 	((BBox*)selectedArea)->minPt.setY(pt.y());
 }
@@ -205,7 +205,7 @@ void RoadGraphEditor::updateArea(const QVector2D& pt) {
 /**
  * 選択エリアが確定した瞬間
  */
-void RoadGraphEditor::finalizeArea() {
+void RoadGraphEditor::stopDefiningArea() {
 	if (((BBox*)selectedArea)->maxPt.x() < ((BBox*)selectedArea)->minPt.x()) {
 		float x = ((BBox*)selectedArea)->maxPt.x();
 		((BBox*)selectedArea)->maxPt.setX(((BBox*)selectedArea)->minPt.x());
@@ -225,11 +225,12 @@ void RoadGraphEditor::finalizeArea() {
 
 		// 選択エリア内の道路セグメントを、"selectedRoads"にコピーする
 		GraphUtil::copyRoads(roads, selectedRoads);
-		GraphUtil::extractRoads(selectedRoads, *selectedArea, true);
+		GraphUtil::extractRoads2(selectedRoads, *selectedArea);
 		GraphUtil::clean(selectedRoads);
 
 		// "roads"からは、選択エリアの分を削除する
-		GraphUtil::subtractRoads(roads, *selectedArea, true);
+		GraphUtil::subtractRoads2(roads, *selectedArea);
+		GraphUtil::clean(roads);
 
 		// backup the road graph
 		GraphUtil::copyRoads(roads, roadsOrig);
@@ -266,26 +267,30 @@ void RoadGraphEditor::startDistortingArea(int type) {
 		break;
 	}
 
-	// copy the roads from the original
+	// copy back from the original
+	GraphUtil::copyRoads(roadsOrig, roads);
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 	
 	// distort the roads
 	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
+
+	voronoiCut2(selectedArea);
 }
 
 void RoadGraphEditor::distortArea(const QVector2D& pt) {
 	selectedArea->resize(pt);
 
-	// copy the roads from the original
+	// copy back from the original
+	GraphUtil::copyRoads(roadsOrig, roads);
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 
 	// distort the roads
 	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
+
+	voronoiCut2(selectedArea);
 }
 
 void RoadGraphEditor::stopDistortingArea() {
-	GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
-
 	mode = MODE_BASIC_AREA_SELECTED;
 }
 
@@ -308,9 +313,10 @@ void RoadGraphEditor::moveArea(float dx, float dy) {
 	GraphUtil::translate(selectedRoadsOrig, QVector2D(dx, dy));
 
 	// copy back from the original
-	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 	GraphUtil::copyRoads(roadsOrig, roads);
+	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 
+	//voronoiCut2(selectedArea);
 	voronoiCut2();
 }
 
@@ -560,6 +566,8 @@ bool RoadGraphEditor::splitEdge(const QVector2D& pt) {
  * Based on the existing road graph and the selected road graph, build a voronoi diagram.
  */
 void RoadGraphEditor::voronoi() {
+	voronoiDiagram.clear();
+
 	std::vector<VoronoiVertex> points;
 	QMap<int, RoadVertexDesc> conv;
 
@@ -567,11 +575,15 @@ void RoadGraphEditor::voronoi() {
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
 		points.push_back(VoronoiVertex(roads, *vi));
+		voronoiDiagram.points.push_back(roads->graph[*vi]->pt);
+		voronoiDiagram.groups.push_back(0);
 		conv[cell_index] = *vi;
 	}
 
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoadsOrig->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(selectedRoadsOrig, *vi));
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(selectedRoads, *vi));
+		voronoiDiagram.points.push_back(selectedRoads->graph[*vi]->pt);
+		voronoiDiagram.groups.push_back(1);
 		conv[cell_index] = *vi;
 	}
 
@@ -580,7 +592,6 @@ void RoadGraphEditor::voronoi() {
 	construct_voronoi(points.begin(), points.end(), &vd);
 
 	// create a voronoi edges
-	voronoiGraph.clear();
 	for (boost::polygon::voronoi_diagram<double>::const_edge_iterator it = vd.edges().begin(); it != vd.edges().end(); ++it) {
 		if (!it->is_primary()) continue;
 		if (it->is_infinite()) continue;
@@ -590,14 +601,14 @@ void RoadGraphEditor::voronoi() {
 
 		if (vertex0 != NULL && vertex1 != NULL) {
 			RoadVertexPtr v0 = RoadVertexPtr(new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f)));
-			RoadVertexDesc v0_desc = boost::add_vertex(voronoiGraph.graph);
-			voronoiGraph.graph[v0_desc] = v0;
+			RoadVertexDesc v0_desc = boost::add_vertex(voronoiDiagram.edges.graph);
+			voronoiDiagram.edges.graph[v0_desc] = v0;
 
 			RoadVertexPtr v1 = RoadVertexPtr(new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f)));
-			RoadVertexDesc v1_desc = boost::add_vertex(voronoiGraph.graph);
-			voronoiGraph.graph[v1_desc] = v1;
+			RoadVertexDesc v1_desc = boost::add_vertex(voronoiDiagram.edges.graph);
+			voronoiDiagram.edges.graph[v1_desc] = v1;
 
-			GraphUtil::addEdge(&voronoiGraph, v0_desc, v1_desc, 1, 1, false);
+			GraphUtil::addEdge(&voronoiDiagram.edges, v0_desc, v1_desc, 1, 1, false);
 		}
 	}
 }
@@ -699,8 +710,6 @@ void RoadGraphEditor::voronoiCut2() {
 		conv[cell_index] = *vi;
 	}
 
-	qDebug() << cell_index;
-
 	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
 		points.push_back(VoronoiVertex(selectedRoads, *vi));
 		conv[cell_index] = *vi;
@@ -770,6 +779,95 @@ void RoadGraphEditor::voronoiCut2() {
 	selectedRoads->setModified();
 }
 
+/**
+ * selectedRoadsのエリアが"area"で与えられている時の、voronoiCut2
+ */
+void RoadGraphEditor::voronoiCut2(AbstractArea* area) {
+	// check if there is at least one vertex
+	if (GraphUtil::getNumVertices(roads) == 0) return;
+	if (GraphUtil::getNumVertices(selectedRoads) == 0) return;
+	
+	std::vector<VoronoiVertex> points;
+	QMap<int, RoadVertexDesc> conv;
+
+	int cell_index = 0;
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(roads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(selectedRoads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	// Construction of the Voronoi Diagram.
+	boost::polygon::voronoi_diagram<double> vd;
+	construct_voronoi(points.begin(), points.end(), &vd);
+
+	// for each cell, check the adjacent cells
+	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
+		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
+		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
+
+	    std::size_t cell_index = it->source_index();
+		VoronoiVertex v = points[cell_index];
+
+		bool withinTerritory = isWithinTerritory(roads, selectedRoads, *area, v);
+
+		// check if the neighbors are in the same road graph
+		bool adjacentToEnemy = false;
+		do {
+			if (!edge->is_primary()) continue;
+		
+			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
+			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
+			int neighbor_index = neighbor_cell->source_index();
+			if (v.roads != points[neighbor_index].roads) {
+				adjacentToEnemy = true;
+				break;
+			}
+
+			edge = edge->next();
+		} while (edge != cell.incident_edge());
+
+		// if this cell is far away from the center of the road and is adjacent to the enemy cells,
+		// remove the edge if both vertices are outside the territory.
+		if (!withinTerritory && adjacentToEnemy) {
+			// for each outing edge
+			RoadOutEdgeIter ei, eend;
+			for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
+				if (!v.roads->graph[*ei]->valid) continue;
+
+				RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
+				
+				// if both the vertices is outside the teritory, remove this edge
+				if (!isWithinTerritory(roads, selectedRoads, *area, VoronoiVertex(v.roads, tgt))) {
+					v.roads->graph[*ei]->valid = false;
+					v.roads->graph[v.desc]->valid = false;
+					continue;
+				}
+
+				// if only v.desc is outside the teritory, find the closest vertex from neighbors[i], and snap v.desc to it.
+				QVector2D vec = v.roads->graph[v.desc]->pt - v.roads->graph[tgt]->pt;
+				if (v.roads == roads) {
+					//RoadVertexDesc snap_v_desc = GraphUtil::getVertex(selectedRoads, v.roads->graph[tgt]->pt, atan2f(vec.y(), vec.x()), 0.75f);
+					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(selectedRoads, v.roads->graph[v.desc]->pt);
+					GraphUtil::moveVertex(v.roads, v.desc, selectedRoads->graph[snap_v_desc]->pt);
+				} else {
+					//RoadVertexDesc snap_v_desc = GraphUtil::getVertex(roads, v.roads->graph[tgt]->pt, atan2f(vec.y(), vec.x()), 0.75f);
+					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(roads, v.roads->graph[v.desc]->pt);
+					GraphUtil::moveVertex(v.roads, v.desc, roads->graph[snap_v_desc]->pt);
+				}
+			}
+		}
+	}
+
+	roads->setModified();
+	selectedRoads->setModified();
+}
+
 bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v) {
 	if (v.roads == roads1) {
 		float dist1 = (v.roads->graph[v.desc]->pt - center1).length();
@@ -780,6 +878,16 @@ bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, const QVector2D& cent
 		float dist1 = (v.roads->graph[v.desc]->pt - center2).length();
 		float dist2 = (v.roads->graph[v.desc]->pt - center1).length();
 		if (dist1 <= dist2) return true;
+		else return false;
+	}
+}
+
+bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2, const VoronoiVertex& v) {
+	if (v.roads == roads1) {
+		if (!area2.contains(v.roads->graph[v.desc]->pt)) return true;
+		else return false;
+	} else {
+		if (area2.contains(v.roads->graph[v.desc]->pt)) return true;
 		else return false;
 	}
 }

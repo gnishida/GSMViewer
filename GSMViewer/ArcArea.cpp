@@ -25,13 +25,19 @@ bool ArcArea::contains(const QVector2D& pt) const {
 	// compute the radian
 	float rad = arc_len / fabs(radius);
 
-	if ((pt - center).length() < radius - width / 2.0f) return false;
-	if ((pt - center).length() > radius + width / 2.0f) return false;
+	QVector2D vec = pt - center;
 
-	float angle = atan2f((pt - center).y(), (pt - center).x());
-	if (angle < -rad / 2.0f || angle > rad / 2.0f) return false;
+	if (vec.length() < fabs(radius) - width / 2.0f) return false;
+	if (vec.length() > fabs(radius) + width / 2.0f) return false;
 
-	return true;
+	float angle = atan2f(vec.y(), vec.x());
+	if (radius >= 0) {
+		if (angle >= M_PI - rad / 2.0f || angle <= -M_PI + rad / 2.0f) return true;
+	} else {
+		if (angle >= -rad / 2.0f && angle <= rad / 2.0f) return true;
+	}
+
+	return false;
 }
 
 QVector2D ArcArea::midPt() const {

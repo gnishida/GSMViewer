@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Thu Dec 26 13:15:15 2013
+** Created: Sat Dec 28 19:39:25 2013
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -44,6 +44,7 @@ public:
     QAction *actionModeBasic;
     QAction *actionModeLayer;
     QAction *actionModeSketch;
+    QAction *actionShowArea;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -122,6 +123,8 @@ public:
         actionModeSketch = new QAction(MainWindow);
         actionModeSketch->setObjectName(QString::fromUtf8("actionModeSketch"));
         actionModeSketch->setCheckable(true);
+        actionShowArea = new QAction(MainWindow);
+        actionShowArea->setObjectName(QString::fromUtf8("actionShowArea"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         MainWindow->setCentralWidget(centralWidget);
@@ -171,6 +174,7 @@ public:
         menuSelect->addAction(actionSelectAll);
         menuTool->addAction(actionVoronoi);
         menuTool->addAction(actionVoronoiCut);
+        menuTool->addAction(actionShowArea);
         menuMode->addAction(actionModeBasic);
         menuMode->addAction(actionModeLayer);
         menuMode->addAction(actionModeSketch);
@@ -182,7 +186,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", 0, QApplication::UnicodeUTF8));
+        MainWindow->setWindowTitle(QApplication::translate("MainWindow", "GSM Viewer", 0, QApplication::UnicodeUTF8));
         actionNew->setText(QApplication::translate("MainWindow", "New", 0, QApplication::UnicodeUTF8));
         actionNew->setShortcut(QApplication::translate("MainWindow", "Ctrl+N", 0, QApplication::UnicodeUTF8));
         actionOpen->setText(QApplication::translate("MainWindow", "Open", 0, QApplication::UnicodeUTF8));
@@ -212,6 +216,7 @@ public:
         actionModeBasic->setText(QApplication::translate("MainWindow", "Basic", 0, QApplication::UnicodeUTF8));
         actionModeLayer->setText(QApplication::translate("MainWindow", "Graph", 0, QApplication::UnicodeUTF8));
         actionModeSketch->setText(QApplication::translate("MainWindow", "Sketch", 0, QApplication::UnicodeUTF8));
+        actionShowArea->setText(QApplication::translate("MainWindow", "Show Area", 0, QApplication::UnicodeUTF8));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0, QApplication::UnicodeUTF8));
         menuWindow->setTitle(QApplication::translate("MainWindow", "Window", 0, QApplication::UnicodeUTF8));
         menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));

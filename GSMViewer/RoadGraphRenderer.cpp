@@ -68,16 +68,32 @@ void RoadGraphRenderer::renderArea(const AbstractArea& area, float height) {
 	v.location[2] = height;
 	renderables[0]->vertices.push_back(v);
 
-	// distortion control point
+	render(renderables);
+}
+
+void RoadGraphRenderer::renderDenseArea(const AbstractArea& area, float height) {
+	RenderablePtr renderable = RenderablePtr(new Renderable(GL_POINTS, 10.0f));
+
+	Vertex v;
 	v.color[0] = 1.0f;
 	v.color[1] = 0.0f;
 	v.color[2] = 0.0f;
-	v.location[0] = area.distortionPt().x();
-	v.location[1] = area.distortionPt().y();
-	v.location[2] = height;
-	renderables[1]->vertices.push_back(v);
+	v.normal[0] = 0.0f;
+	v.normal[1] = 0.0f;
+	v.normal[2] = 1.0f;
 
-	render(renderables);
+	for (int y = -10000; y <= 10000; y+=10) {
+		for (int x = -10000; x<= 10000; x+=10) {
+			if (area.contains(QVector2D(x, y))) {
+				v.location[0] = x;
+				v.location[1] = y;
+				v.location[2] = height;
+				renderable->vertices.push_back(v);
+			}
+		}
+	}
+
+	renderOne(renderable);
 }
 
 void RoadGraphRenderer::renderPoint(const QVector2D& pt, float height) {
@@ -126,8 +142,10 @@ void RoadGraphRenderer::renderPolyline(std::vector<QVector2D>& polyline, float h
 	render(renderables);
 }
 
-void RoadGraphRenderer::renderVoronoiDiagram(RoadGraph& roads, float height) {
-	RenderablePtr renderable = RenderablePtr(new Renderable(GL_LINES, 3.0f));
+void RoadGraphRenderer::renderVoronoiDiagram(VoronoiDiagram& vd, float height) {
+	std::vector<RenderablePtr> renderables;
+	renderables.push_back(RenderablePtr(new Renderable(GL_LINES, 3.0f)));
+	renderables.push_back(RenderablePtr(new Renderable(GL_POINTS, 10.0f)));
 
 	Vertex v;
 	v.color[0] = 0.0f;
@@ -136,20 +154,39 @@ void RoadGraphRenderer::renderVoronoiDiagram(RoadGraph& roads, float height) {
 	v.normal[0] = 0.0f;
 	v.normal[1] = 0.0f;
 	v.normal[2] = 1.0f;
+	v.location[2] = height;
 
+	// add voronoi edges
 	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(roads.graph); ei != eend; ++ei) {
-		if (!roads.graph[*ei]->valid) continue;
+	for (boost::tie(ei, eend) = boost::edges(vd.edges.graph); ei != eend; ++ei) {
+		if (!(vd.edges.graph[*ei]->valid)) continue;
 
-		RoadVertexDesc src = boost::source(*ei, roads.graph);
-		RoadVertexDesc tgt = boost::target(*ei, roads.graph);
+		RoadVertexDesc src = boost::source(*ei, vd.edges.graph);
+		RoadVertexDesc tgt = boost::target(*ei, vd.edges.graph);
 
-		v.location[0] = roads.graph[src]->pt.x();
-		v.location[1] = roads.graph[tgt]->pt.y();
-		v.location[2] = height;
+		v.location[0] = vd.edges.graph[src]->pt.x();
+		v.location[1] = vd.edges.graph[tgt]->pt.y();
 
-		renderable->vertices.push_back(v);
+		renderables[0]->vertices.push_back(v);
 	}
 
-	renderOne(renderable);
+	// add voronoi points
+	for (int i = 0; i < vd.points.size(); i++) {
+		v.location[0] = vd.points[i].x();
+		v.location[1] = vd.points[i].y();
+
+		if (vd.groups[i] == 0) {
+			v.color[0] = 1.0f;
+			v.color[1] = 0.0f;
+			v.color[2] = 0.0f;
+		} else {
+			v.color[0] = 0.0f;
+			v.color[1] = 0.0f;
+			v.color[2] = 1.0f;
+		}
+
+		renderables[1]->vertices.push_back(v);
+	}
+
+	render(renderables);
 }

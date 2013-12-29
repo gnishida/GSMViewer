@@ -6,6 +6,7 @@
 #include "ClipBoard.h"
 #include "RoadGraphDatabase.h"
 #include "ShadowRoadGraph.h"
+#include "VoronoiDiagram.h"
 #include <boost/polygon/voronoi.hpp>
 
 class VoronoiVertex {
@@ -93,7 +94,7 @@ public:
 	RoadGraphDatabase* roadDB;
 	QList<ShadowRoadGraph*> shadowRoads;
 
-	RoadGraph voronoiGraph;
+	VoronoiDiagram voronoiDiagram;
 
 	ClipBoard clipBoard;
 
@@ -120,9 +121,9 @@ public:
 	void selectAll();
 
 	// MODE_BASIC DEFINING_AREA
-	void startArea(const QVector2D& pt);
-	void updateArea(const QVector2D& pt);
-	void finalizeArea();
+	void startDefiningArea(const QVector2D& pt);
+	void defineArea(const QVector2D& pt);
+	void stopDefiningArea();
 
 	// MODE_BASIC_AREA_DISTORTING
 	void startDistortingArea(int type);
@@ -160,7 +161,9 @@ public:
 	void voronoi();
 	void voronoiCut();
 	void voronoiCut2();
-	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& pt);
+	void voronoiCut2(AbstractArea* area);
+	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v);
+	bool isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2, const VoronoiVertex& v);
 
 	// Sketch
 	void startSketchLine(const QVector2D& pt, float snap_threshold);

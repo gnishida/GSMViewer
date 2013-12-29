@@ -22,6 +22,8 @@ public:
 	QPoint lastPos;
 	QVector2D last2DPos;
 
+	bool showArea;
+
 	// key status
 	bool shiftPressed;
 	bool controlPressed;

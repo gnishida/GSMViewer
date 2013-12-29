@@ -125,6 +125,9 @@
     <ClCompile Include="RoadGraphDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VoronoiDiagram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -214,6 +217,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RoadGraphDatabase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoronoiDiagram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -115,7 +115,33 @@ RoadVertexDesc GraphUtil::getVertex(RoadGraph* roads, const QVector2D& pt, bool 
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
 		if (onlyValidVertex && !roads->graph[*vi]->valid) continue;
 
-		float dist = (roads->graph[*vi]->getPt() - pt).length();
+		float dist = (roads->graph[*vi]->getPt() - pt).lengthSquared();
+		if (dist < min_dist) {
+			nearest_desc = *vi;
+			min_dist = dist;
+		}
+	}
+
+	return nearest_desc;
+}
+
+/**
+ * 近隣頂点を探す。
+ * ただし、方向ベクトルがangle方向からしきい値を超えてる場合、その頂点はスキップする。
+ */
+RoadVertexDesc GraphUtil::getVertex(RoadGraph* roads, const QVector2D& pt, float angle, float angle_threshold, bool onlyValidVertex) {
+	RoadVertexDesc nearest_desc;
+	float min_dist = std::numeric_limits<float>::max();
+
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
+		if (onlyValidVertex && !roads->graph[*vi]->valid) continue;
+
+		QVector2D vec = roads->graph[*vi]->getPt() - pt;
+		float angle2 = atan2f(vec.y(), vec.x());
+		if (diffAngle(angle, angle2) > angle_threshold) continue;
+
+		float dist = vec.lengthSquared();
 		if (dist < min_dist) {
 			nearest_desc = *vi;
 			min_dist = dist;
@@ -136,14 +162,14 @@ bool GraphUtil::getVertex(RoadGraph* roads, const QVector2D& pos, float threshol
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
 		if (onlyValidVertex && !roads->graph[*vi]->valid) continue;
 
-		float dist = (roads->graph[*vi]->getPt() - pos).length();
+		float dist = (roads->graph[*vi]->getPt() - pos).lengthSquared();
 		if (dist < min_dist) {
 			min_dist = dist;
 			desc = *vi;
 		}
 	}
 
-	if (min_dist <= threshold) return true;
+	if (min_dist <= threshold * threshold) return true;
 	else return false;
 }
 
@@ -167,14 +193,14 @@ bool GraphUtil::getVertex(RoadGraph* roads, QVector2D pos, float threshold, Road
 		if (onlyValidVertex && !roads->graph[*vi]->valid) continue;
 		if (*vi == ignore) continue;
 
-		float dist = (roads->graph[*vi]->getPt() - pos).length();
+		float dist = (roads->graph[*vi]->getPt() - pos).lengthSquared();
 		if (dist < min_dist) {
 			min_dist = dist;
 			desc = *vi;
 		}
 	}
 
-	if (min_dist <= threshold) return true;
+	if (min_dist <= threshold * threshold) return true;
 	else return false;
 }
 
@@ -503,7 +529,7 @@ std::vector<QVector2D> GraphUtil::getOrderedPolyLine(RoadGraph* roads, RoadEdgeD
 
 	RoadVertexDesc src = boost::source(e, roads->graph);
 	RoadVertexDesc tgt = boost::target(e, roads->graph);
-	if ((roads->graph[src]->getPt() - roads->graph[e]->getPolyLine()[0]).length() < (roads->graph[tgt]->getPt() - roads->graph[e]->getPolyLine()[0]).length()) {
+	if ((roads->graph[src]->getPt() - roads->graph[e]->getPolyLine()[0]).lengthSquared() < (roads->graph[tgt]->getPt() - roads->graph[e]->getPolyLine()[0]).lengthSquared()) {
 		return ret;
 	} else {
 		std::reverse(ret.begin(), ret.end());
@@ -527,7 +553,7 @@ void GraphUtil::orderPolyLine(RoadGraph* roads, RoadEdgeDesc e, RoadVertexDesc s
 	}
 
 	// If the order is opposite, reverse the order.
-	if ((roads->graph[src]->getPt() - roads->graph[e]->getPolyLine()[0]).length() > (roads->graph[tgt]->getPt() - roads->graph[e]->getPolyLine()[0]).length()) {
+	if ((roads->graph[src]->getPt() - roads->graph[e]->getPolyLine()[0]).lengthSquared() > (roads->graph[tgt]->getPt() - roads->graph[e]->getPolyLine()[0]).lengthSquared()) {
 		std::reverse(roads->graph[e]->polyLine.begin(), roads->graph[e]->polyLine.end());
 	}
 }
@@ -542,7 +568,7 @@ void GraphUtil::moveEdge(RoadGraph* roads, RoadEdgeDesc e, QVector2D& src_pos, Q
 	QVector2D src_diff = src_pos - roads->graph[src]->pt;
 	QVector2D tgt_diff = tgt_pos - roads->graph[tgt]->pt;
 
-	if ((roads->graph[e]->polyLine[0] - roads->graph[src]->pt).length() < (roads->graph[e]->polyLine[0] - roads->graph[tgt]->pt).length()) {
+	if ((roads->graph[e]->polyLine[0] - roads->graph[src]->pt).lengthSquared() < (roads->graph[e]->polyLine[0] - roads->graph[tgt]->pt).lengthSquared()) {
 		int n = roads->graph[e]->polyLine.size();
 		for (int i = 1; i < n - 1; i++) {
 			roads->graph[e]->polyLine[i] += src_diff + (tgt_diff - src_diff) * (float)i / (float)(n - 1);
@@ -738,52 +764,22 @@ RoadVertexDesc GraphUtil::splitEdge(RoadGraph* roads, RoadEdgeDesc edge_desc, co
 
 	// find which point along the polyline is the closest to the specified split point.
 	int index;
+	QVector2D pos;
 	float min_dist = std::numeric_limits<float>::max();
-	for (int i = 0; i < edge->polyLine.size(); i++) {
-		float dist = (edge->polyLine[i] - pt).length();
-		if (dist < min_dist) {
-			min_dist = dist;
-			index = i;
-		}
-	}
-
-	// define the point location
-	QVector2D new_pt = edge->polyLine[index];
-
-	// if the point is not close enough, find the 2nd closest one, and add another point that interpolate them.
-	if (min_dist > 0.1f) {
-		// find which point along the polyline is the 2nd closest to the specified split point.
-		int index2;
-		float min_dist2 = std::numeric_limits<float>::max();
-		for (int i = 0; i < edge->polyLine.size(); i++) {
-			if (i == index) continue;
-			float dist = (edge->polyLine[i] - pt).length();
-			if (dist < min_dist2) {
-				min_dist2 = dist;
-				index2 = i;
+	for (int i = 0; i < roads->graph[edge_desc]->polyLine.size() - 1; i++) {
+		QVector2D vec = roads->graph[edge_desc]->polyLine[i + 1] - roads->graph[edge_desc]->polyLine[i];
+		float length = vec.length();
+		for (int j = 0; j < length; j += 1.0f) {
+			QVector2D pt2 = roads->graph[edge_desc]->polyLine[i] + vec * (float)j / length;
+			float dist = (pt2 - pt).lengthSquared();
+			if (dist < min_dist) {
+				min_dist = dist;
+				index = i;
+				pos = pt2;
 			}
 		}
-
-		// adjust the index2 so that index and index2 are adjacent
-		if (index2 > index) {
-			index2 = index + 1;
-		} else {
-			index2 = index - 1;
-		}
-
-		// update the point location
-		new_pt = edge->polyLine[index] * min_dist2 / (min_dist + min_dist2) + edge->polyLine[index2] * min_dist / (min_dist + min_dist2);
-
-		if (index < index2) {
-			edge->polyLine.insert(edge->polyLine.begin() + index2, new_pt);
-			index = index2;
-		} else {
-			edge->polyLine.insert(edge->polyLine.begin() + index, new_pt);
-		}
-
 	}
 
-	QVector2D pos = edge->getPolyLine()[index];
 	RoadVertexDesc src = boost::source(edge_desc, roads->graph);
 	RoadVertexDesc tgt = boost::target(edge_desc, roads->graph);
 
@@ -794,12 +790,14 @@ RoadVertexDesc GraphUtil::splitEdge(RoadGraph* roads, RoadEdgeDesc edge_desc, co
 
 	// add the first edge
 	RoadEdgePtr e1 = RoadEdgePtr(new RoadEdge(edge->type, edge->lanes, edge->oneWay));
-	if ((edge->getPolyLine()[0] - roads->graph[src]->pt).length() < (edge->getPolyLine()[0] - roads->graph[tgt]->pt).length()) {
-		for (int i = index; i >= 0; i--) {
+	if ((edge->getPolyLine()[0] - roads->graph[src]->pt).lengthSquared() < (edge->getPolyLine()[0] - roads->graph[tgt]->pt).lengthSquared()) {
+		for (int i = 0; i <= index; i++) {
 			e1->addPoint(edge->getPolyLine()[i]);
 		}
+		e1->addPoint(pos);
 	} else {
-		for (int i = index; i < edge->getPolyLine().size(); i++) {
+		e1->addPoint(pos);
+		for (int i = index + 1; i < edge->getPolyLine().size(); i++) {
 			e1->addPoint(edge->getPolyLine()[i]);
 		}
 	}
@@ -808,15 +806,16 @@ RoadVertexDesc GraphUtil::splitEdge(RoadGraph* roads, RoadEdgeDesc edge_desc, co
 
 	// add the second edge
 	RoadEdgePtr e2 = RoadEdgePtr(new RoadEdge(edge->type, edge->lanes, edge->oneWay));
-	if ((edge->getPolyLine()[0] - roads->graph[src]->pt).length() < (edge->getPolyLine()[0] - roads->graph[tgt]->pt).length()) {
-		for (int i = index; i < edge->getPolyLine().size(); i++) {
+	if ((edge->getPolyLine()[0] - roads->graph[src]->pt).lengthSquared() < (edge->getPolyLine()[0] - roads->graph[tgt]->pt).lengthSquared()) {
+		e2->addPoint(pos);
+		for (int i = index + 1; i < edge->getPolyLine().size(); i++) {
 			e2->addPoint(edge->getPolyLine()[i]);
 		}
 	} else {
-		//for (int i = 0; i <= index; i++) {
-		for (int i = index; i >= 0; i--) {
+		for (int i = 0; i <= index; i++) {
 			e2->addPoint(edge->getPolyLine()[i]);
 		}
+		e2->addPoint(pos);
 	}
 	std::pair<RoadEdgeDesc, bool> edge_pair2 = boost::add_edge(v_desc, tgt, roads->graph);
 	roads->graph[edge_pair2.first] = e2;
@@ -909,6 +908,24 @@ void GraphUtil::removeShortEdges(RoadGraph* roads, float threshold) {
 			roads->graph[*ei]->valid = false;
 		}
 	}
+}
+
+/**
+ * Make the edge finer by inserting more points along the polyline.
+ */
+std::vector<QVector2D> GraphUtil::finerEdge(RoadGraph* roads, RoadEdgeDesc e, float step) {
+	std::vector<QVector2D> polyLine;
+
+	for (int i = 0; i < roads->graph[e]->polyLine.size() - 1; i++) {
+		QVector2D vec = roads->graph[e]->polyLine[i + 1] - roads->graph[e]->polyLine[i];
+		float length = vec.length();
+		for (int j = 0; j < length; j += step) {
+			polyLine.push_back(roads->graph[e]->polyLine[i] + vec * (float)j / length);
+		}
+	}
+	polyLine.push_back(roads->graph[e]->polyLine[roads->graph[e]->polyLine.size() - 1]);
+
+	return polyLine;
 }
 
 /**
@@ -1468,6 +1485,70 @@ void GraphUtil::extractRoads(RoadGraph* roads, const AbstractArea& area, bool st
 }
 
 /**
+ * Extract roads that reside in the specified area.
+ * If a edge is across the border of the area, add a vertex on the border and split the edge at the vertex.
+ */
+void GraphUtil::extractRoads2(RoadGraph* roads, const AbstractArea& area, int roadType) {
+	QList<RoadEdgeDesc> edges;
+
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+
+		if ((int)powf(2.0f, roads->graph[*ei]->type - 1) & roadType) {
+			if (!area.contains(roads->graph[src]->pt) && !area.contains(roads->graph[tgt]->pt)) {
+				roads->graph[*ei]->valid = false;
+			} else if (!area.contains(roads->graph[src]->pt) || !area.contains(roads->graph[tgt]->pt)) {
+				edges.push_back(*ei);
+			}
+		} else {
+			roads->graph[*ei]->valid = false;
+		}
+	}
+
+	for (int e_id = 0; e_id < edges.size(); e_id++) {
+		RoadVertexDesc src = boost::source(edges[e_id], roads->graph);
+		RoadVertexDesc tgt = boost::target(edges[e_id], roads->graph);
+
+		// if either vertice is out of the range, add a vertex on the border
+		std::vector<QVector2D> polyLine = finerEdge(roads, edges[e_id]);
+		QVector2D intPt;
+		if (area.contains(polyLine[0])) {
+			for (int i = 1; i < polyLine.size(); i++) {
+				if (!area.contains(polyLine[i])) {
+					intPt = polyLine[i];
+					break;
+				}
+			}
+		} else {
+			for (int i = polyLine.size() - 1; i >= 0; i--) {
+				if (!area.contains(polyLine[i])) {
+					intPt = polyLine[i];
+					break;
+				}
+			}
+		}
+
+		RoadVertexDesc v = splitEdge(roads, edges[e_id], intPt);
+		if (area.contains(roads->graph[src]->pt)) {
+			RoadEdgeDesc e = getEdge(roads, v, tgt);
+			roads->graph[e]->valid = false;
+		} else {
+			RoadEdgeDesc e = getEdge(roads, v, src);
+			roads->graph[e]->valid = false;
+		}
+	}
+
+	removeIsolatedVertices(roads);
+	reduce(roads);
+
+	roads->setModified();
+}
+
+/**
  * Subtract an area from the road graph.
  * If "strict" is true, only the edges that are completely within the area will be subtracted.
  * Note that this function does not change neighter the vertex desc nor the edge desc.
@@ -1494,6 +1575,66 @@ void GraphUtil::subtractRoads(RoadGraph* roads, const AbstractArea& area, bool s
 	}
 
 	removeIsolatedVertices(roads);
+
+	roads->setModified();
+}
+
+/**
+ * Subtract an area from the road graph.
+ */
+void GraphUtil::subtractRoads2(RoadGraph* roads, const AbstractArea& area) {
+	QList<RoadEdgeDesc> edges;
+
+	// list up all the edges that are across the border of the area
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+		
+		if (area.contains(roads->graph[src]->pt) && area.contains(roads->graph[tgt]->pt)) {
+			roads->graph[*ei]->valid = false;
+		} else if (area.contains(roads->graph[src]->pt) || area.contains(roads->graph[tgt]->pt)) {
+			edges.push_back(*ei);
+		}
+	}
+
+	for (int e_id = 0; e_id < edges.size(); e_id++) {
+		RoadVertexDesc src = boost::source(edges[e_id], roads->graph);
+		RoadVertexDesc tgt = boost::target(edges[e_id], roads->graph);
+
+		// if either vertice is out of the range, add a vertex on the border
+		std::vector<QVector2D> polyLine = finerEdge(roads, edges[e_id], 3.0f);
+		QVector2D intPt;
+		if (area.contains(polyLine[0])) {
+			for (int i = 1; i < polyLine.size(); i++) {
+				if (!area.contains(polyLine[i])) {
+					intPt = polyLine[i];
+					break;
+				}
+			}
+		} else {
+			for (int i = polyLine.size() - 1; i >= 0; i--) {
+				if (!area.contains(polyLine[i])) {
+					intPt = polyLine[i];
+					break;
+				}
+			}
+		}
+
+		RoadVertexDesc v = splitEdge(roads, edges[e_id], intPt);
+		if (area.contains(roads->graph[src]->pt)) {
+			RoadEdgeDesc e = getEdge(roads, v, src);
+			roads->graph[e]->valid = false;
+		} else {
+			RoadEdgeDesc e = getEdge(roads, v, tgt);
+			roads->graph[e]->valid = false;
+		}
+	}
+
+	removeIsolatedVertices(roads);
+	reduce(roads);
 
 	roads->setModified();
 }
@@ -1656,7 +1797,7 @@ RoadVertexDesc GraphUtil::findConnectedNearestNeighbor(RoadGraph* roads, const Q
 			visited[v2] = true;
 
 			// 指定した座標との距離をチェック
-			float dist = (roads->graph[v2]->getPt() - pt).length();
+			float dist = (roads->graph[v2]->getPt() - pt).lengthSquared();
 			if (dist < min_dist) {
 				min_dist = dist;
 				min_desc = v2;
@@ -1965,7 +2106,7 @@ void GraphUtil::normalize(RoadGraph* roads) {
 
 		RoadVertexDesc prev_desc;
 		RoadVertexDesc last_desc;
-		if ((roads->graph[src]->getPt() - roads->graph[*ei]->getPolyLine()[0]).length() < (roads->graph[tgt]->getPt() - roads->graph[*ei]->getPolyLine()[0]).length()) {
+		if ((roads->graph[src]->getPt() - roads->graph[*ei]->getPolyLine()[0]).lengthSquared() < (roads->graph[tgt]->getPt() - roads->graph[*ei]->getPolyLine()[0]).lengthSquared()) {
 			prev_desc = src;
 			last_desc = tgt;
 		} else {
@@ -2264,17 +2405,9 @@ void GraphUtil::distort(RoadGraph* roads, ArcArea* area) {
 	
 	RoadEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		std::vector<QVector2D> polyline;
-
-		for (int i = 0; i < roads->graph[*ei]->polyLine.size() - 1; i++) {
-			QVector2D vec = roads->graph[*ei]->polyLine[i + 1] - roads->graph[*ei]->polyLine[i];
-			float length = vec.length();
-			for (int j = 0; j < length; j += 3.0f) {
-				polyline.push_back(area->deform(roads->graph[*ei]->polyLine[i] + vec * (float)j / length));
-			}
+		for (int i = 0; i < roads->graph[*ei]->polyLine.size(); i++) {
+			roads->graph[*ei]->polyLine[i] = area->deform(roads->graph[*ei]->polyLine[i]);
 		}
-
-		roads->graph[*ei]->polyLine = polyline;
 	}
 
 	roads->setModified();

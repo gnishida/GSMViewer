@@ -40,6 +40,7 @@ public slots:
 	void onDeleteEdge();
 	void onVoronoi();
 	void onVoronoiCut();
+	void onShowArea();
 	void onShowControlWidget();
 };
 

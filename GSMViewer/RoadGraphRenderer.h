@@ -3,6 +3,7 @@
 #include "RoadGraph.h"
 #include "Renderable.h"
 #include "BBox.h"
+#include "VoronoiDiagram.h"
 
 class RoadGraphRenderer {
 public:
@@ -15,8 +16,9 @@ public:
 	void renderOne(RenderablePtr renderable);
 
 	void renderArea(const AbstractArea& area, float height);
+	void renderDenseArea(const AbstractArea& area, float height);
 	void renderPoint(const QVector2D& pt, float height);
 	void renderPolyline(std::vector<QVector2D>& polyline, float height);
-	void renderVoronoiDiagram(RoadGraph& roads, float height);
+	void renderVoronoiDiagram(VoronoiDiagram& vd, float height);
 };
 
