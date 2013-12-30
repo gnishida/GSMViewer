@@ -35,7 +35,7 @@ void ShadowRoadGraph::generateMesh() {
 		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
 
 		QColor color;
-		float ratio = ((roads->graph[src]->pt + roads->graph[tgt]->pt) / 2.0f - center).length() / 1000.0f;
+		float ratio = ((roads->graph[src]->pt + roads->graph[tgt]->pt) / 2.0f - center - translation).length() / 1000.0f;
 		if (ratio > 1.0f) ratio = 1.0f;
 		color.setRed((int)((233 - 148) * ratio + 148));
 		color.setGreen((int)((229 - 148) * ratio + 148));
@@ -87,10 +87,10 @@ RoadGraph* ShadowRoadGraph::instantiateRoads() {
 	GraphUtil::translate(new_roads, translation);
 
 	if (type == RoadGraphDatabase::TYPE_LARGE) {
-		CircleArea area(center, 2000.0f);
+		CircleArea area(center + translation, 2000.0f);
 		GraphUtil::extractRoads2(new_roads, area);
 	} else {
-		CircleArea area(center, 500.0f);
+		CircleArea area(center + translation, 500.0f);
 		GraphUtil::extractRoads2(new_roads, area);
 	}
 

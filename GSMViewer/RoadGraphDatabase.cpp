@@ -104,7 +104,8 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		float rotation = computeRotationAngle(roads1, r2, map1);
 		//float rotation = computeRotationAngle(r2, roads1, map1);
 
-		results.push_back(new ShadowRoadGraph(r2, roads, type, roads1->graph[root1]->pt, rotation, translation));
+		//results.push_back(new ShadowRoadGraph(r2, roads, type, roads1->graph[root1]->pt, rotation, translation));
+		results.push_back(new ShadowRoadGraph(r2, roads, type, r2->graph[root2]->pt, rotation, translation));
 
 		// clear the "fullyPaired" flags
 		RoadEdgeIter ei, eend;

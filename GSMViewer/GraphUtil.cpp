@@ -2002,7 +2002,7 @@ bool GraphUtil::reduce(RoadGraph* roads, RoadVertexDesc desc) {
 	}
 
 	if (edges[0]->type != edges[1]->type) return false;
-	if (edges[0]->lanes != edges[1]->lanes) return false;
+	//if (edges[0]->lanes != edges[1]->lanes) return false;
 
 	// If the vertices form a triangle, don't remove it.
 	if (hasEdge(roads, vd[0], vd[1])) return false;
