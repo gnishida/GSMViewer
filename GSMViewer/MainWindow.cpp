@@ -4,8 +4,13 @@
 MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
 
+	statusLebelL = new QLabel();
+	statusLabelR = new QLabel();
+
 	// setup UI
 	ui.actionModeBasic->setChecked(true);
+	ui.statusBar->addWidget(statusLebelL, 1);
+	ui.statusBar->addWidget(statusLabelR, 0);
 
 	// setup the docking widgets
 	controlWidget = new ControlWidget(this);
@@ -44,6 +49,11 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 }
 
 MainWindow::~MainWindow() {
+}
+
+void MainWindow::setStatusMessage(QString message1, QString message2) {
+	statusLebelL->setText(message1);
+	statusLabelR->setText(message2);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -84,7 +84,7 @@ public:
 	std::vector<RoadGraph*> interpolatedRoads;
 
 	Sketch sketch;
-	RoadGraphDatabase* roadDB;
+	RoadGraphDatabase roadDB;
 	QList<ShadowRoadGraph*> shadowRoads;
 
 	VoronoiDiagram voronoiDiagram;

@@ -3,17 +3,20 @@
 #include "BFSTree.h"
 #include "TopNSearch.h"
 
-RoadGraphDatabase::RoadGraphDatabase(QString filename) {
-	this->roads = new RoadGraph();
-	GraphUtil::loadRoads(roads, filename);
-
-	// compute the BFSTree for all the vertices
-	createTrees(this->roads);
+RoadGraphDatabase::RoadGraphDatabase() {
 }
 
 RoadGraphDatabase::~RoadGraphDatabase() {
 	delete roads;
 	clearTrees();
+}
+
+void RoadGraphDatabase::load(QString filename) {
+	this->roads = new RoadGraph();
+	GraphUtil::loadRoads(roads, filename);
+
+	// compute the BFSTree for all the vertices
+	createTrees(this->roads);
 }
 
 void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowRoadGraph*>& results) {

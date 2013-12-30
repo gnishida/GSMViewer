@@ -11,7 +11,7 @@ RoadGraphEditor::RoadGraphEditor() {
 	selectedRoads = new RoadGraph();
 	selectedRoadsOrig = new RoadGraph();
 	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/new-york.gsm");
-	roadDB = new RoadGraphDatabase("osm/3x3_simplified/paris.gsm");
+	roadDB.load("osm/3x3_simplified/paris.gsm");
 
 	clear();
 }
@@ -917,7 +917,7 @@ void RoadGraphEditor::sketching(const QVector2D& pt) {
 void RoadGraphEditor::stopSketching(float simplify_threshold, float snap_threshold) {
 	sketch.finalizeLine(simplify_threshold, snap_threshold);
 
-	roadDB->findSimilarRoads(&sketch, 1, shadowRoads);
+	roadDB.findSimilarRoads(&sketch, 1, shadowRoads);
 
 	mode = MODE_SKETCH;
 }

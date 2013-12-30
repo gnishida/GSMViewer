@@ -12,9 +12,10 @@ public:
 	QMap<RoadVertexDesc, BFSTree*> trees;
 
 public:
-	RoadGraphDatabase(QString filename);
+	RoadGraphDatabase();
 	~RoadGraphDatabase();
 
+	void load(QString filename);
 	void findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowRoadGraph*>& results);
 
 private:
