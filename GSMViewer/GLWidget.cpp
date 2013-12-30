@@ -23,6 +23,8 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// initialize the width and others
 	editor->roads->setZ(MIN_Z);
 
+	city_id = 0;
+
 	showArea = false;
 
 	// initialize the key status
@@ -133,10 +135,10 @@ void GLWidget::showStatusMessage() {
 		strMode = "MODE_BASIC_AREA_DISTORTING_BR";
 		break;
 	case RoadGraphEditor::MODE_SKETCH:
-		strMode = "MODE_SKETCH";
+		strMode = QString("MODE_SKETCH (%1)").arg(city_id);
 		break;
 	case RoadGraphEditor::MODE_SKETCH_SKETCHING:
-		strMode = "MODE_SKETCHING";
+		strMode = QString("MODE_SKETCHING (%1)").arg(city_id);
 		break;
 	}
 
@@ -174,7 +176,18 @@ void GLWidget::keyPressEvent(QKeyEvent *e) {
 			updateGL();
 		}
 		break;
+	case Qt::Key_1:
+		city_id = 0;
+		break;
+	case Qt::Key_2:
+		city_id = 1;
+		break;
+	case Qt::Key_3:
+		city_id = 2;
+		break;
 	}
+
+	showStatusMessage();
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent* e) {
@@ -197,6 +210,8 @@ void GLWidget::keyReleaseEvent(QKeyEvent* e) {
 		keyXPressed = false;
 		break;
 	}
+
+	showStatusMessage();
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *e) {
@@ -250,7 +265,11 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 
 	switch (editor->mode) {
 	case RoadGraphEditor::MODE_SKETCH_SKETCHING:
-		editor->stopSketching(camera->dz * 0.01f, camera->dz * 0.03f);
+		editor->stopSketching(
+			(camera->dz > 2000.0f) ? RoadGraphDatabase::TYPE_LARGE : RoadGraphDatabase::TYPE_SMALL, 
+			city_id,
+			camera->dz * 0.01f,
+			camera->dz * 0.03f);
 		break;
 	case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:
 		if (controlPressed) {
@@ -353,8 +372,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 		editor->roads->setZ(camera->dz);
 
 		lastPos = e->pos();
-
-		//mainWin->ui.statusBar->showMessage(QString("Z: %1").arg(camera->dz));
 	}
 
 	last2DPos = pos;

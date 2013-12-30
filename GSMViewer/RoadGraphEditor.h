@@ -84,7 +84,8 @@ public:
 	std::vector<RoadGraph*> interpolatedRoads;
 
 	Sketch sketch;
-	RoadGraphDatabase roadDB;
+	std::vector<RoadGraphDatabase*> largeRoadDB;
+	std::vector<RoadGraphDatabase*> smallRoadDB;
 	QList<ShadowRoadGraph*> shadowRoads;
 
 	VoronoiDiagram voronoiDiagram;
@@ -161,7 +162,7 @@ public:
 	// MODE_SKETCH | MODE_SKETCHING
 	void startSketching(const QVector2D& pt, float snap_threshold);
 	void sketching(const QVector2D& pt);
-	void stopSketching(float simplify_threshold, float snap_threshold);
+	void stopSketching(int type, int subtype, float simplify_threshold, float snap_threshold);
 	void instanciateShadowRoads();
 };
 

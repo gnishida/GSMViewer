@@ -1,8 +1,19 @@
 #include "ShadowRoadGraph.h"
+#include "RoadGraphDatabase.h"
+#include "GraphUtil.h"
+#include "CircleArea.h"
 
-ShadowRoadGraph::ShadowRoadGraph(RoadGraph* roads, const QVector2D center) {
+ShadowRoadGraph::ShadowRoadGraph(RoadGraph* roads, RoadGraph* roadsOrig, int type, const QVector2D& center, float rotation, const QVector2D& translation) {
 	this->roads = roads;
+	this->roadsOrig = roadsOrig;
+	this->type = type;
 	this->center = center;
+	this->rotation = rotation;
+	this->translation = translation;
+
+	// translation and rotation
+	GraphUtil::rotate(roads, -rotation, center);
+	GraphUtil::translate(roads, translation);
 }
 
 ShadowRoadGraph::~ShadowRoadGraph() {
@@ -66,4 +77,22 @@ void ShadowRoadGraph::addMeshFromEdge(RenderablePtr renderable, RoadEdgePtr edge
 		v.location[1] = edge->polyLine[i].y();
 		renderable->vertices.push_back(v);
 	}
+}
+
+RoadGraph* ShadowRoadGraph::instantiateRoads() {
+	RoadGraph* new_roads = GraphUtil::copyRoads(roadsOrig);
+
+	// translation and rotation
+	GraphUtil::rotate(new_roads, -rotation, center);
+	GraphUtil::translate(new_roads, translation);
+
+	if (type == RoadGraphDatabase::TYPE_LARGE) {
+		CircleArea area(center, 2000.0f);
+		GraphUtil::extractRoads2(new_roads, area);
+	} else {
+		CircleArea area(center, 500.0f);
+		GraphUtil::extractRoads2(new_roads, area);
+	}
+
+	return new_roads;
 }

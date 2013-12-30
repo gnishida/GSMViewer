@@ -4,6 +4,8 @@
 #include "TopNSearch.h"
 
 RoadGraphDatabase::RoadGraphDatabase() {
+	roads = NULL;
+	roadsForSearch = NULL;
 }
 
 RoadGraphDatabase::~RoadGraphDatabase() {
@@ -11,12 +13,26 @@ RoadGraphDatabase::~RoadGraphDatabase() {
 	clearTrees();
 }
 
-void RoadGraphDatabase::load(QString filename) {
+void RoadGraphDatabase::load(int type, QString filename) {
+	this->type = type;
+
+	if (this->roads != NULL) delete this->roads;
+	if (this->roadsForSearch != NULL) delete this->roadsForSearch;
+
 	this->roads = new RoadGraph();
 	GraphUtil::loadRoads(roads, filename);
 
+	// set up the road for search according to the type
+	if (type == TYPE_LARGE) {
+		roadsForSearch = GraphUtil::copyRoads(roads, 6);
+	} else {
+		roadsForSearch = GraphUtil::copyRoads(roads, 3);
+	}
+	GraphUtil::reduce(roadsForSearch);
+	GraphUtil::clean(roadsForSearch);
+
 	// compute the BFSTree for all the vertices
-	createTrees(this->roads);
+	createTrees(roadsForSearch);
 }
 
 void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowRoadGraph*>& results) {
@@ -45,10 +61,10 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		// Find the matching
 		QMap<RoadVertexDesc, RoadVertexDesc> map1;
 		QMap<RoadVertexDesc, RoadVertexDesc> map2;
-		GraphUtil::findCorrespondence(roads1, &tree1, this->roads, tree2, false, 0.75f, map1, map2);
+		GraphUtil::findCorrespondence(roads1, &tree1, roadsForSearch, tree2, false, 0.75f, map1, map2);
 
 		// Compute the similarity
-		float similarity = GraphUtil::computeSimilarity(roads1, map1, this->roads, map2, 1.0f, 1.0f, 1.0f);
+		float similarity = GraphUtil::computeSimilarity(roads1, map1, roadsForSearch, map2, 1.0f, 1.0f, 1.0f);
 		search.add(similarity, it.key());
 
 		if (similarity > max_similarity) {
@@ -61,8 +77,8 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		for (boost::tie(ei, eend) = boost::edges(roads1->graph); ei != eend; ++ei) {
 			roads1->graph[*ei]->fullyPaired = false;
 		}
-		for (boost::tie(ei, eend) = boost::edges(this->roads->graph); ei != eend; ++ei) {
-			this->roads->graph[*ei]->fullyPaired = false;
+		for (boost::tie(ei, eend) = boost::edges(roadsForSearch->graph); ei != eend; ++ei) {
+			roadsForSearch->graph[*ei]->fullyPaired = false;
 		}
 	}
 
@@ -72,7 +88,7 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		RoadVertexDesc root2 = list[i];
 		BFSTree* tree2 = trees[root2];
 
-		RoadGraph* r2 = GraphUtil::copyRoads(this->roads);
+		RoadGraph* r2 = GraphUtil::copyRoads(roadsForSearch);
 
 		// Find the matching
 		QMap<RoadVertexDesc, RoadVertexDesc> map1;
@@ -88,11 +104,7 @@ void RoadGraphDatabase::findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowR
 		float rotation = computeRotationAngle(roads1, r2, map1);
 		//float rotation = computeRotationAngle(r2, roads1, map1);
 
-		// translation and rotation
-		GraphUtil::rotate(r2, -rotation, r2->graph[root2]->pt);
-		GraphUtil::translate(r2, translation);
-
-		results.push_back(new ShadowRoadGraph(r2, roads1->graph[root1]->pt));
+		results.push_back(new ShadowRoadGraph(r2, roads, type, roads1->graph[root1]->pt, rotation, translation));
 
 		// clear the "fullyPaired" flags
 		RoadEdgeIter ei, eend;

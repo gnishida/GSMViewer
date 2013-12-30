@@ -10,8 +10,22 @@ RoadGraphEditor::RoadGraphEditor() {
 	roadsOrig = new RoadGraph();
 	selectedRoads = new RoadGraph();
 	selectedRoadsOrig = new RoadGraph();
-	//roadDB = new RoadGraphDatabase("osm/3x3_simplified/new-york.gsm");
-	roadDB.load("osm/3x3_simplified/paris.gsm");
+
+	const char* files[3] = {
+		"osm/3x3_simplified/london.gsm",
+		"osm/3x3_simplified/paris.gsm",
+		"osm/3x3_simplified/new-york.gsm"
+	};
+
+	for (int i = 0; i < 3; i++) {
+		RoadGraphDatabase* db1 = new RoadGraphDatabase();
+		db1->load(RoadGraphDatabase::TYPE_LARGE, QString(files[i]));
+		largeRoadDB.push_back(db1);
+
+		RoadGraphDatabase* db2 = new RoadGraphDatabase();
+		db2->load(RoadGraphDatabase::TYPE_SMALL, QString(files[i]));
+		smallRoadDB.push_back(db2);
+	}
 
 	clear();
 }
@@ -914,10 +928,14 @@ void RoadGraphEditor::sketching(const QVector2D& pt) {
 /**
  * スケッチ終了
  */
-void RoadGraphEditor::stopSketching(float simplify_threshold, float snap_threshold) {
+void RoadGraphEditor::stopSketching(int type, int subtype, float simplify_threshold, float snap_threshold) {
 	sketch.finalizeLine(simplify_threshold, snap_threshold);
 
-	roadDB.findSimilarRoads(&sketch, 1, shadowRoads);
+	if (type == RoadGraphDatabase::TYPE_LARGE) {
+		largeRoadDB[subtype]->findSimilarRoads(&sketch, 1, shadowRoads);
+	} else {
+		smallRoadDB[subtype]->findSimilarRoads(&sketch, 1, shadowRoads);
+	}
 
 	mode = MODE_SKETCH;
 }
@@ -926,7 +944,8 @@ void RoadGraphEditor::stopSketching(float simplify_threshold, float snap_thresho
  * シャドー道路を確定する
  */
 void RoadGraphEditor::instanciateShadowRoads() {
-	GraphUtil::copyRoads(shadowRoads[0]->roads, selectedRoads);
+	if (selectedRoads) delete selectedRoads;
+	selectedRoads = shadowRoads[0]->instantiateRoads();
 
 	if (selectedArea != NULL) {
 		delete selectedArea;

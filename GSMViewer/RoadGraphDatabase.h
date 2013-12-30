@@ -8,14 +8,19 @@
 
 class RoadGraphDatabase {
 public:
+	static enum { TYPE_LARGE = 0, TYPE_SMALL };
+
+public:
+	int type;
 	RoadGraph* roads;
+	RoadGraph* roadsForSearch;
 	QMap<RoadVertexDesc, BFSTree*> trees;
 
 public:
 	RoadGraphDatabase();
 	~RoadGraphDatabase();
 
-	void load(QString filename);
+	void load(int type, QString filename);
 	void findSimilarRoads(RoadGraph* roads1, int N, QList<ShadowRoadGraph*>& results);
 
 private:
