@@ -151,18 +151,22 @@ public:
 	void finalizeInterpolation(int ratio);
 	bool splitEdge(const QVector2D& pt);
 
-	// Voronoi
-	void voronoi();
-	void voronoiCut();
-	void voronoiCut2();
-	void voronoiCut2(AbstractArea* area);
-	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v);
-	bool isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2, const VoronoiVertex& v);
-
 	// MODE_SKETCH | MODE_SKETCHING
 	void startSketching(const QVector2D& pt, float snap_threshold);
 	void sketching(const QVector2D& pt);
 	void stopSketching(int type, int subtype, float simplify_threshold, float snap_threshold);
 	void instanciateShadowRoads();
+
+	// Voronoi
+	void voronoi();
+	void voronoiCut();
+	void voronoiCut2();
+	void voronoiCut2(AbstractArea* area);
+	void voronoiCut3();
+	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v);
+	bool isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2, const VoronoiVertex& v);
+
+	// Simple connect
+	void simpleConnect();
 };
 

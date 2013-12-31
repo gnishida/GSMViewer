@@ -1,5 +1,6 @@
 ﻿#include "RoadGraphEditor.h"
 #include "GraphUtil.h"
+#include "Util.h"
 #include "BFSTree.h"
 #include "ArcArea.h"
 #include "CircleArea.h"
@@ -17,7 +18,7 @@ RoadGraphEditor::RoadGraphEditor() {
 		"osm/3x3_simplified/new-york.gsm"
 	};
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 1; i++) {
 		RoadGraphDatabase* db1 = new RoadGraphDatabase();
 		db1->load(RoadGraphDatabase::TYPE_LARGE, QString(files[i]));
 		largeRoadDB.push_back(db1);
@@ -334,7 +335,9 @@ void RoadGraphEditor::moveArea(float dx, float dy) {
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 
 	//voronoiCut2(selectedArea);
-	voronoiCut2();
+	//voronoiCut2();
+	//simpleConnect();
+	voronoiCut3();
 }
 
 /**
@@ -577,6 +580,67 @@ bool RoadGraphEditor::splitEdge(const QVector2D& pt) {
 	} else {
 		return false;
 	}
+}
+
+/**
+ * スケッチ開始
+ */
+void RoadGraphEditor::startSketching(const QVector2D& pt, float snap_threshold) {
+	sketch.startLine(pt, snap_threshold);
+
+	mode = MODE_SKETCH_SKETCHING;
+}
+
+/**
+ * スケッチ中
+ */
+void RoadGraphEditor::sketching(const QVector2D& pt) {
+	sketch.addPointToLine(pt);
+}
+
+/**
+ * スケッチ終了
+ */
+void RoadGraphEditor::stopSketching(int type, int subtype, float simplify_threshold, float snap_threshold) {
+	sketch.finalizeLine(simplify_threshold, snap_threshold);
+
+	if (type == RoadGraphDatabase::TYPE_LARGE) {
+		largeRoadDB[subtype]->findSimilarRoads(&sketch, 1, shadowRoads);
+	} else {
+		smallRoadDB[subtype]->findSimilarRoads(&sketch, 1, shadowRoads);
+	}
+
+	mode = MODE_SKETCH;
+}
+
+/**
+ * シャドー道路を確定する
+ */
+void RoadGraphEditor::instanciateShadowRoads() {
+	if (selectedRoads) delete selectedRoads;
+	selectedRoads = shadowRoads[0]->instantiateRoads();
+
+	if (selectedArea != NULL) {
+		delete selectedArea;
+	}
+	//selectedArea = new CircleArea(shadowRoads[0]->center, 1000.0f);
+	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
+	//GraphUtil::extractRoads2(selectedRoads, *selectedArea);
+	
+	// clear the sketch
+	sketch.clear();
+
+	// clear the shadow roads
+	for (int i = 0; i < shadowRoads.size(); i++) {
+		delete shadowRoads[i];
+	}
+	shadowRoads.clear();
+
+	// backup the road graph
+	GraphUtil::copyRoads(roads, roadsOrig);
+	GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
+
+	mode = MODE_BASIC_AREA_SELECTED;
 }
 
 /**
@@ -885,6 +949,303 @@ void RoadGraphEditor::voronoiCut2(AbstractArea* area) {
 	selectedRoads->setModified();
 }
 
+/**
+ * Voronoi図を使って、２つの道路網をうまく結合させる。
+ * 1) 各セルについて、１つ以上の隣接頂点uとVoronoi図で隣接していない場合、敵陣の中の場合、そのセルの頂点vを無効にする。
+ * 2) 各セルについて、１つ以上の隣接頂点uとVoronoi図で隣接していない場合、
+ *    自陣の中の場合、隣接する敵セルの頂点wについて、ベクトルu-vとベクトルw-vのなす角度が小さい場合、wを無効にする。
+ * 3) 次に、各頂点について、センター頂点まで到達できない頂点を、全て無効にする。
+ * 4) 次に、各エッジについて、両端頂点が共に無効の場合、そのエッジも無効にする。
+ * 5) 各エッジについて、両端頂点のどちらかが無効になっている場合、無効な頂点uに最も近い敵陣の頂点u'を探す。
+ *    有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
+ *    1.x倍以下なら、エッジをu'にスナップする。ただし、そのエッジが他のエッジと交差する場合、交点u''を計算し、u''にスナップさせる。
+ *    既存エッジと交差する場合は、交点u''にスナップする。
+ */
+void RoadGraphEditor::voronoiCut3() {
+	// check if there is at least one vertex
+	if (GraphUtil::getNumVertices(roads) == 0) return;
+	if (GraphUtil::getNumVertices(selectedRoads) == 0) return;
+
+	std::vector<VoronoiVertex> points;
+	QMap<int, RoadVertexDesc> conv;
+
+	// define the center of the roads
+	RoadVertexDesc root1 = GraphUtil::getCentralVertex(roads);
+	RoadVertexDesc root2 = GraphUtil::getCentralVertex(selectedRoads);
+	QVector2D center1 = roads->graph[root1]->pt;
+	QVector2D center2 = selectedRoads->graph[root2]->pt;
+
+	int cell_index = 0;
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(roads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
+		points.push_back(VoronoiVertex(selectedRoads, *vi));
+		conv[cell_index] = *vi;
+	}
+
+	// Construction of the Voronoi Diagram.
+	boost::polygon::voronoi_diagram<double> vd;
+	construct_voronoi(points.begin(), points.end(), &vd);
+
+	// for each cell, check the adjacent cells
+	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
+		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
+		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
+
+	    std::size_t cell_index = it->source_index();
+		VoronoiVertex v = points[cell_index];
+
+		QList<RoadVertexDesc> neighbors;
+		RoadOutEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
+			if (!v.roads->graph[*ei]->valid) continue;
+
+			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
+			if (!v.roads->graph[tgt]->valid) continue;
+
+			neighbors.push_back(tgt);
+		}
+
+		// check if the neighbors are adjacent in Voronoi diagram
+		do {
+			if (!edge->is_primary()) continue;
+		
+			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
+			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
+			int neighbor_index = neighbor_cell->source_index();
+			if (v.roads == points[neighbor_index].roads) {
+				neighbors.removeOne(points[neighbor_index].desc);
+			}	
+
+			edge = edge->next();
+		} while (edge != cell.incident_edge());
+
+		// 全ての隣接頂点とVoronoi図で隣接している場合は、スキップ
+		if (neighbors.size() == 0) continue;
+
+		// 1) 頂点vが敵陣の中の場合、そのセルの頂点を無効にする
+		if (!isWithinTerritory(roads, center1, selectedRoads, center2, v)) {
+			v.roads->graph[v.desc]->valid = false;
+		}
+	}
+
+	// for each cell, check the adjacent cells
+	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
+		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
+		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
+
+	    std::size_t cell_index = it->source_index();
+		VoronoiVertex v = points[cell_index];
+
+		QList<RoadVertexDesc> neighbors;
+		RoadOutEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
+			if (!v.roads->graph[*ei]->valid) continue;
+
+			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
+			if (!v.roads->graph[tgt]->valid) continue;
+
+			neighbors.push_back(tgt);
+		}
+
+		// check if the neighbors are adjacent in Voronoi diagram
+		do {
+			if (!edge->is_primary()) continue;
+		
+			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
+			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
+			int neighbor_index = neighbor_cell->source_index();
+			if (v.roads == points[neighbor_index].roads) {
+				neighbors.removeOne(points[neighbor_index].desc);
+			}	
+
+			edge = edge->next();
+		} while (edge != cell.incident_edge());
+
+		// 全ての隣接頂点とVoronoi図で隣接している場合は、スキップ
+		if (neighbors.size() == 0) continue;
+
+		if (!isWithinTerritory(roads, center1, selectedRoads, center2, v)) continue;
+
+		// 2) 頂点vが自陣の中の場合、
+		for (int i = 0; i < neighbors.size(); i++) {
+			QVector2D vec1 = v.roads->graph[neighbors[i]]->pt - v.roads->graph[v.desc]->pt;
+			
+			edge = cell.incident_edge();
+
+			do {
+				if (!edge->is_primary()) continue;
+		
+				const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
+				const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
+				int neighbor_index = neighbor_cell->source_index();
+
+				QVector2D vec2 = points[neighbor_index].roads->graph[points[neighbor_index].desc]->pt - v.roads->graph[v.desc]->pt;
+
+				if (GraphUtil::diffAngle(vec1, vec2) < 0.65f) {
+					points[neighbor_index].roads->graph[points[neighbor_index].desc]->valid = false;
+				}
+
+				edge = edge->next();
+			} while (edge != cell.incident_edge());
+		}
+	}
+
+	// 3) 次に、各頂点について、センター頂点まで到達できない頂点を、全て無効にする。
+	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
+		if (!roads->graph[*vi]->valid) continue;
+
+		if (!GraphUtil::isConnected(roads, *vi, root1)) {
+			roads->graph[*vi]->valid = false;
+		}
+	}
+	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi) {
+		if (!selectedRoads->graph[*vi]->valid) continue;
+
+		if (!GraphUtil::isConnected(selectedRoads, *vi, root2)) {
+			selectedRoads->graph[*vi]->valid = false;
+		}
+	}
+
+	// 4) 次に、各エッジについて、両端頂点が共に無効の場合、そのエッジも無効にする。
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+
+		if (!roads->graph[src]->valid && !roads->graph[tgt]->valid) {
+			roads->graph[*ei]->valid = false;
+		}
+	}
+	for (boost::tie(ei, eend) = boost::edges(selectedRoads->graph); ei != eend; ++ei) {
+		if (!selectedRoads->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, selectedRoads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, selectedRoads->graph);
+
+		if (!selectedRoads->graph[src]->valid && !selectedRoads->graph[tgt]->valid) {
+			selectedRoads->graph[*ei]->valid = false;
+		}
+	}
+
+	// 5) 各エッジについて、両端頂点のどちらかが無効になっている場合、無効な頂点uに最も近い敵陣の頂点u'を探す。
+	QList<RoadEdgeDesc> edges1;
+	QList<RoadEdgeDesc> edges2;
+	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
+		if (!roads->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+
+		if (!roads->graph[src]->valid && !roads->graph[tgt]->valid) continue;
+
+		if (GraphUtil::getNumVertices(selectedRoads) == 0) continue;
+
+		float len = roads->graph[*ei]->getLength();
+		if (!roads->graph[src]->valid) {
+			RoadVertexDesc src2 = GraphUtil::getVertex(selectedRoads, roads->graph[src]->pt);
+			GraphUtil::moveEdge(roads, *ei, selectedRoads->graph[src2]->pt, roads->graph[tgt]->pt);
+		} else if (!roads->graph[tgt]->valid) {
+			RoadVertexDesc tgt2 = GraphUtil::getVertex(selectedRoads, roads->graph[tgt]->pt);
+			GraphUtil::moveEdge(roads, *ei, roads->graph[src]->pt, selectedRoads->graph[tgt2]->pt);
+		}
+
+		// 有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
+		if (roads->graph[*ei]->getLength() > len * 1.2f) {
+			roads->graph[*ei]->valid = false;
+			continue;
+		}
+
+		// 既存エッジと交差するかチェック
+		bool overlapped = false;
+		float tab, tcd;
+		QVector2D intPt;
+		for (int i = 0; i < roads->graph[*ei]->polyLine.size() - 1 && !overlapped; i++) {
+			RoadEdgeIter ei2, eend2;
+			for (boost::tie(ei2, eend2) = boost::edges(selectedRoads->graph); ei2 != eend2 && !overlapped; ++ei2) {
+				if (!selectedRoads->graph[*ei2]->valid) continue;
+
+				for (int j = 0; j < selectedRoads->graph[*ei2]->polyLine.size() - 1; j++) {
+					if (Util::segmentSegmentIntersectXY(roads->graph[*ei]->polyLine[i], roads->graph[*ei]->polyLine[i + 1], selectedRoads->graph[*ei2]->polyLine[j], selectedRoads->graph[*ei2]->polyLine[j + 1], &tab, &tcd, true, intPt)) {
+						overlapped = true;
+						break;
+					}
+				}
+			}
+		}
+
+		// 既存エッジと交差する場合は、交点にスナップ
+		if (overlapped) {
+			if (!roads->graph[src]->valid) {
+				GraphUtil::moveEdge(roads, *ei, intPt, roads->graph[tgt]->pt);
+			} else if (!roads->graph[tgt]->valid) {
+				GraphUtil::moveEdge(roads, *ei, roads->graph[src]->pt, intPt);
+			}
+		}
+	}
+	for (boost::tie(ei, eend) = boost::edges(selectedRoads->graph); ei != eend; ++ei) {
+		if (!selectedRoads->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, selectedRoads->graph);
+		RoadVertexDesc tgt = boost::target(*ei, selectedRoads->graph);
+
+		if (!selectedRoads->graph[src]->valid && !selectedRoads->graph[tgt]->valid) continue;
+
+		if (GraphUtil::getNumVertices(roads) == 0) continue;
+
+		float len = selectedRoads->graph[*ei]->getLength();
+		if (!selectedRoads->graph[src]->valid) {
+			RoadVertexDesc src2 = GraphUtil::getVertex(roads, selectedRoads->graph[src]->pt);
+			GraphUtil::moveEdge(selectedRoads, *ei, roads->graph[src2]->pt, selectedRoads->graph[tgt]->pt);
+		} else if (!selectedRoads->graph[tgt]->valid) {
+			RoadVertexDesc tgt2 = GraphUtil::getVertex(roads, selectedRoads->graph[tgt]->pt);
+			GraphUtil::moveEdge(selectedRoads, *ei, selectedRoads->graph[src]->pt, roads->graph[tgt2]->pt);
+		}
+
+		// 有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
+		if (selectedRoads->graph[*ei]->getLength() > len * 1.2f) {
+			selectedRoads->graph[*ei]->valid = false;
+			continue;
+		}
+
+		// 既存エッジと交差するかチェック
+		bool overlapped = false;
+		float tab, tcd;
+		QVector2D intPt;
+		for (int i = 0; i < selectedRoads->graph[*ei]->polyLine.size() - 1 && !overlapped; i++) {
+			RoadEdgeIter ei2, eend2;
+			for (boost::tie(ei2, eend2) = boost::edges(roads->graph); ei2 != eend2 && !overlapped; ++ei2) {
+				if (!roads->graph[*ei2]->valid) continue;
+
+				for (int j = 0; j < roads->graph[*ei2]->polyLine.size() - 1; j++) {
+					if (Util::segmentSegmentIntersectXY(selectedRoads->graph[*ei]->polyLine[i], selectedRoads->graph[*ei]->polyLine[i + 1], roads->graph[*ei2]->polyLine[j], roads->graph[*ei2]->polyLine[j + 1], &tab, &tcd, true, intPt)) {
+						overlapped = true;
+						break;
+					}
+				}
+			}
+		}
+
+		// 既存エッジと交差する場合は、交点にスナップ
+		if (overlapped) {
+			if (!selectedRoads->graph[src]->valid) {
+				GraphUtil::moveEdge(selectedRoads, *ei, intPt, selectedRoads->graph[tgt]->pt);
+			} else if (!selectedRoads->graph[tgt]->valid) {
+				GraphUtil::moveEdge(selectedRoads, *ei, selectedRoads->graph[src]->pt, intPt);
+			}
+		}
+	}
+
+	roads->setModified();
+	selectedRoads->setModified();
+}
+
 bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v) {
 	if (v.roads == roads1) {
 		float dist1 = (v.roads->graph[v.desc]->pt - center1).length();
@@ -910,62 +1271,50 @@ bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, co
 }
 
 /**
- * スケッチ開始
+ * 既存の道路網roadsと、選択された道路網selectedRoadsを、簡単に結合する。
+ * オーバラップされたエッジについて、中央から遠いほうを削除する。
+ * 削除されたエッジについて、交点までのエッジに置き換える。
  */
-void RoadGraphEditor::startSketching(const QVector2D& pt, float snap_threshold) {
-	sketch.startLine(pt, snap_threshold);
+void RoadGraphEditor::simpleConnect() {
+	// check if there is at least one vertex
+	if (GraphUtil::getNumVertices(roads) == 0) return;
+	if (GraphUtil::getNumVertices(selectedRoads) == 0) return;
 
-	mode = MODE_SKETCH_SKETCHING;
-}
+	float tab, tcd;
+	QVector2D intPt;
 
-/**
- * スケッチ中
- */
-void RoadGraphEditor::sketching(const QVector2D& pt) {
-	sketch.addPointToLine(pt);
-}
+	// define the center of each road graph
+	RoadVertexDesc root1 = GraphUtil::getCentralVertex(roads);
+	RoadVertexDesc root2 = GraphUtil::getCentralVertex(selectedRoads);
+	QVector2D center1 = roads->graph[root1]->pt;
+	QVector2D center2 = selectedRoads->graph[root2]->pt;
 
-/**
- * スケッチ終了
- */
-void RoadGraphEditor::stopSketching(int type, int subtype, float simplify_threshold, float snap_threshold) {
-	sketch.finalizeLine(simplify_threshold, snap_threshold);
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(selectedRoads->graph); ei != eend; ++ei) {
+		if (!selectedRoads->graph[*ei]->valid) continue;
 
-	if (type == RoadGraphDatabase::TYPE_LARGE) {
-		largeRoadDB[subtype]->findSimilarRoads(&sketch, 1, shadowRoads);
-	} else {
-		smallRoadDB[subtype]->findSimilarRoads(&sketch, 1, shadowRoads);
+		bool overlapped = false;
+
+		RoadEdgeIter ei2, eend2;
+		for (boost::tie(ei2, eend2) = boost::edges(roads->graph); ei2 != eend2 && !overlapped; ++ei2) {
+			if (!roads->graph[*ei2]->valid) continue;
+
+			for (int i = 0; i < selectedRoads->graph[*ei]->polyLine.size() - 1 && !overlapped; i++) {
+				for (int j = 0; j < roads->graph[*ei2]->polyLine.size() - 1; j++) {
+					if (Util::segmentSegmentIntersectXY(selectedRoads->graph[*ei]->polyLine[i], selectedRoads->graph[*ei]->polyLine[i + 1], roads->graph[*ei2]->polyLine[j], roads->graph[*ei2]->polyLine[j + 1], &tab, &tcd, true, intPt)) {
+						if ((intPt - center1).lengthSquared() < (intPt - center2).lengthSquared()) {
+							overlapped = true;
+						} else {
+							roads->graph[*ei2]->valid = false;
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		if (overlapped) {
+			selectedRoads->graph[*ei]->valid = false;
+		}
 	}
-
-	mode = MODE_SKETCH;
-}
-
-/**
- * シャドー道路を確定する
- */
-void RoadGraphEditor::instanciateShadowRoads() {
-	if (selectedRoads) delete selectedRoads;
-	selectedRoads = shadowRoads[0]->instantiateRoads();
-
-	if (selectedArea != NULL) {
-		delete selectedArea;
-	}
-	//selectedArea = new CircleArea(shadowRoads[0]->center, 1000.0f);
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
-	//GraphUtil::extractRoads2(selectedRoads, *selectedArea);
-	
-	// clear the sketch
-	sketch.clear();
-
-	// clear the shadow roads
-	for (int i = 0; i < shadowRoads.size(); i++) {
-		delete shadowRoads[i];
-	}
-	shadowRoads.clear();
-
-	// backup the road graph
-	GraphUtil::copyRoads(roads, roadsOrig);
-	GraphUtil::copyRoads(selectedRoads, selectedRoadsOrig);
-
-	mode = MODE_BASIC_AREA_SELECTED;
 }
