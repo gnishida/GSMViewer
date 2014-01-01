@@ -172,7 +172,7 @@ void GLWidget::keyPressEvent(QKeyEvent *e) {
 		break;
 	case Qt::Key_Space:
 		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
-			editor->instanciateShadowRoads();
+			editor->instantiateShadowRoads();
 			updateGL();
 		}
 		break;
@@ -224,7 +224,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
 		if (editor->mode == RoadGraphEditor::MODE_SKETCH) {
-			editor->startSketching(last2DPos, camera->dz * 0.03f);
+			editor->startSketching(last2DPos, camera->dz * 0.01f);
 		} else if (editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED) {
 			/*if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
 				editor->startResizingArea(RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR);
@@ -269,7 +269,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 			(camera->dz > 2000.0f) ? RoadGraphDatabase::TYPE_LARGE : RoadGraphDatabase::TYPE_SMALL, 
 			city_id,
 			camera->dz * 0.01f,
-			camera->dz * 0.03f);
+			camera->dz * 0.01f);
 		break;
 	case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:
 		if (controlPressed) {

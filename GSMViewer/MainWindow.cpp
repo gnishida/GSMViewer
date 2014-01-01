@@ -188,7 +188,7 @@ void MainWindow::onVoronoi() {
 }
 
 void MainWindow::onVoronoiCut() {
-	glWidget->editor->voronoiCut2();
+	glWidget->editor->voronoiMerge2();
 }
 
 void MainWindow::onShowArea() {

@@ -4,6 +4,7 @@
 #include "BFSTree.h"
 #include "ArcArea.h"
 #include "CircleArea.h"
+#include "VoronoiUtil.h"
 #include <boost/polygon/voronoi.hpp>
 
 RoadGraphEditor::RoadGraphEditor() {
@@ -18,7 +19,7 @@ RoadGraphEditor::RoadGraphEditor() {
 		"osm/3x3_simplified/new-york.gsm"
 	};
 
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 3; i++) {
 		RoadGraphDatabase* db1 = new RoadGraphDatabase();
 		db1->load(RoadGraphDatabase::TYPE_LARGE, QString(files[i]));
 		largeRoadDB.push_back(db1);
@@ -292,7 +293,7 @@ void RoadGraphEditor::startDistortingArea(int type) {
 	// distort the roads
 	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 
-	voronoiCut2(selectedArea);
+	VoronoiUtil::merge2(roads, selectedRoads, selectedArea);
 }
 
 void RoadGraphEditor::distortArea(const QVector2D& pt) {
@@ -305,7 +306,7 @@ void RoadGraphEditor::distortArea(const QVector2D& pt) {
 	// distort the roads
 	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 
-	voronoiCut2(selectedArea);
+	VoronoiUtil::merge2(roads, selectedRoads, selectedArea);
 }
 
 void RoadGraphEditor::stopDistortingArea() {
@@ -334,10 +335,7 @@ void RoadGraphEditor::moveArea(float dx, float dy) {
 	GraphUtil::copyRoads(roadsOrig, roads);
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 
-	//voronoiCut2(selectedArea);
-	//voronoiCut2();
-	//simpleConnect();
-	voronoiCut3();
+	VoronoiUtil::merge4(roads, selectedRoads);
 }
 
 /**
@@ -616,7 +614,7 @@ void RoadGraphEditor::stopSketching(int type, int subtype, float simplify_thresh
 /**
  * シャドー道路を確定する
  */
-void RoadGraphEditor::instanciateShadowRoads() {
+void RoadGraphEditor::instantiateShadowRoads() {
 	if (selectedRoads) delete selectedRoads;
 	selectedRoads = shadowRoads[0]->instantiateRoads();
 
@@ -643,631 +641,24 @@ void RoadGraphEditor::instanciateShadowRoads() {
 	mode = MODE_BASIC_AREA_SELECTED;
 }
 
-/**
- * Based on the existing road graph and the selected road graph, build a voronoi diagram.
- */
 void RoadGraphEditor::voronoi() {
-	voronoiDiagram.clear();
-
-	std::vector<VoronoiVertex> points;
-	QMap<int, RoadVertexDesc> conv;
-
-	int cell_index = 0;
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(roads, *vi));
-		voronoiDiagram.points.push_back(roads->graph[*vi]->pt);
-		voronoiDiagram.groups.push_back(0);
-		conv[cell_index] = *vi;
-	}
-
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(selectedRoads, *vi));
-		voronoiDiagram.points.push_back(selectedRoads->graph[*vi]->pt);
-		voronoiDiagram.groups.push_back(1);
-		conv[cell_index] = *vi;
-	}
-
-	// Construction of the Voronoi Diagram.
-	boost::polygon::voronoi_diagram<double> vd;
-	construct_voronoi(points.begin(), points.end(), &vd);
-
-	// create a voronoi edges
-	for (boost::polygon::voronoi_diagram<double>::const_edge_iterator it = vd.edges().begin(); it != vd.edges().end(); ++it) {
-		if (!it->is_primary()) continue;
-		if (it->is_infinite()) continue;
-
-		const boost::polygon::voronoi_diagram<double>::vertex_type* vertex0 = it->vertex0();
-		const boost::polygon::voronoi_diagram<double>::vertex_type* vertex1 = it->vertex1();
-
-		if (vertex0 != NULL && vertex1 != NULL) {
-			RoadVertexPtr v0 = RoadVertexPtr(new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f)));
-			RoadVertexDesc v0_desc = boost::add_vertex(voronoiDiagram.edges.graph);
-			voronoiDiagram.edges.graph[v0_desc] = v0;
-
-			RoadVertexPtr v1 = RoadVertexPtr(new RoadVertex(QVector2D((float)vertex0->x() * 0.01f, (float)vertex0->y() * 0.01f)));
-			RoadVertexDesc v1_desc = boost::add_vertex(voronoiDiagram.edges.graph);
-			voronoiDiagram.edges.graph[v1_desc] = v1;
-
-			GraphUtil::addEdge(&voronoiDiagram.edges, v0_desc, v1_desc, 1, 1, false);
-		}
-	}
+	VoronoiUtil::voronoi(roads, selectedRoads, voronoiDiagram);
 }
 
-/**
- * Voronoi図を使って、２つの道路網をうまく結合させる。
- * 各エッジについて、２つの頂点がそれぞれ属するセルが隣接していない場合、そのエッジを無効にする。
- * かなり、保守的なアルゴリズムだ。しかも、エッジを無効にするだけで、２つの道路網をつなぐエッジを追加していないので、
- * あまり良くない。
- */
-void RoadGraphEditor::voronoiCut() {
-	// copy the road graph
-	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
-
-	std::vector<VoronoiVertex> points;
-	QMap<int, RoadVertexDesc> conv;
-
-	int cell_index = 0;
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(roads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(selectedRoads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	// Construction of the Voronoi Diagram.
-	boost::polygon::voronoi_diagram<double> vd;
-	construct_voronoi(points.begin(), points.end(), &vd);
-
-	// for each cell, check the adjacent cells
-	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
-		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
-		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
-
-	    std::size_t cell_index = it->source_index();
-		VoronoiVertex v = points[cell_index];
-
-		// list up all the outing edges
-		QList<RoadVertexDesc> neighbors;
-		RoadOutEdgeIter ei, eend;
-		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
-			if (!v.roads->graph[*ei]->valid) continue;
-
-			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
-			neighbors.push_back(tgt);
-		}
-
-		// check if the neighbors are in the same road graph
-		do {
-			if (!edge->is_primary()) continue;
-		
-			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
-			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
-			int neighbor_index = neighbor_cell->source_index();
-			if (v.roads == points[neighbor_index].roads) {
-				neighbors.removeOne(points[neighbor_index].desc);
-			}	
-
-			edge = edge->next();
-		} while (edge != cell.incident_edge());
-
-		// for those neighbors which are in the different road graph, remove the corresponding edges
-		for (int i = 0; i < neighbors.size(); i++) {
-			RoadEdgeDesc e = GraphUtil::getEdge(v.roads, v.desc, neighbors[i]);
-			v.roads->graph[e]->valid = false;
-		}
-	}
-
-	roads->setModified();
-	selectedRoads->setModified();
+void RoadGraphEditor::voronoiMerge() {
+	VoronoiUtil::merge(roads, selectedRoads);
 }
 
-/**
- * Voronoi図を使って、２つの道路網をうまく結合させる。
- * 各エッジについて、２つの頂点がそれぞれ属するセルが隣接していない場合、
- * 1) 敵陣に近い場合、両端の頂点が共に敵陣の中なら、そのエッジを無効にする。
- * 2) 片方の頂点だけ敵陣の中なら、その頂点を敵陣の近接頂点にスナップする。
- */
-void RoadGraphEditor::voronoiCut2() {
-	// check if there is at least one vertex
-	if (GraphUtil::getNumVertices(roads) == 0) return;
-	if (GraphUtil::getNumVertices(selectedRoads) == 0) return;
-	
-	std::vector<VoronoiVertex> points;
-	QMap<int, RoadVertexDesc> conv;
-
-	// define the center of the roads
-	QVector2D center1 = roads->graph[GraphUtil::getCentralVertex(roads)]->pt;
-	QVector2D center2 = selectedRoads->graph[GraphUtil::getCentralVertex(selectedRoads)]->pt;
-
-	int cell_index = 0;
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(roads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(selectedRoads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	// Construction of the Voronoi Diagram.
-	boost::polygon::voronoi_diagram<double> vd;
-	construct_voronoi(points.begin(), points.end(), &vd);
-
-	// for each cell, check the adjacent cells
-	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
-		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
-		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
-
-	    std::size_t cell_index = it->source_index();
-		VoronoiVertex v = points[cell_index];
-
-		bool withinTerritory = isWithinTerritory(roads, center1, selectedRoads, center2, v);
-
-		// check if the neighbors are in the same road graph
-		bool adjacentToEnemy = false;
-		do {
-			if (!edge->is_primary()) continue;
-		
-			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
-			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
-			int neighbor_index = neighbor_cell->source_index();
-			if (v.roads != points[neighbor_index].roads) {
-				adjacentToEnemy = true;
-				break;
-			}
-
-			edge = edge->next();
-		} while (edge != cell.incident_edge());
-
-		// if this cell is far away from the center of the road and is adjacent to the enemy cells,
-		// remove the edge if both vertices are outside the territory.
-		if (!withinTerritory && adjacentToEnemy) {
-			// for each outing edge
-			RoadOutEdgeIter ei, eend;
-			for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
-				if (!v.roads->graph[*ei]->valid) continue;
-
-				RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
-				
-				// if both the vertices is outside the teritory, remove this edge
-				if (!isWithinTerritory(roads, center1, selectedRoads, center2, v) &&
-					!isWithinTerritory(roads, center1, selectedRoads, center2, VoronoiVertex(v.roads, tgt))) {
-					v.roads->graph[*ei]->valid = false;
-					v.roads->graph[v.desc]->valid = false;
-					continue;
-				}
-
-				// if only v.desc is outside the teritory, find the closest vertex from neighbors[i], and snap v.desc to it.
-				if (v.roads == roads) {
-					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(selectedRoads, v.roads->graph[tgt]->pt);
-					GraphUtil::moveVertex(v.roads, v.desc, selectedRoads->graph[snap_v_desc]->pt);
-				} else {
-					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(roads, v.roads->graph[tgt]->pt);
-					GraphUtil::moveVertex(v.roads, v.desc, roads->graph[snap_v_desc]->pt);
-				}
-			}
-		}
-	}
-
-	roads->setModified();
-	selectedRoads->setModified();
+void RoadGraphEditor::voronoiMerge2() {
+	VoronoiUtil::merge2(roads, selectedRoads);
 }
 
-/**
- * selectedRoadsのエリアが"area"で与えられている時の、voronoiCut2
- */
-void RoadGraphEditor::voronoiCut2(AbstractArea* area) {
-	// check if there is at least one vertex
-	if (GraphUtil::getNumVertices(roads) == 0) return;
-	if (GraphUtil::getNumVertices(selectedRoads) == 0) return;
-	
-	std::vector<VoronoiVertex> points;
-	QMap<int, RoadVertexDesc> conv;
-
-	int cell_index = 0;
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(roads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(selectedRoads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	// Construction of the Voronoi Diagram.
-	boost::polygon::voronoi_diagram<double> vd;
-	construct_voronoi(points.begin(), points.end(), &vd);
-
-	// for each cell, check the adjacent cells
-	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
-		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
-		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
-
-	    std::size_t cell_index = it->source_index();
-		VoronoiVertex v = points[cell_index];
-
-		bool withinTerritory = isWithinTerritory(roads, selectedRoads, *area, v);
-
-		// check if the neighbors are in the same road graph
-		bool adjacentToEnemy = false;
-		do {
-			if (!edge->is_primary()) continue;
-		
-			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
-			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
-			int neighbor_index = neighbor_cell->source_index();
-			if (v.roads != points[neighbor_index].roads) {
-				adjacentToEnemy = true;
-				break;
-			}
-
-			edge = edge->next();
-		} while (edge != cell.incident_edge());
-
-		// if this cell is far away from the center of the road and is adjacent to the enemy cells,
-		// remove the edge if both vertices are outside the territory.
-		if (!withinTerritory && adjacentToEnemy) {
-			// for each outing edge
-			RoadOutEdgeIter ei, eend;
-			for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
-				if (!v.roads->graph[*ei]->valid) continue;
-
-				RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
-				
-				// if both the vertices is outside the teritory, remove this edge
-				if (!isWithinTerritory(roads, selectedRoads, *area, VoronoiVertex(v.roads, tgt))) {
-					v.roads->graph[*ei]->valid = false;
-					v.roads->graph[v.desc]->valid = false;
-					continue;
-				}
-
-				// if only v.desc is outside the teritory, find the closest vertex from neighbors[i], and snap v.desc to it.
-				QVector2D vec = v.roads->graph[v.desc]->pt - v.roads->graph[tgt]->pt;
-				if (v.roads == roads) {
-					//RoadVertexDesc snap_v_desc = GraphUtil::getVertex(selectedRoads, v.roads->graph[tgt]->pt, atan2f(vec.y(), vec.x()), 0.75f);
-					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(selectedRoads, v.roads->graph[v.desc]->pt);
-					GraphUtil::moveVertex(v.roads, v.desc, selectedRoads->graph[snap_v_desc]->pt);
-				} else {
-					//RoadVertexDesc snap_v_desc = GraphUtil::getVertex(roads, v.roads->graph[tgt]->pt, atan2f(vec.y(), vec.x()), 0.75f);
-					RoadVertexDesc snap_v_desc = GraphUtil::getVertex(roads, v.roads->graph[v.desc]->pt);
-					GraphUtil::moveVertex(v.roads, v.desc, roads->graph[snap_v_desc]->pt);
-				}
-			}
-		}
-	}
-
-	roads->setModified();
-	selectedRoads->setModified();
+void RoadGraphEditor::voronoiMerge2(AbstractArea* area) {
+	VoronoiUtil::merge2(roads, selectedRoads, area);
 }
 
-/**
- * Voronoi図を使って、２つの道路網をうまく結合させる。
- * 1) 各セルについて、１つ以上の隣接頂点uとVoronoi図で隣接していない場合、敵陣の中の場合、そのセルの頂点vを無効にする。
- * 2) 各セルについて、１つ以上の隣接頂点uとVoronoi図で隣接していない場合、
- *    自陣の中の場合、隣接する敵セルの頂点wについて、ベクトルu-vとベクトルw-vのなす角度が小さい場合、wを無効にする。
- * 3) 次に、各頂点について、センター頂点まで到達できない頂点を、全て無効にする。
- * 4) 次に、各エッジについて、両端頂点が共に無効の場合、そのエッジも無効にする。
- * 5) 各エッジについて、両端頂点のどちらかが無効になっている場合、無効な頂点uに最も近い敵陣の頂点u'を探す。
- *    有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
- *    1.x倍以下なら、エッジをu'にスナップする。ただし、そのエッジが他のエッジと交差する場合、交点u''を計算し、u''にスナップさせる。
- *    既存エッジと交差する場合は、交点u''にスナップする。
- */
-void RoadGraphEditor::voronoiCut3() {
-	// check if there is at least one vertex
-	if (GraphUtil::getNumVertices(roads) == 0) return;
-	if (GraphUtil::getNumVertices(selectedRoads) == 0) return;
-
-	std::vector<VoronoiVertex> points;
-	QMap<int, RoadVertexDesc> conv;
-
-	// define the center of the roads
-	RoadVertexDesc root1 = GraphUtil::getCentralVertex(roads);
-	RoadVertexDesc root2 = GraphUtil::getCentralVertex(selectedRoads);
-	QVector2D center1 = roads->graph[root1]->pt;
-	QVector2D center2 = selectedRoads->graph[root2]->pt;
-
-	int cell_index = 0;
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(roads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi, ++cell_index) {
-		points.push_back(VoronoiVertex(selectedRoads, *vi));
-		conv[cell_index] = *vi;
-	}
-
-	// Construction of the Voronoi Diagram.
-	boost::polygon::voronoi_diagram<double> vd;
-	construct_voronoi(points.begin(), points.end(), &vd);
-
-	// for each cell, check the adjacent cells
-	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
-		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
-		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
-
-	    std::size_t cell_index = it->source_index();
-		VoronoiVertex v = points[cell_index];
-
-		QList<RoadVertexDesc> neighbors;
-		RoadOutEdgeIter ei, eend;
-		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
-			if (!v.roads->graph[*ei]->valid) continue;
-
-			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
-			if (!v.roads->graph[tgt]->valid) continue;
-
-			neighbors.push_back(tgt);
-		}
-
-		// check if the neighbors are adjacent in Voronoi diagram
-		do {
-			if (!edge->is_primary()) continue;
-		
-			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
-			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
-			int neighbor_index = neighbor_cell->source_index();
-			if (v.roads == points[neighbor_index].roads) {
-				neighbors.removeOne(points[neighbor_index].desc);
-			}	
-
-			edge = edge->next();
-		} while (edge != cell.incident_edge());
-
-		// 全ての隣接頂点とVoronoi図で隣接している場合は、スキップ
-		if (neighbors.size() == 0) continue;
-
-		// 1) 頂点vが敵陣の中の場合、そのセルの頂点を無効にする
-		if (!isWithinTerritory(roads, center1, selectedRoads, center2, v)) {
-			v.roads->graph[v.desc]->valid = false;
-		}
-	}
-
-	// for each cell, check the adjacent cells
-	for (boost::polygon::voronoi_diagram<double>::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it) {
-		const boost::polygon::voronoi_diagram<double>::cell_type& cell = *it;
-		const boost::polygon::voronoi_diagram<double>::edge_type* edge = cell.incident_edge();
-
-	    std::size_t cell_index = it->source_index();
-		VoronoiVertex v = points[cell_index];
-
-		QList<RoadVertexDesc> neighbors;
-		RoadOutEdgeIter ei, eend;
-		for (boost::tie(ei, eend) = boost::out_edges(v.desc, v.roads->graph); ei != eend; ++ei) {
-			if (!v.roads->graph[*ei]->valid) continue;
-
-			RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
-			if (!v.roads->graph[tgt]->valid) continue;
-
-			neighbors.push_back(tgt);
-		}
-
-		// check if the neighbors are adjacent in Voronoi diagram
-		do {
-			if (!edge->is_primary()) continue;
-		
-			const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
-			const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
-			int neighbor_index = neighbor_cell->source_index();
-			if (v.roads == points[neighbor_index].roads) {
-				neighbors.removeOne(points[neighbor_index].desc);
-			}	
-
-			edge = edge->next();
-		} while (edge != cell.incident_edge());
-
-		// 全ての隣接頂点とVoronoi図で隣接している場合は、スキップ
-		if (neighbors.size() == 0) continue;
-
-		if (!isWithinTerritory(roads, center1, selectedRoads, center2, v)) continue;
-
-		// 2) 頂点vが自陣の中の場合、
-		for (int i = 0; i < neighbors.size(); i++) {
-			QVector2D vec1 = v.roads->graph[neighbors[i]]->pt - v.roads->graph[v.desc]->pt;
-			
-			edge = cell.incident_edge();
-
-			do {
-				if (!edge->is_primary()) continue;
-		
-				const boost::polygon::voronoi_diagram<double>::edge_type* neighbor_edge = edge->twin();
-				const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
-				int neighbor_index = neighbor_cell->source_index();
-
-				QVector2D vec2 = points[neighbor_index].roads->graph[points[neighbor_index].desc]->pt - v.roads->graph[v.desc]->pt;
-
-				if (GraphUtil::diffAngle(vec1, vec2) < 0.65f) {
-					points[neighbor_index].roads->graph[points[neighbor_index].desc]->valid = false;
-				}
-
-				edge = edge->next();
-			} while (edge != cell.incident_edge());
-		}
-	}
-
-	// 3) 次に、各頂点について、センター頂点まで到達できない頂点を、全て無効にする。
-	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
-		if (!roads->graph[*vi]->valid) continue;
-
-		if (!GraphUtil::isConnected(roads, *vi, root1)) {
-			roads->graph[*vi]->valid = false;
-		}
-	}
-	for (boost::tie(vi, vend) = boost::vertices(selectedRoads->graph); vi != vend; ++vi) {
-		if (!selectedRoads->graph[*vi]->valid) continue;
-
-		if (!GraphUtil::isConnected(selectedRoads, *vi, root2)) {
-			selectedRoads->graph[*vi]->valid = false;
-		}
-	}
-
-	// 4) 次に、各エッジについて、両端頂点が共に無効の場合、そのエッジも無効にする。
-	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		if (!roads->graph[*ei]->valid) continue;
-
-		RoadVertexDesc src = boost::source(*ei, roads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
-
-		if (!roads->graph[src]->valid && !roads->graph[tgt]->valid) {
-			roads->graph[*ei]->valid = false;
-		}
-	}
-	for (boost::tie(ei, eend) = boost::edges(selectedRoads->graph); ei != eend; ++ei) {
-		if (!selectedRoads->graph[*ei]->valid) continue;
-
-		RoadVertexDesc src = boost::source(*ei, selectedRoads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, selectedRoads->graph);
-
-		if (!selectedRoads->graph[src]->valid && !selectedRoads->graph[tgt]->valid) {
-			selectedRoads->graph[*ei]->valid = false;
-		}
-	}
-
-	// 5) 各エッジについて、両端頂点のどちらかが無効になっている場合、無効な頂点uに最も近い敵陣の頂点u'を探す。
-	QList<RoadEdgeDesc> edges1;
-	QList<RoadEdgeDesc> edges2;
-	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		if (!roads->graph[*ei]->valid) continue;
-
-		RoadVertexDesc src = boost::source(*ei, roads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
-
-		if (!roads->graph[src]->valid && !roads->graph[tgt]->valid) continue;
-
-		if (GraphUtil::getNumVertices(selectedRoads) == 0) continue;
-
-		float len = roads->graph[*ei]->getLength();
-		if (!roads->graph[src]->valid) {
-			RoadVertexDesc src2 = GraphUtil::getVertex(selectedRoads, roads->graph[src]->pt);
-			GraphUtil::moveEdge(roads, *ei, selectedRoads->graph[src2]->pt, roads->graph[tgt]->pt);
-		} else if (!roads->graph[tgt]->valid) {
-			RoadVertexDesc tgt2 = GraphUtil::getVertex(selectedRoads, roads->graph[tgt]->pt);
-			GraphUtil::moveEdge(roads, *ei, roads->graph[src]->pt, selectedRoads->graph[tgt2]->pt);
-		}
-
-		// 有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
-		if (roads->graph[*ei]->getLength() > len * 1.2f) {
-			roads->graph[*ei]->valid = false;
-			continue;
-		}
-
-		// 既存エッジと交差するかチェック
-		bool overlapped = false;
-		float tab, tcd;
-		QVector2D intPt;
-		for (int i = 0; i < roads->graph[*ei]->polyLine.size() - 1 && !overlapped; i++) {
-			RoadEdgeIter ei2, eend2;
-			for (boost::tie(ei2, eend2) = boost::edges(selectedRoads->graph); ei2 != eend2 && !overlapped; ++ei2) {
-				if (!selectedRoads->graph[*ei2]->valid) continue;
-
-				for (int j = 0; j < selectedRoads->graph[*ei2]->polyLine.size() - 1; j++) {
-					if (Util::segmentSegmentIntersectXY(roads->graph[*ei]->polyLine[i], roads->graph[*ei]->polyLine[i + 1], selectedRoads->graph[*ei2]->polyLine[j], selectedRoads->graph[*ei2]->polyLine[j + 1], &tab, &tcd, true, intPt)) {
-						overlapped = true;
-						break;
-					}
-				}
-			}
-		}
-
-		// 既存エッジと交差する場合は、交点にスナップ
-		if (overlapped) {
-			if (!roads->graph[src]->valid) {
-				GraphUtil::moveEdge(roads, *ei, intPt, roads->graph[tgt]->pt);
-			} else if (!roads->graph[tgt]->valid) {
-				GraphUtil::moveEdge(roads, *ei, roads->graph[src]->pt, intPt);
-			}
-		}
-	}
-	for (boost::tie(ei, eend) = boost::edges(selectedRoads->graph); ei != eend; ++ei) {
-		if (!selectedRoads->graph[*ei]->valid) continue;
-
-		RoadVertexDesc src = boost::source(*ei, selectedRoads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, selectedRoads->graph);
-
-		if (!selectedRoads->graph[src]->valid && !selectedRoads->graph[tgt]->valid) continue;
-
-		if (GraphUtil::getNumVertices(roads) == 0) continue;
-
-		float len = selectedRoads->graph[*ei]->getLength();
-		if (!selectedRoads->graph[src]->valid) {
-			RoadVertexDesc src2 = GraphUtil::getVertex(roads, selectedRoads->graph[src]->pt);
-			GraphUtil::moveEdge(selectedRoads, *ei, roads->graph[src2]->pt, selectedRoads->graph[tgt]->pt);
-		} else if (!selectedRoads->graph[tgt]->valid) {
-			RoadVertexDesc tgt2 = GraphUtil::getVertex(roads, selectedRoads->graph[tgt]->pt);
-			GraphUtil::moveEdge(selectedRoads, *ei, selectedRoads->graph[src]->pt, roads->graph[tgt2]->pt);
-		}
-
-		// 有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
-		if (selectedRoads->graph[*ei]->getLength() > len * 1.2f) {
-			selectedRoads->graph[*ei]->valid = false;
-			continue;
-		}
-
-		// 既存エッジと交差するかチェック
-		bool overlapped = false;
-		float tab, tcd;
-		QVector2D intPt;
-		for (int i = 0; i < selectedRoads->graph[*ei]->polyLine.size() - 1 && !overlapped; i++) {
-			RoadEdgeIter ei2, eend2;
-			for (boost::tie(ei2, eend2) = boost::edges(roads->graph); ei2 != eend2 && !overlapped; ++ei2) {
-				if (!roads->graph[*ei2]->valid) continue;
-
-				for (int j = 0; j < roads->graph[*ei2]->polyLine.size() - 1; j++) {
-					if (Util::segmentSegmentIntersectXY(selectedRoads->graph[*ei]->polyLine[i], selectedRoads->graph[*ei]->polyLine[i + 1], roads->graph[*ei2]->polyLine[j], roads->graph[*ei2]->polyLine[j + 1], &tab, &tcd, true, intPt)) {
-						overlapped = true;
-						break;
-					}
-				}
-			}
-		}
-
-		// 既存エッジと交差する場合は、交点にスナップ
-		if (overlapped) {
-			if (!selectedRoads->graph[src]->valid) {
-				GraphUtil::moveEdge(selectedRoads, *ei, intPt, selectedRoads->graph[tgt]->pt);
-			} else if (!selectedRoads->graph[tgt]->valid) {
-				GraphUtil::moveEdge(selectedRoads, *ei, selectedRoads->graph[src]->pt, intPt);
-			}
-		}
-	}
-
-	roads->setModified();
-	selectedRoads->setModified();
-}
-
-bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v) {
-	if (v.roads == roads1) {
-		float dist1 = (v.roads->graph[v.desc]->pt - center1).length();
-		float dist2 = (v.roads->graph[v.desc]->pt - center2).length();
-		if (dist1 <= dist2) return true;
-		else return false;
-	} else {
-		float dist1 = (v.roads->graph[v.desc]->pt - center2).length();
-		float dist2 = (v.roads->graph[v.desc]->pt - center1).length();
-		if (dist1 <= dist2) return true;
-		else return false;
-	}
-}
-
-bool RoadGraphEditor::isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2, const VoronoiVertex& v) {
-	if (v.roads == roads1) {
-		if (!area2.contains(v.roads->graph[v.desc]->pt)) return true;
-		else return false;
-	} else {
-		if (area2.contains(v.roads->graph[v.desc]->pt)) return true;
-		else return false;
-	}
+void RoadGraphEditor::voronoiMerge3() {
+	VoronoiUtil::merge3(roads, selectedRoads);
 }
 
 /**

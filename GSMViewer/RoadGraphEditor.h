@@ -9,6 +9,7 @@
 #include "VoronoiDiagram.h"
 #include <boost/polygon/voronoi.hpp>
 
+/*
 class VoronoiVertex {
 public:
 	RoadGraph* roads;
@@ -36,6 +37,7 @@ struct point_traits<VoronoiVertex> {
 };
 }
 }
+*/
 
 class RoadGraphEditor {
 public:
@@ -155,16 +157,14 @@ public:
 	void startSketching(const QVector2D& pt, float snap_threshold);
 	void sketching(const QVector2D& pt);
 	void stopSketching(int type, int subtype, float simplify_threshold, float snap_threshold);
-	void instanciateShadowRoads();
+	void instantiateShadowRoads();
 
 	// Voronoi
 	void voronoi();
-	void voronoiCut();
-	void voronoiCut2();
-	void voronoiCut2(AbstractArea* area);
-	void voronoiCut3();
-	bool isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v);
-	bool isWithinTerritory(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2, const VoronoiVertex& v);
+	void voronoiMerge();
+	void voronoiMerge2();
+	void voronoiMerge2(AbstractArea* area);
+	void voronoiMerge3();
 
 	// Simple connect
 	void simpleConnect();

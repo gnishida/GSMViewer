@@ -57,7 +57,24 @@ void RoadGraph::generateMesh() {
 		}
 	}
 
-	//renderables.push_back(Renderable(GL_POINTS, 20.0f));
+	// road vertices
+	Vertex v;
+	v.normal[0] = 0.0f;
+	v.normal[1] = 0.0f;
+	v.normal[2] = 0.0f;
+	v.color[0] = 0.0f;
+	v.color[1] = 0.0f;
+	v.color[2] = 1.0f;
+	renderables.push_back(RenderablePtr(new Renderable(GL_POINTS, 10.0f)));
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi) {
+		if (!graph[*vi]->valid) continue;
+
+		v.location[0] = graph[*vi]->pt.x();
+		v.location[1] = graph[*vi]->pt.y();
+		v.location[2] = avenueHeight;
+		renderables[1]->vertices.push_back(v);
+	}
 
 	modified = false;
 }
