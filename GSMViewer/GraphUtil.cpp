@@ -911,6 +911,16 @@ void GraphUtil::removeShortEdges(RoadGraph* roads, float threshold) {
 }
 
 /**
+ * Make the road graph realistic.
+ * 1) remove isolated vertices.
+ * 2) remove isolated edges.
+ */
+void GraphUtil::realize(RoadGraph* roads) {
+	removeIsolatedVertices(roads);
+	removeIsolatedEdges(roads);
+}
+
+/**
  * Make the edge finer by inserting more points along the polyline.
  */
 std::vector<QVector2D> GraphUtil::finerEdge(RoadGraph* roads, RoadEdgeDesc e, float step) {

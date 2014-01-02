@@ -293,7 +293,7 @@ void RoadGraphEditor::startDistortingArea(int type) {
 	// distort the roads
 	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 
-	VoronoiUtil::merge2(roads, selectedRoads, selectedArea);
+	VoronoiUtil::merge3(roads, selectedRoads, selectedArea);
 }
 
 void RoadGraphEditor::distortArea(const QVector2D& pt) {
@@ -306,7 +306,7 @@ void RoadGraphEditor::distortArea(const QVector2D& pt) {
 	// distort the roads
 	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 
-	VoronoiUtil::merge2(roads, selectedRoads, selectedArea);
+	VoronoiUtil::merge3(roads, selectedRoads, selectedArea);
 }
 
 void RoadGraphEditor::stopDistortingArea() {
@@ -335,7 +335,7 @@ void RoadGraphEditor::moveArea(float dx, float dy) {
 	GraphUtil::copyRoads(roadsOrig, roads);
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 
-	VoronoiUtil::merge4(roads, selectedRoads);
+	VoronoiUtil::merge3(roads, selectedRoads);
 }
 
 /**

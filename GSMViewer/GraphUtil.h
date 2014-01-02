@@ -128,6 +128,7 @@ public:
 	static void snapDeadendEdges(RoadGraph* roads, float threshold);
 	static void snapDeadendEdges2(RoadGraph* roads, int degree, float threshold);
 	static void removeShortDeadend(RoadGraph* roads, float threshold);
+	static void realize(RoadGraph* roads);
 
 	// Others
 	static float computeMinDiffAngle(std::vector<float> *data1, std::vector<float> *data2);
