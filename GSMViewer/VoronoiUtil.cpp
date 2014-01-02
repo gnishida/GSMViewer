@@ -856,10 +856,13 @@ void VoronoiUtil::invalidateObstacleEdges(const boost::polygon::voronoi_diagram<
 		const boost::polygon::voronoi_diagram<double>::cell_type* neighbor_cell = neighbor_edge->cell();
 		int neighbor_index = neighbor_cell->source_index();
 
-		QVector2D vec2 = points[neighbor_index].roads->graph[points[neighbor_index].desc]->pt - v.roads->graph[v.desc]->pt;
+		// 敵セルの場合、方向をチェック
+		if (v.roads != points[neighbor_index].roads) {
+			QVector2D vec2 = points[neighbor_index].roads->graph[points[neighbor_index].desc]->pt - v.roads->graph[v.desc]->pt;
 
-		if (GraphUtil::diffAngle(dir, vec2) < threshold) {
-			points[neighbor_index].roads->graph[points[neighbor_index].desc]->valid = false;
+			if (GraphUtil::diffAngle(dir, vec2) < threshold) {
+				points[neighbor_index].roads->graph[points[neighbor_index].desc]->valid = false;
+			}
 		}
 
 		edge = edge->next();
