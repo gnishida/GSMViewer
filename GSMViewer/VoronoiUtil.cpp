@@ -8,10 +8,14 @@
 void VoronoiUtil::buildVoronoi(RoadGraph* roads1, RoadGraph* roads2, boost::polygon::voronoi_diagram<double>& vd, std::vector<VoronoiVertex>& points) {
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(roads1->graph); vi != vend; ++vi) {
+		if (!roads1->graph[*vi]->valid) continue;
+
 		points.push_back(VoronoiVertex(roads1, *vi));
 	}
 
 	for (boost::tie(vi, vend) = boost::vertices(roads2->graph); vi != vend; ++vi) {
+		if (!roads2->graph[*vi]->valid) continue;
+
 		points.push_back(VoronoiVertex(roads2, *vi));
 	}
 
@@ -339,10 +343,8 @@ void VoronoiUtil::merge3(RoadGraph* roads1, RoadGraph* roads2) {
 	if (GraphUtil::getNumVertices(roads2) == 0) return;
 
 	// define the center of the roads
-	RoadVertexDesc root1 = GraphUtil::getCentralVertex(roads1);
-	RoadVertexDesc root2 = GraphUtil::getCentralVertex(roads2);
-	QVector2D center1 = roads1->graph[root1]->pt;
-	QVector2D center2 = roads2->graph[root2]->pt;
+	QVector2D center1 = roads1->graph[GraphUtil::getCentralVertex(roads1)]->pt;
+	QVector2D center2 = roads2->graph[GraphUtil::getCentralVertex(roads2)]->pt;
 
 	// Construction of the Voronoi Diagram.
 	boost::polygon::voronoi_diagram<double> vd;
