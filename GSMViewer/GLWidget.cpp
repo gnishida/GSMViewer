@@ -268,7 +268,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 		editor->stopSketching(
 			(camera->dz > 2000.0f) ? RoadGraphDatabase::TYPE_LARGE : RoadGraphDatabase::TYPE_SMALL, 
 			city_id,
-			camera->dz * 0.01f,
+			camera->dz * 0.002f,
 			camera->dz * 0.01f);
 		break;
 	case RoadGraphEditor::MODE_BASIC_VERTEX_MOVING:

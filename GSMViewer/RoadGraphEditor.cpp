@@ -338,7 +338,7 @@ void RoadGraphEditor::moveArea(float dx, float dy) {
 	GraphUtil::clean(roads);
 	GraphUtil::clean(selectedRoads);
 
-	VoronoiUtil::merge3(roads, selectedRoads);
+	VoronoiUtil::merge5(roads, selectedRoads);
 }
 
 /**

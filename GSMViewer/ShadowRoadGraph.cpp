@@ -87,10 +87,10 @@ RoadGraph* ShadowRoadGraph::instantiateRoads() {
 	GraphUtil::translate(new_roads, translation);
 
 	if (type == RoadGraphDatabase::TYPE_LARGE) {
-		CircleArea area(center + translation, 2500.0f);
+		CircleArea area(center + translation, 2400.0f);
 		GraphUtil::extractRoads2(new_roads, area);
 	} else {
-		CircleArea area(center + translation, 1000.0f);
+		CircleArea area(center + translation, 800.0f);
 		GraphUtil::extractRoads2(new_roads, area);
 	}
 
