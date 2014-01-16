@@ -2,6 +2,7 @@
 
 #include "AbstractArea.h"
 #include "BBox.h"
+#include <boost/shared_ptr.hpp>
 
 class ArcArea : public AbstractArea {
 public:
@@ -12,6 +13,7 @@ public:
 
 public:
 	ArcArea(const QVector2D& leftPt, const QVector2D& rightPt, float radius, float arc_len);
+	ArcArea(const AbstractArea& ref, int mode);
 	~ArcArea();
 
 	bool contains(const QVector2D& pt) const;
@@ -26,3 +28,4 @@ public:
 	QVector2D deform(const QVector2D& pt) const;
 };
 
+typedef boost::shared_ptr<ArcArea> ArcAreaPtr;

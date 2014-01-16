@@ -2406,17 +2406,17 @@ void GraphUtil::scale(RoadGraph* roads, const BBox& bbox1, const BBox& bbox2) {
 /**
  * Distort the road graph
  */
-void GraphUtil::distort(RoadGraph* roads, ArcArea* area) {
+void GraphUtil::distort(RoadGraph* roads, const ArcArea& area) {
 	// distort the roads
 	RoadVertexIter vi, vend;
 	for (boost::tie(vi, vend) = boost::vertices(roads->graph); vi != vend; ++vi) {
-		roads->graph[*vi]->pt = area->deform(roads->graph[*vi]->pt);
+		roads->graph[*vi]->pt = area.deform(roads->graph[*vi]->pt);
 	}
 	
 	RoadEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
 		for (int i = 0; i < roads->graph[*ei]->polyLine.size(); i++) {
-			roads->graph[*ei]->polyLine[i] = area->deform(roads->graph[*ei]->polyLine[i]);
+			roads->graph[*ei]->polyLine[i] = area.deform(roads->graph[*ei]->polyLine[i]);
 		}
 	}
 

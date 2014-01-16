@@ -58,10 +58,7 @@ void RoadGraphEditor::openToAddRoad(QString filename) {
 	GraphUtil::loadRoads(selectedRoads, filename, 7);
 
 	// update the bbox according to the loaded roads
-	if (selectedArea != NULL) {
-		delete selectedArea;
-	}
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoads));
+	selectedArea = BBoxPtr(new BBox(GraphUtil::getAABoundingBox(selectedRoads)));
 
 	// backup the road graph
 	GraphUtil::copyRoads(roads, roadsOrig);
@@ -116,23 +113,13 @@ void RoadGraphEditor::paste() {
 	selectedRoadsOrig = clipBoard.paste();
 
 	// update the bbox according to the paseted roads
-	if (selectedArea != NULL) {
-		delete selectedArea;
-	}
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig));
+	selectedArea = BBoxPtr(new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig)));
 
 	// move the pasted roads to the center of the screen (to be updated!!!)
 	GraphUtil::translate(selectedRoadsOrig, selectedArea->midPt() * -1.0f);
-	delete selectedArea;
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig));
+	selectedArea = BBoxPtr(new BBox(GraphUtil::getAABoundingBox(selectedRoadsOrig)));
 
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
-
-	// inflate the bbox a little so that all the vertices are completely within the bbox.
-	((BBox*)selectedArea)->minPt.setX(((BBox*)selectedArea)->minPt.x() - selectedArea->dx() * 0.1f);
-	((BBox*)selectedArea)->minPt.setY(((BBox*)selectedArea)->minPt.y() - selectedArea->dy() * 0.1f);
-	((BBox*)selectedArea)->maxPt.setX(((BBox*)selectedArea)->maxPt.x() + selectedArea->dx() * 0.1f);
-	((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->maxPt.y() + selectedArea->dy() * 0.1f);
 
 	mode = MODE_AREA_SELECTED;
 }
@@ -164,8 +151,7 @@ void RoadGraphEditor::removeShortDeadend(float threshold) {
 }
 
 void RoadGraphEditor::selectAll() {
-	if (selectedArea != NULL) delete selectedArea;
-	selectedArea = new BBox(GraphUtil::getAABoundingBox(roads));
+	selectedArea = BBoxPtr(new BBox(GraphUtil::getAABoundingBox(roads)));
 
 	GraphUtil::copyRoads(roads, selectedRoads);
 	roads->clear();
@@ -181,9 +167,7 @@ void RoadGraphEditor::selectAll() {
  * 選択エリアを選択開始
  */
 void RoadGraphEditor::startDefiningArea(const QVector2D& pt) {
-	if (selectedArea != NULL) delete selectedArea;
-	selectedArea = new BBox();
-	((BBox*)selectedArea)->addPoint(pt);
+	selectedArea = BBoxPtr(new BBox(pt));
 
 	mode = MODE_DEFINING_AREA;
 }
@@ -192,27 +176,16 @@ void RoadGraphEditor::startDefiningArea(const QVector2D& pt) {
  * 選択エリアを選択中
  */
 void RoadGraphEditor::defineArea(const QVector2D& pt) {
-	((BBox*)selectedArea)->maxPt.setX(pt.x());
-	((BBox*)selectedArea)->minPt.setY(pt.y());
+	selectedArea->resizingType = AbstractArea::RESIZING_BOTTOM_RIGHT;
+	selectedArea->resize(pt);
 }
 
 /**
  * 選択エリアが確定した瞬間
  */
 void RoadGraphEditor::stopDefiningArea() {
-	if (((BBox*)selectedArea)->maxPt.x() < ((BBox*)selectedArea)->minPt.x()) {
-		float x = ((BBox*)selectedArea)->maxPt.x();
-		((BBox*)selectedArea)->maxPt.setX(((BBox*)selectedArea)->minPt.x());
-		((BBox*)selectedArea)->minPt.setX(x);
-	}
-	if (((BBox*)selectedArea)->maxPt.y() < ((BBox*)selectedArea)->minPt.y()) {
-		float y = ((BBox*)selectedArea)->maxPt.y();
-		((BBox*)selectedArea)->maxPt.setY(((BBox*)selectedArea)->minPt.y());
-		((BBox*)selectedArea)->minPt.setY(y);
-	}
-
 	// if the box is just a single point, cancel the selection.
-	if (((BBox*)selectedArea)->maxPt.x() == ((BBox*)selectedArea)->minPt.x() && ((BBox*)selectedArea)->maxPt.y() == ((BBox*)selectedArea)->minPt.y()) {
+	if (selectedArea->dx() == 0.0f && selectedArea->dy() == 0.0f) {
 		mode = MODE_DEFAULT;
 	} else {
 		history.push_back(GraphUtil::copyRoads(roads));
@@ -237,38 +210,16 @@ void RoadGraphEditor::stopDefiningArea() {
 void RoadGraphEditor::startDistortingArea(int type) {
 	mode = type;
 
-	QVector2D leftPt(((BBox*)selectedArea)->minPt.x(), ((BBox*)selectedArea)->midPt().y());
-	QVector2D rightPt(((BBox*)selectedArea)->maxPt.x(), ((BBox*)selectedArea)->midPt().y());
-	float arc_len = selectedArea->dy();
-	delete selectedArea;
-
-	switch (mode) {
-	case MODE_AREA_DISTORTING_TL:
-		selectedArea = new ArcArea(leftPt, rightPt, 10000.0f, arc_len);
-		selectedArea->resizingType = AbstractArea::RESIZING_TOP_LEFT;
-		break;
-	case MODE_AREA_DISTORTING_TR:
-		selectedArea = new ArcArea(leftPt, rightPt, -10000.0f, arc_len);
-		selectedArea->resizingType = AbstractArea::RESIZING_TOP_RIGHT;
-		break;
-	case MODE_AREA_DISTORTING_BL:
-		selectedArea = new ArcArea(leftPt, rightPt, 10000.0f, arc_len);
-		selectedArea->resizingType = AbstractArea::RESIZING_BOTTOM_LEFT;
-		break;
-	case MODE_AREA_DISTORTING_BR:
-		selectedArea = new ArcArea(leftPt, rightPt, -10000.0f, arc_len);
-		selectedArea->resizingType = AbstractArea::RESIZING_BOTTOM_RIGHT;
-		break;
-	}
+	selectedArea = ArcAreaPtr(new ArcArea(*selectedArea, mode));
 
 	// copy back from the original
 	GraphUtil::copyRoads(roadsOrig, roads);
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
-	
-	// distort the roads
-	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
 
-	VoronoiUtil::merge2(roads, selectedRoads, selectedArea);
+	// distort the roads
+	GraphUtil::distort(selectedRoads, (const ArcArea&)*selectedArea);
+
+	VoronoiUtil::merge2(roads, selectedRoads, *selectedArea);
 }
 
 void RoadGraphEditor::distortArea(const QVector2D& pt) {
@@ -279,9 +230,9 @@ void RoadGraphEditor::distortArea(const QVector2D& pt) {
 	GraphUtil::copyRoads(selectedRoadsOrig, selectedRoads);
 
 	// distort the roads
-	GraphUtil::distort(selectedRoads, (ArcArea*)selectedArea);
+	GraphUtil::distort(selectedRoads, (const ArcArea&)*selectedArea);
 
-	VoronoiUtil::merge2(roads, selectedRoads, selectedArea);
+	VoronoiUtil::merge2(roads, selectedRoads, *selectedArea);
 }
 
 void RoadGraphEditor::stopDistortingArea() {
@@ -444,6 +395,9 @@ void RoadGraphEditor::unselectRoads() {
 	selectedRoads->clear();
 	selectedRoadsOrig->clear();
 
+	// clear the area
+	selectedArea = AbstractAreaPtr();
+
 	mode = MODE_DEFAULT;
 }
 
@@ -570,7 +524,7 @@ void RoadGraphEditor::voronoiMerge2() {
 	VoronoiUtil::merge2(roads, selectedRoads);
 }
 
-void RoadGraphEditor::voronoiMerge2(AbstractArea* area) {
+void RoadGraphEditor::voronoiMerge2(const AbstractArea& area) {
 	VoronoiUtil::merge2(roads, selectedRoads, area);
 }
 

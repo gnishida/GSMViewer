@@ -240,7 +240,7 @@ void VoronoiUtil::merge2(RoadGraph* roads1, RoadGraph* roads2) {
 /**
  * roads2のエリアが"area"で与えられている時の、merge
  */
-void VoronoiUtil::merge2(RoadGraph* roads1, RoadGraph* roads2, AbstractArea* area) {
+void VoronoiUtil::merge2(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area) {
 	// check if there is at least one vertex
 	if (GraphUtil::getNumVertices(roads1) == 0) return;
 	if (GraphUtil::getNumVertices(roads2) == 0) return;
@@ -272,7 +272,7 @@ void VoronoiUtil::merge2(RoadGraph* roads1, RoadGraph* roads2, AbstractArea* are
 	    std::size_t cell_index = it->source_index();
 		VoronoiVertex v = points[cell_index];
 
-		bool withinTerritory = isWithinTerritory(roads1, roads2, *area, v);
+		bool withinTerritory = isWithinTerritory(roads1, roads2, area, v);
 
 		// check if the neighbors are in the same road graph
 		bool adjacentToEnemy = false;
@@ -301,7 +301,7 @@ void VoronoiUtil::merge2(RoadGraph* roads1, RoadGraph* roads2, AbstractArea* are
 				RoadVertexDesc tgt = boost::target(*ei, v.roads->graph);
 				
 				// if both the vertices is outside the teritory, remove this edge
-				if (!isWithinTerritory(roads1, roads2, *area, VoronoiVertex(v.roads, tgt))) {
+				if (!isWithinTerritory(roads1, roads2, area, VoronoiVertex(v.roads, tgt))) {
 					v.roads->graph[*ei]->valid = false;
 					v.roads->graph[v.desc]->valid = false;
 					continue;
@@ -956,6 +956,151 @@ void VoronoiUtil::merge5(RoadGraph* roads1, RoadGraph* roads2) {
 }
 
 /**
+ * ボロノイ図を使わないで、もっと簡単に。
+ * 1) 頂点vについて、敵陣の中にあり、且つ、敵頂点が近くにある場合、頂点vを無効にする。
+ * 2) 次に、各エッジについて、両端頂点が共にが無効の場合、そのエッジも無効にする。
+ * 3) 各エッジについて、両端頂点のどちらかが無効になっている場合、無効な頂点uに最も近い敵陣の頂点u'を探す。
+ * 4) ２つの道路網間で、非常に近い頂点同士をくっつける。
+ */
+void VoronoiUtil::merge5(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area) {
+	// check if there is at least one vertex
+	if (GraphUtil::getNumVertices(roads1) == 0) return;
+	if (GraphUtil::getNumVertices(roads2) == 0) return;
+
+	// define the center of the roads
+	//QVector2D center1 = roads1->graph[GraphUtil::getCentralVertex(roads1)]->pt;
+	//QVector2D center2 = roads2->graph[GraphUtil::getCentralVertex(roads2)]->pt;
+
+	// 1)
+	invalidateObstacleEdges(roads1, roads2, area);
+
+	// 2) 次に、各エッジについて、両端頂点が共にが無効の場合、そのエッジも無効にする。
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(roads1->graph); ei != eend; ++ei) {
+		if (!roads1->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads1->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads1->graph);
+
+		if (!roads1->graph[src]->valid && !roads1->graph[tgt]->valid) {
+			roads1->graph[*ei]->valid = false;
+		}
+	}
+	for (boost::tie(ei, eend) = boost::edges(roads2->graph); ei != eend; ++ei) {
+		if (!roads2->graph[*ei]->valid) continue;
+
+		RoadVertexDesc src = boost::source(*ei, roads2->graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads2->graph);
+
+		if (!roads2->graph[src]->valid && !roads2->graph[tgt]->valid) {
+			roads2->graph[*ei]->valid = false;
+		}
+	}
+
+	// 3) 各エッジについて、両端頂点のどちらかが無効になっている場合、無効な頂点uに最も近い敵陣の頂点u'を探す。
+	if (GraphUtil::getNumVertices(roads2) > 0) {
+		for (boost::tie(ei, eend) = boost::edges(roads1->graph); ei != eend; ++ei) {
+			if (!roads1->graph[*ei]->valid) continue;
+
+			RoadVertexDesc src = boost::source(*ei, roads1->graph);
+			RoadVertexDesc tgt = boost::target(*ei, roads1->graph);
+
+			// 両端頂点が共に無効の場合は、スキップ
+			if (!roads1->graph[src]->valid && !roads1->graph[tgt]->valid) continue;
+
+			// 両端頂点が共に有効の場合も、スキップ
+			if (roads1->graph[src]->valid && roads1->graph[tgt]->valid) continue;
+
+			float len = roads1->graph[*ei]->getLength();
+			RoadVertexDesc invalidVertexDesc;
+			if (!roads1->graph[src]->valid) {
+				invalidVertexDesc = src;
+			} else {
+				invalidVertexDesc = tgt;
+			}
+
+			RoadVertexDesc new_v_desc = GraphUtil::getVertex(roads2, roads1->graph[invalidVertexDesc]->pt);
+			GraphUtil::moveVertex(roads1, invalidVertexDesc, roads2->graph[new_v_desc]->pt);
+			roads1->graph[invalidVertexDesc]->valid = true;
+
+			// 有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
+			if (roads1->graph[*ei]->getLength() > len * 1.2f) {
+				roads1->graph[*ei]->valid = false;
+				continue;
+			}
+
+			// 既存エッジと交差するかチェック
+			RoadOutEdgeIter ei2, eend2;
+			for (boost::tie(ei2, eend2) = boost::out_edges(invalidVertexDesc, roads1->graph); ei2 != eend2; ++ei2) {
+				bool overlapped = false;
+				if (GraphUtil::isIntersect(roads2, roads1->graph[*ei2]->polyLine)) {
+					roads1->graph[*ei2]->valid = false;
+				}
+			}
+		}
+	}
+	if (GraphUtil::getNumVertices(roads1) > 0) {
+		for (boost::tie(ei, eend) = boost::edges(roads2->graph); ei != eend; ++ei) {
+			if (!roads2->graph[*ei]->valid) continue;
+
+			RoadVertexDesc src = boost::source(*ei, roads2->graph);
+			RoadVertexDesc tgt = boost::target(*ei, roads2->graph);
+
+			// 両端頂点が共に無効の場合は、スキップ
+			if (!roads2->graph[src]->valid && !roads2->graph[tgt]->valid) continue;
+
+			// 両端頂点が共に有効の場合も、スキップ
+			if (roads2->graph[src]->valid && roads2->graph[tgt]->valid) continue;
+
+			float len = roads2->graph[*ei]->getLength();
+			RoadVertexDesc invalidVertexDesc;
+			if (!roads2->graph[src]->valid) {
+				invalidVertexDesc = src;
+			} else {
+				invalidVertexDesc = tgt;
+			}
+
+			RoadVertexDesc new_v_desc = GraphUtil::getVertex(roads1, roads2->graph[invalidVertexDesc]->pt);
+			GraphUtil::moveVertex(roads2, invalidVertexDesc, roads1->graph[new_v_desc]->pt);
+			roads2->graph[invalidVertexDesc]->valid = true;
+
+			// 有効な頂点vとu'との距離が、元のエッジの長さの1.x倍以上なら、エッジを無効にする。
+			if (roads2->graph[*ei]->getLength() > len * 1.2f) {
+				roads2->graph[*ei]->valid = false;
+				continue;
+			}
+
+			// 既存エッジと交差するかチェック
+			RoadOutEdgeIter ei2, eend2;
+			for (boost::tie(ei2, eend2) = boost::out_edges(invalidVertexDesc, roads2->graph); ei2 != eend2; ++ei2) {
+				bool overlapped = false;
+				if (GraphUtil::isIntersect(roads1, roads2->graph[*ei2]->polyLine)) {
+					roads2->graph[*ei2]->valid = false;
+				}
+			}
+		}
+	}
+
+	GraphUtil::realize(roads1);
+	GraphUtil::realize(roads2);
+
+	// 4) ２つの道路網間で、非常に近い頂点同士をくっつける。
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads1->graph); vi != vend; ++vi) {
+		RoadVertexDesc near_desc;
+		if (GraphUtil::getVertex(roads2, roads1->graph[*vi]->pt, 5.0f, near_desc)) {
+			GraphUtil::moveVertex(roads1, *vi, roads2->graph[near_desc]->pt);
+		}
+	}
+	for (boost::tie(vi, vend) = boost::vertices(roads2->graph); vi != vend; ++vi) {
+		RoadVertexDesc near_desc;
+		if (GraphUtil::getVertex(roads1, roads2->graph[*vi]->pt, 5.0f, near_desc)) {
+			GraphUtil::moveVertex(roads2, *vi, roads1->graph[near_desc]->pt);
+		}
+	}
+}
+
+/**
  * ボロノイ頂点vが、自陣の中にいるならtrueを返却する。
  */
 bool VoronoiUtil::isWithinTerritory(RoadGraph* roads1, const QVector2D& center1, RoadGraph* roads2, const QVector2D& center2, const VoronoiVertex& v) {
@@ -1058,6 +1203,82 @@ void VoronoiUtil::invalidateObstacleEdges(RoadGraph* roads1, const QVector2D& ce
 		if (!roads2->graph[*vi]->valid) continue;
 
 		if (isWithinTerritory(roads1, center1, roads2, center2, VoronoiVertex(roads2, *vi))) continue;
+
+		bool invalid = false;
+
+		RoadOutEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::out_edges(*vi, roads2->graph); ei != eend && !invalid; ++ei) {
+			RoadVertexDesc tgt = boost::target(*ei, roads2->graph);
+
+			std::vector<QVector2D> polyLine = GraphUtil::finerEdge(roads2, *ei, 200.0f);
+
+			RoadEdgeIter ei2, eend2;
+			for (boost::tie(ei2, eend2) = boost::edges(roads1->graph); ei2 != eend2 && !invalid; ++ei2) {
+				if (!roads1->graph[*ei2]->valid) continue;
+
+				std::vector<QVector2D> polyLine2 = GraphUtil::finerEdge(roads1, *ei2, 200.0f);
+
+				for (int i = 0; i < polyLine.size() && !invalid; i++) {
+					for (int j = 0; j < polyLine2.size(); j++) {
+						if ((polyLine[i] - polyLine2[j]).lengthSquared() < 40000.0f) {
+							invalid = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if (invalid) {
+			roads2->graph[*vi]->valid = false;
+		}
+	}
+}
+
+/**
+ * 各エッジについて、敵陣の中にあり、且つ、近くに敵頂点がある場合、無効にする。
+ */
+void VoronoiUtil::invalidateObstacleEdges(RoadGraph* roads1, RoadGraph* roads2, const AbstractArea& area2) {
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(roads1->graph); vi != vend; ++vi) {
+		if (!roads1->graph[*vi]->valid) continue;
+
+		if (isWithinTerritory(roads1, roads2, area2, VoronoiVertex(roads1, *vi))) continue;
+
+		bool invalid = false;
+
+		RoadOutEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = boost::out_edges(*vi, roads1->graph); ei != eend && !invalid; ++ei) {
+			RoadVertexDesc tgt = boost::target(*ei, roads1->graph);
+
+			std::vector<QVector2D> polyLine = GraphUtil::finerEdge(roads1, *ei, 200.0f);
+
+			RoadEdgeIter ei2, eend2;
+			for (boost::tie(ei2, eend2) = boost::edges(roads2->graph); ei2 != eend2 && !invalid; ++ei2) {
+				if (!roads2->graph[*ei2]->valid) continue;
+
+				std::vector<QVector2D> polyLine2 = GraphUtil::finerEdge(roads2, *ei2, 200.0f);
+
+				for (int i = 0; i < polyLine.size() && !invalid; i++) {
+					for (int j = 0; j < polyLine2.size(); j++) {
+						if ((polyLine[i] - polyLine2[j]).lengthSquared() < 40000.0f) {
+							invalid = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if (invalid) {
+			roads1->graph[*vi]->valid = false;
+		}
+	}
+
+	for (boost::tie(vi, vend) = boost::vertices(roads2->graph); vi != vend; ++vi) {
+		if (!roads2->graph[*vi]->valid) continue;
+
+		if (isWithinTerritory(roads1, roads2, area2, VoronoiVertex(roads2, *vi))) continue;
 
 		bool invalid = false;
 

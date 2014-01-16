@@ -3,7 +3,6 @@
 #include "RoadGraph.h"
 #include "BBox.h"
 #include "ClipBoard.h"
-#include "RoadGraphDatabase.h"
 #include "VoronoiDiagram.h"
 #include <boost/polygon/voronoi.hpp>
 
@@ -33,7 +32,7 @@ public:
 
 	int mode;
 
-	AbstractArea* selectedArea;				// the selected area
+	AbstractAreaPtr selectedArea;				// the selected area
 	RoadVertexPtr selectedVertex;
 	RoadVertexDesc selectedVertexDesc;
 	RoadEdgePtr selectedEdge;
@@ -42,9 +41,6 @@ public:
 	RoadGraph* selectedRoads;
 	RoadGraph* selectedRoadsOrig;
 	std::vector<RoadGraph*> interpolatedRoads;
-
-	std::vector<RoadGraphDatabase*> largeRoadDB;
-	std::vector<RoadGraphDatabase*> smallRoadDB;
 
 	VoronoiDiagram voronoiDiagram;
 
@@ -113,7 +109,7 @@ public:
 	void voronoi();
 	void voronoiMerge();
 	void voronoiMerge2();
-	void voronoiMerge2(AbstractArea* area);
+	void voronoiMerge2(const AbstractArea& area);
 	void voronoiMerge3();
 
 	// Simple connect

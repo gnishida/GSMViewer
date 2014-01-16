@@ -2,6 +2,7 @@
 
 #include "AbstractArea.h"
 #include <QVector2D>
+#include <boost/shared_ptr.hpp>
 
 class CircleArea : public AbstractArea {
 private:
@@ -25,3 +26,4 @@ public:
 	std::vector<QVector2D> polyline() const;
 };
 
+typedef boost::shared_ptr<CircleArea> CircleAreaPtr;

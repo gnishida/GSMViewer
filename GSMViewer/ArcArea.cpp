@@ -1,4 +1,5 @@
 ﻿#include "ArcArea.h"
+#include "RoadGraphEditor.h"
 
 #ifndef M_PI
 #define M_PI	3.14159265359
@@ -9,6 +10,34 @@ ArcArea::ArcArea(const QVector2D& leftPt, const QVector2D& rightPt, float radius
 	this->rightPt = rightPt;
 	this->radius = radius;
 	this->arc_len = arc_len;
+}
+
+ArcArea::ArcArea(const AbstractArea& ref, int mode) {
+	leftPt.setX(ref.midPt().x() - ref.dx() / 2.0f);
+	leftPt.setY(ref.midPt().y());
+	rightPt.setX(ref.midPt().x() + ref.dx() / 2.0f);
+	rightPt.setY(ref.midPt().y());
+
+	arc_len = ref.dy();
+
+	switch (mode) {
+	case RoadGraphEditor::MODE_AREA_DISTORTING_TL:
+		radius = 10000.0f;
+		resizingType = AbstractArea::RESIZING_TOP_LEFT;
+		break;
+	case RoadGraphEditor::MODE_AREA_DISTORTING_TR:
+		radius = -10000.0f;
+		resizingType = AbstractArea::RESIZING_TOP_RIGHT;
+		break;
+	case RoadGraphEditor::MODE_AREA_DISTORTING_BL:
+		radius = 10000.0f;
+		resizingType = AbstractArea::RESIZING_BOTTOM_LEFT;
+		break;
+	case RoadGraphEditor::MODE_AREA_DISTORTING_BR:
+		radius = -10000.0f;
+		resizingType = AbstractArea::RESIZING_BOTTOM_RIGHT;
+		break;
+	}
 }
 
 ArcArea::~ArcArea() {
