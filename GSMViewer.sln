@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GSMViewer", "GSMViewer\GSMViewer.vcxproj", "{256EB276-57DF-4353-8653-19135C724A29}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RoadSketch", "RoadSketch\RoadSketch.vcxproj", "{DF05B398-D90A-4B93-9478-2AAC9577CC7B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -21,14 +19,6 @@ Global
 		{256EB276-57DF-4353-8653-19135C724A29}.Release|Win32.Build.0 = Release|Win32
 		{256EB276-57DF-4353-8653-19135C724A29}.Release|x64.ActiveCfg = Release|x64
 		{256EB276-57DF-4353-8653-19135C724A29}.Release|x64.Build.0 = Release|x64
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Debug|Win32.Build.0 = Debug|Win32
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Debug|x64.ActiveCfg = Debug|x64
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Debug|x64.Build.0 = Debug|x64
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Release|Win32.ActiveCfg = Release|Win32
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Release|Win32.Build.0 = Release|Win32
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Release|x64.ActiveCfg = Release|x64
-		{DF05B398-D90A-4B93-9478-2AAC9577CC7B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
