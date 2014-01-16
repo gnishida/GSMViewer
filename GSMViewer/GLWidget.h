@@ -21,7 +21,6 @@ public:
 	RoadGraphRenderer* renderer;
 	QPoint lastPos;
 	QVector2D last2DPos;
-	int city_id;
 
 	bool showArea;
 

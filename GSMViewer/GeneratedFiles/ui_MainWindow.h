@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Mon Dec 30 22:48:33 2013
+** Created: Thu Jan 16 13:32:51 2014
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -52,7 +52,6 @@ public:
     QMenu *menuEdit;
     QMenu *menuSelect;
     QMenu *menuTool;
-    QMenu *menuMode;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -141,8 +140,6 @@ public:
         menuSelect->setObjectName(QString::fromUtf8("menuSelect"));
         menuTool = new QMenu(menuBar);
         menuTool->setObjectName(QString::fromUtf8("menuTool"));
-        menuMode = new QMenu(menuBar);
-        menuMode->setObjectName(QString::fromUtf8("menuMode"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -152,7 +149,6 @@ public:
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
-        menuBar->addAction(menuMode->menuAction());
         menuBar->addAction(menuSelect->menuAction());
         menuBar->addAction(menuEdit->menuAction());
         menuBar->addAction(menuTool->menuAction());
@@ -175,9 +171,6 @@ public:
         menuTool->addAction(actionVoronoi);
         menuTool->addAction(actionVoronoiCut);
         menuTool->addAction(actionShowArea);
-        menuMode->addAction(actionModeBasic);
-        menuMode->addAction(actionModeLayer);
-        menuMode->addAction(actionModeSketch);
 
         retranslateUi(MainWindow);
 
@@ -222,7 +215,6 @@ public:
         menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));
         menuSelect->setTitle(QApplication::translate("MainWindow", "Select", 0, QApplication::UnicodeUTF8));
         menuTool->setTitle(QApplication::translate("MainWindow", "Tool", 0, QApplication::UnicodeUTF8));
-        menuMode->setTitle(QApplication::translate("MainWindow", "Mode", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

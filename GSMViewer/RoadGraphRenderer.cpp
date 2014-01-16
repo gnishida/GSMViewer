@@ -4,7 +4,6 @@
 RoadGraphRenderer::RoadGraphRenderer() {
 }
 
-//void RoadGraphRenderer::render(std::vector<Renderable>& renderables) {
 void RoadGraphRenderer::render(std::vector<RenderablePtr>& renderables) {
 	for (int i = 0; i < renderables.size(); i++) {
 		renderOne(renderables[i]);

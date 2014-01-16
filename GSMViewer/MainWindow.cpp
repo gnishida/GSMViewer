@@ -8,7 +8,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	statusLabelR = new QLabel();
 
 	// setup UI
-	ui.actionModeBasic->setChecked(true);
 	ui.statusBar->addWidget(statusLebelL, 1);
 	ui.statusBar->addWidget(statusLabelR, 0);
 
@@ -16,7 +15,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	controlWidget = new ControlWidget(this);
 
 	// register the menu's "AboutToShow" handlers
-	connect(ui.menuMode, SIGNAL(aboutToShow()), this, SLOT(onMenuMode()));
 	connect(ui.menuEdit, SIGNAL(aboutToShow()), this, SLOT(onMenuEdit()));
 
 	// register the menu's action handlers
@@ -25,9 +23,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	connect(ui.actionOpenToAdd, SIGNAL(triggered()), this, SLOT(onOpenToAdd()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
-	connect(ui.actionModeBasic, SIGNAL(triggered()), this, SLOT(onModeBasic()));
-	connect(ui.actionModeLayer, SIGNAL(triggered()), this, SLOT(onModeLayer()));
-	connect(ui.actionModeSketch, SIGNAL(triggered()), this, SLOT(onModeSketch()));
 	connect(ui.actionSelectAll, SIGNAL(triggered()), this, SLOT(onSelectAll()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionCut, SIGNAL(triggered()), this, SLOT(onCut()));
@@ -67,16 +62,10 @@ void MainWindow::keyReleaseEvent(QKeyEvent* e) {
 	glWidget->keyReleaseEvent(e);
 }
 
-void MainWindow::onMenuMode() {
-	ui.actionModeBasic->setChecked(glWidget->editor->mode == RoadGraphEditor::MODE_BASIC);
-	ui.actionModeLayer->setChecked(glWidget->editor->mode == RoadGraphEditor::MODE_LAYER);
-	ui.actionModeSketch->setChecked(glWidget->editor->mode == RoadGraphEditor::MODE_SKETCH);
-}
-
 void MainWindow::onMenuEdit() {
 	ui.actionUndo->setDisabled(glWidget->editor->history.empty());
-	ui.actionCut->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED);
-	ui.actionCopy->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_BASIC_AREA_SELECTED);
+	ui.actionCut->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_AREA_SELECTED);
+	ui.actionCopy->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_AREA_SELECTED);
 	ui.actionPaste->setDisabled(glWidget->editor->clipBoard.empty());
 	ui.actionDeleteEdge->setDisabled(glWidget->editor->selectedEdge == NULL);
 }
@@ -126,30 +115,6 @@ void MainWindow::onSave() {
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 	glWidget->editor->saveRoad(filename);
 	QApplication::restoreOverrideCursor();
-}
-
-void MainWindow::onModeBasic() {
-	glWidget->editor->mode = RoadGraphEditor::MODE_BASIC;
-
-	ui.actionModeBasic->setChecked(true);
-	ui.actionModeLayer->setChecked(false);
-	ui.actionModeSketch->setChecked(false);
-}
-
-void MainWindow::onModeLayer() {
-	glWidget->editor->mode = RoadGraphEditor::MODE_LAYER;
-
-	ui.actionModeBasic->setChecked(false);
-	ui.actionModeLayer->setChecked(true);
-	ui.actionModeSketch->setChecked(false);
-}
-
-void MainWindow::onModeSketch() {
-	glWidget->editor->mode = RoadGraphEditor::MODE_SKETCH;
-
-	ui.actionModeBasic->setChecked(false);
-	ui.actionModeLayer->setChecked(false);
-	ui.actionModeSketch->setChecked(true);
 }
 
 void MainWindow::onSelectAll() {

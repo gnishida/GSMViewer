@@ -72,16 +72,7 @@
     <addaction name="actionVoronoiCut"/>
     <addaction name="actionShowArea"/>
    </widget>
-   <widget class="QMenu" name="menuMode">
-    <property name="title">
-     <string>Mode</string>
-    </property>
-    <addaction name="actionModeBasic"/>
-    <addaction name="actionModeLayer"/>
-    <addaction name="actionModeSketch"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuMode"/>
    <addaction name="menuSelect"/>
    <addaction name="menuEdit"/>
    <addaction name="menuTool"/>

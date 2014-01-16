@@ -170,13 +170,9 @@
     <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="RoadEdge.cpp" />
     <ClCompile Include="RoadGraph.cpp" />
-    <ClCompile Include="RoadGraphDatabase.cpp" />
     <ClCompile Include="RoadGraphEditor.cpp" />
     <ClCompile Include="RoadGraphRenderer.cpp" />
     <ClCompile Include="RoadVertex.cpp" />
-    <ClCompile Include="ShadowRoadGraph.cpp" />
-    <ClCompile Include="Sketch.cpp" />
-    <ClCompile Include="TopNSearch.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="VoronoiDiagram.cpp" />
     <ClCompile Include="VoronoiUtil.cpp" />
@@ -233,7 +229,6 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CircleArea.h" />
     <ClInclude Include="ClipBoard.h" />
-    <ClInclude Include="RoadGraphDatabase.h" />
     <ClInclude Include="RoadGraphEditor.h" />
     <ClInclude Include="VoronoiDiagram.h" />
     <ClInclude Include="VoronoiUtil.h" />
@@ -264,9 +259,6 @@
     <ClInclude Include="RoadGraph.h" />
     <ClInclude Include="RoadGraphRenderer.h" />
     <ClInclude Include="RoadVertex.h" />
-    <ClInclude Include="ShadowRoadGraph.h" />
-    <ClInclude Include="Sketch.h" />
-    <ClInclude Include="TopNSearch.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <ItemGroup>
