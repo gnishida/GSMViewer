@@ -134,7 +134,7 @@ void ControlWidget::removeShortDeadend() {
  * Event handler for button [Extract Major Roads]
  */
 void ControlWidget::extractMajorRoads() {
-	GraphUtil::extractMajorRoads(*mainWin->glWidget->editor->roads, 600);
+	GraphUtil::extractMajorRoads(*mainWin->glWidget->editor->roads, 1000);
 
 	mainWin->glWidget->updateGL();
 }

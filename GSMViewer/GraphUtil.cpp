@@ -939,6 +939,22 @@ std::vector<QVector2D> GraphUtil::finerEdge(RoadGraph* roads, RoadEdgeDesc e, fl
 }
 
 /**
+ * 道路エッジが途中で折れ曲がっているか？
+ */
+bool GraphUtil::isEdgeBended(RoadGraph& roads, RoadEdgeDesc e, float threshold) {
+	for (int i = 1; i < roads.graph[e]->polyLine.size() - 1; i++) {
+		int prev = i - 1;
+		int next = i + 1;
+		float angle = diffAngle(roads.graph[e]->polyLine[next] - roads.graph[e]->polyLine[i], roads.graph[e]->polyLine[i] - roads.graph[e]->polyLine[prev]);
+		if (angle > threshold) {
+				return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Load the road from a file.
  */
 void GraphUtil::loadRoads(RoadGraph* roads, QString filename, int roadType) {
@@ -1674,7 +1690,7 @@ void GraphUtil::extractMajorRoads(RoadGraph& roads, float threshold) {
 
 				RoadVertexDesc next_v;
 				RoadEdgeDesc next_e;
-				if (!goStraightRoad(roads, v, e, 0.1f, next_v, next_e, edges)) break;
+				if (!goStraightRoad(roads, v, e, 0.75f, next_v, next_e, edges)) break;
 
 				v = next_v;
 				e = next_e;
@@ -1696,6 +1712,8 @@ void GraphUtil::extractMajorRoads(RoadGraph& roads, float threshold) {
 			roads.graph[*ei]->valid = false;
 		}
 	}
+
+	roads.setModified();
 }
 
 bool GraphUtil::goStraightRoad(RoadGraph& roads, RoadVertexDesc v, RoadEdgeDesc e, float threshold, RoadVertexDesc& next_v, RoadEdgeDesc& next_e, QList<RoadEdgeDesc>& edges) {
@@ -1714,6 +1732,9 @@ bool GraphUtil::goStraightRoad(RoadGraph& roads, RoadVertexDesc v, RoadEdgeDesc 
 	for (boost::tie(ei, eend) = out_edges(next_v, roads.graph); ei != eend; ++ei) {
 		if (!roads.graph[*ei]->valid) continue;
 		if (*ei == e) continue;
+
+		// 道路セグメントの途中で、大きく折れている場合は、ストレートとは見なさない
+		if (isEdgeBended(roads, *ei)) continue;
 
 		RoadVertexDesc v3 = boost::target(*ei, roads.graph);
 

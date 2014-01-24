@@ -77,6 +77,7 @@ public:
 	static std::vector<QVector2D> simplifyPolyLine(std::vector<QVector2D>& polyLine, float threshold);
 	static void removeShortEdges(RoadGraph* roads, float threshold);
 	static std::vector<QVector2D> finerEdge(RoadGraph* roads, RoadEdgeDesc e, float step = 1.0f);
+	static bool isEdgeBended(RoadGraph& roads, RoadEdgeDesc e, float threshold = 1.0f);
 
 	// File I/O
 	static void loadRoads(RoadGraph* roads, QString filename, int roadType = 7);
