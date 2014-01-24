@@ -200,7 +200,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="pushButtonExtractAvenues">
+   <widget class="QPushButton" name="pushButtonExtractMajorRoads">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -210,7 +210,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Extract Avenues</string>
+     <string>Extract Major Roads</string>
     </property>
    </widget>
    <widget class="QGroupBox" name="groupBox_4">

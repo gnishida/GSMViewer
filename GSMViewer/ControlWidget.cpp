@@ -20,7 +20,7 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	connect(ui.pushButtonSimplify, SIGNAL(clicked()), this, SLOT(simplify()));
 	connect(ui.pushButtonReduce, SIGNAL(clicked()), this, SLOT(reduce()));
 	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
-	connect(ui.pushButtonExtractAvenues, SIGNAL(clicked()), this, SLOT(extractAvenues()));
+	connect(ui.pushButtonExtractMajorRoads, SIGNAL(clicked()), this, SLOT(extractMajorRoads()));
 	connect(ui.pushButtonConnectRoads, SIGNAL(clicked()), this, SLOT(connectRoads()));
 	connect(ui.pushButtonInterpolation, SIGNAL(clicked()), this, SLOT(interpolation()));
 	connect(ui.horizontalSliderInterpolationRatio, SIGNAL(valueChanged(int)), this, SLOT(interpolationRatio(int)));
@@ -131,10 +131,10 @@ void ControlWidget::removeShortDeadend() {
 }
 
 /**
- * Event handler for button [Extract Avenues]
+ * Event handler for button [Extract Major Roads]
  */
-void ControlWidget::extractAvenues() {
-	GraphUtil::extractRoads(mainWin->glWidget->editor->roads, 6);
+void ControlWidget::extractMajorRoads() {
+	GraphUtil::extractMajorRoads(*mainWin->glWidget->editor->roads, 600);
 
 	mainWin->glWidget->updateGL();
 }

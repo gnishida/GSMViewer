@@ -1650,6 +1650,94 @@ void GraphUtil::subtractRoads2(RoadGraph* roads, const AbstractArea& area) {
 }
 
 /**
+ * 長いメイン道路のみを抽出する。
+ */
+void GraphUtil::extractMajorRoads(RoadGraph& roads, float threshold) {
+	QList<RoadEdgeDesc> totalEdges;
+
+	RoadVertexIter vi, vend;
+	for (boost::tie(vi, vend) = vertices(roads.graph); vi != vend; ++vi) {
+		if (!roads.graph[*vi]->valid) continue;
+
+		RoadOutEdgeIter ei, eend;
+		for (boost::tie(ei, eend) = out_edges(*vi, roads.graph); ei != eend; ++ei) {
+			if (!roads.graph[*ei]->valid) continue;
+
+			QList<RoadEdgeDesc> edges;
+			float totalLength = 0.0f;
+
+			RoadVertexDesc v = *vi;
+			RoadEdgeDesc e = *ei;
+			while (true) {
+				edges.push_back(e);
+				totalLength += roads.graph[e]->getLength();
+
+				RoadVertexDesc next_v;
+				RoadEdgeDesc next_e;
+				if (!goStraightRoad(roads, v, e, 0.1f, next_v, next_e, edges)) break;
+
+				v = next_v;
+				e = next_e;
+			}
+
+			// 長さがしきい値より長い場合、保存する
+			if (totalLength >= threshold) {
+				totalEdges.append(edges);
+			}
+		}
+	}
+
+	// 最終的に残ったエッジを使って、グラフを生成する
+	RoadEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = edges(roads.graph); ei != eend; ++ei) {
+		if (!roads.graph[*ei]->valid) continue;
+
+		if (!totalEdges.contains(*ei)) {
+			roads.graph[*ei]->valid = false;
+		}
+	}
+}
+
+bool GraphUtil::goStraightRoad(RoadGraph& roads, RoadVertexDesc v, RoadEdgeDesc e, float threshold, RoadVertexDesc& next_v, RoadEdgeDesc& next_e, QList<RoadEdgeDesc>& edges) {
+	next_v = boost::target(e, roads.graph);
+
+	QVector2D baseDir;
+	if ((roads.graph[v]->pt - roads.graph[e]->polyLine[0]).lengthSquared() <= (roads.graph[next_v]->pt - roads.graph[e]->polyLine[0]).lengthSquared()) {
+		baseDir = roads.graph[e]->polyLine[roads.graph[e]->polyLine.size() - 1] - roads.graph[e]->polyLine[roads.graph[e]->polyLine.size() - 2];
+	} else {
+		baseDir = roads.graph[e]->polyLine[0] - roads.graph[e]->polyLine[1];
+	}
+
+	float min_angle = std::numeric_limits<float>::max();
+
+	RoadOutEdgeIter ei, eend;
+	for (boost::tie(ei, eend) = out_edges(next_v, roads.graph); ei != eend; ++ei) {
+		if (!roads.graph[*ei]->valid) continue;
+		if (*ei == e) continue;
+
+		RoadVertexDesc v3 = boost::target(*ei, roads.graph);
+
+		QVector2D dir;
+		if ((roads.graph[next_v]->pt - roads.graph[*ei]->polyLine[0]).lengthSquared() <= (roads.graph[v3]->pt - roads.graph[*ei]->polyLine[0]).lengthSquared()) {
+			dir = roads.graph[*ei]->polyLine[1] - roads.graph[*ei]->polyLine[0];
+		} else {
+			dir = roads.graph[*ei]->polyLine[roads.graph[*ei]->polyLine.size() - 2] - roads.graph[*ei]->polyLine[roads.graph[*ei]->polyLine.size() - 1];
+		}
+
+		float angle = diffAngle(dir, baseDir);
+		if (angle < min_angle) {
+			min_angle = angle;
+			next_e = *ei;
+		}
+	}
+
+	if (edges.contains(next_e)) return false;
+
+	if (min_angle <= threshold) return true;
+	else return false;
+}
+
+/**
  * Subtract a circle from the road graph.
  * Note that this function does not change neighter the vertex desc nor the edge desc.
  */

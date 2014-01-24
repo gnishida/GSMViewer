@@ -96,6 +96,8 @@ public:
 	static void extractRoads2(RoadGraph* roads, const AbstractArea& area, int roadType = 7);
 	static void subtractRoads(RoadGraph* roads, const AbstractArea& area, bool strict);
 	static void subtractRoads2(RoadGraph* roads, const AbstractArea& area);
+	static void extractMajorRoads(RoadGraph& roads, float threshold);
+	static bool goStraightRoad(RoadGraph& roads, RoadVertexDesc v, RoadEdgeDesc e, float threshold, RoadVertexDesc& next_v, RoadEdgeDesc& next_e, QList<RoadEdgeDesc>& edges);
 
 	// Connectivity related functions
 	static std::vector<RoadVertexDesc> getNeighbors(RoadGraph* roads, RoadVertexDesc v, bool onlyValidVertex = true);

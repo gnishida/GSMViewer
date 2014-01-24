@@ -26,7 +26,7 @@ public slots:
 	void simplify();
 	void reduce();
 	void removeShortDeadend();
-	void extractAvenues();
+	void extractMajorRoads();
 	void connectRoads();
 	void interpolation();
 	void interpolationRatio(int ratio);
