@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'ControlWidget.ui'
 **
-** Created: Thu Jan 23 23:22:16 2014
+** Created: Sat Jan 25 19:45:57 2014
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -20,7 +20,6 @@
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
-#include <QtGui/QSlider>
 #include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -57,10 +56,7 @@ public:
     QGroupBox *groupBox_6;
     QPushButton *pushButtonReduce;
     QPushButton *pushButtonConnectRoads;
-    QGroupBox *groupBox_7;
-    QPushButton *pushButtonInterpolation;
-    QSlider *horizontalSliderInterpolationRatio;
-    QPushButton *pushButtonFinalizeInterpolation;
+    QPushButton *pushButtonPlanarify;
 
     void setupUi(QDockWidget *ControlWidget)
     {
@@ -155,19 +151,9 @@ public:
         pushButtonConnectRoads = new QPushButton(dockWidgetContents);
         pushButtonConnectRoads->setObjectName(QString::fromUtf8("pushButtonConnectRoads"));
         pushButtonConnectRoads->setGeometry(QRect(20, 630, 151, 31));
-        groupBox_7 = new QGroupBox(dockWidgetContents);
-        groupBox_7->setObjectName(QString::fromUtf8("groupBox_7"));
-        groupBox_7->setGeometry(QRect(10, 670, 171, 131));
-        pushButtonInterpolation = new QPushButton(groupBox_7);
-        pushButtonInterpolation->setObjectName(QString::fromUtf8("pushButtonInterpolation"));
-        pushButtonInterpolation->setGeometry(QRect(10, 20, 151, 31));
-        horizontalSliderInterpolationRatio = new QSlider(groupBox_7);
-        horizontalSliderInterpolationRatio->setObjectName(QString::fromUtf8("horizontalSliderInterpolationRatio"));
-        horizontalSliderInterpolationRatio->setGeometry(QRect(10, 60, 151, 19));
-        horizontalSliderInterpolationRatio->setOrientation(Qt::Horizontal);
-        pushButtonFinalizeInterpolation = new QPushButton(groupBox_7);
-        pushButtonFinalizeInterpolation->setObjectName(QString::fromUtf8("pushButtonFinalizeInterpolation"));
-        pushButtonFinalizeInterpolation->setGeometry(QRect(10, 90, 151, 31));
+        pushButtonPlanarify = new QPushButton(dockWidgetContents);
+        pushButtonPlanarify->setObjectName(QString::fromUtf8("pushButtonPlanarify"));
+        pushButtonPlanarify->setGeometry(QRect(20, 670, 151, 31));
         ControlWidget->setWidget(dockWidgetContents);
 
         retranslateUi(ControlWidget);
@@ -197,9 +183,7 @@ public:
         groupBox_6->setTitle(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
         pushButtonReduce->setText(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
         pushButtonConnectRoads->setText(QApplication::translate("ControlWidget", "Connect Roads", 0, QApplication::UnicodeUTF8));
-        groupBox_7->setTitle(QApplication::translate("ControlWidget", "Interpolation", 0, QApplication::UnicodeUTF8));
-        pushButtonInterpolation->setText(QApplication::translate("ControlWidget", "Interpolation", 0, QApplication::UnicodeUTF8));
-        pushButtonFinalizeInterpolation->setText(QApplication::translate("ControlWidget", "OK", 0, QApplication::UnicodeUTF8));
+        pushButtonPlanarify->setText(QApplication::translate("ControlWidget", "Planar Graph", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(ControlWidget);
     } // retranslateUi
 

@@ -2334,34 +2334,40 @@ void GraphUtil::singlify(RoadGraph* roads) {
 /**
  * Convert the road graph to a planar graph.
  */
-void GraphUtil::planarify(RoadGraph* roads) {
+void GraphUtil::planarify(RoadGraph& roads) {
+	clock_t start, end;
+	start = clock();
+
 	bool split = true;
 
 	while (split) {
 		split = planarifyOne(roads);
 	}
+
+	end = clock();
+	std::cout << "planarify: " << (double)(end-start)/CLOCKS_PER_SEC << std::endl;
 }
 
 /**
  * Convert one intersected road segments to a planar one by adding the intersection, and return true.
  * If the road segments do not intersect, return false.
  */
-bool GraphUtil::planarifyOne(RoadGraph* roads) {
+bool GraphUtil::planarifyOne(RoadGraph& roads) {
 	RoadEdgeIter ei, eend;
-	for (boost::tie(ei, eend) = boost::edges(roads->graph); ei != eend; ++ei) {
-		RoadEdgePtr e = roads->graph[*ei];
+	for (boost::tie(ei, eend) = boost::edges(roads.graph); ei != eend; ++ei) {
+		RoadEdgePtr e = roads.graph[*ei];
 		if (!e->valid) continue;
 
-		RoadVertexDesc src = boost::source(*ei, roads->graph);
-		RoadVertexDesc tgt = boost::target(*ei, roads->graph);
+		RoadVertexDesc src = boost::source(*ei, roads.graph);
+		RoadVertexDesc tgt = boost::target(*ei, roads.graph);
 
 		RoadEdgeIter ei2, eend2;
-		for (boost::tie(ei2, eend2) = boost::edges(roads->graph); ei2 != eend2; ++ei2) {
-			RoadEdgePtr e2 = roads->graph[*ei2];
+		for (boost::tie(ei2, eend2) = boost::edges(roads.graph); ei2 != eend2; ++ei2) {
+			RoadEdgePtr e2 = roads.graph[*ei2];
 			if (!e2->valid) continue;
 
-			RoadVertexDesc src2 = boost::source(*ei2, roads->graph);
-			RoadVertexDesc tgt2 = boost::target(*ei2, roads->graph);
+			RoadVertexDesc src2 = boost::source(*ei2, roads.graph);
+			RoadVertexDesc tgt2 = boost::target(*ei2, roads.graph);
 
 			//if ((src == src2 && tgt == tgt2) || (src == tgt2 && tgt == src2)) continue;
 			if (src == src2 || src == tgt2 || tgt == src2 || tgt == tgt2) continue;
@@ -2372,23 +2378,23 @@ bool GraphUtil::planarifyOne(RoadGraph* roads) {
 					QVector2D intPt;
 					if (Util::segmentSegmentIntersectXY(e->polyLine[i], e->polyLine[i+1], e2->polyLine[j], e2->polyLine[j+1], &tab, &tcd, true, intPt)) {
 						// エッジの端、ぎりぎりで、交差する場合は、交差させない
-						if ((roads->graph[src]->pt - intPt).length() < 10 || (roads->graph[tgt]->pt - intPt).length() < 10 || (roads->graph[src2]->pt - intPt).length() < 10 || (roads->graph[tgt2]->pt - intPt).length() < 10) continue;
+						if ((roads.graph[src]->pt - intPt).length() < 10 || (roads.graph[tgt]->pt - intPt).length() < 10 || (roads.graph[src2]->pt - intPt).length() < 10 || (roads.graph[tgt2]->pt - intPt).length() < 10) continue;
 
 						// 交点をノードとして登録
 						RoadVertexPtr new_v = RoadVertexPtr(new RoadVertex(intPt));
-						RoadVertexDesc new_v_desc = boost::add_vertex(roads->graph);
-						roads->graph[new_v_desc] = new_v;
+						RoadVertexDesc new_v_desc = boost::add_vertex(roads.graph);
+						roads.graph[new_v_desc] = new_v;
 
 						// もともとのエッジを無効にする
-						roads->graph[*ei]->valid = false;
-						roads->graph[*ei2]->valid = false;
+						roads.graph[*ei]->valid = false;
+						roads.graph[*ei2]->valid = false;
 
 						// 新たなエッジを追加する
-						addEdge(roads, src, new_v_desc, roads->graph[*ei]->type, roads->graph[*ei]->lanes, roads->graph[*ei]->oneWay);
-						addEdge(roads, new_v_desc, tgt, roads->graph[*ei]->type, roads->graph[*ei]->lanes, roads->graph[*ei]->oneWay);
+						addEdge(&roads, src, new_v_desc, roads.graph[*ei]->type, roads.graph[*ei]->lanes, roads.graph[*ei]->oneWay);
+						addEdge(&roads, new_v_desc, tgt, roads.graph[*ei]->type, roads.graph[*ei]->lanes, roads.graph[*ei]->oneWay);
 
-						addEdge(roads, src2, new_v_desc, roads->graph[*ei2]->type, roads->graph[*ei2]->lanes, roads->graph[*ei2]->oneWay);
-						addEdge(roads, new_v_desc, tgt2, roads->graph[*ei2]->type, roads->graph[*ei2]->lanes, roads->graph[*ei2]->oneWay);
+						addEdge(&roads, src2, new_v_desc, roads.graph[*ei2]->type, roads.graph[*ei2]->lanes, roads.graph[*ei2]->oneWay);
+						addEdge(&roads, new_v_desc, tgt2, roads.graph[*ei2]->type, roads.graph[*ei2]->lanes, roads.graph[*ei2]->oneWay);
 
 						return true;
 					}

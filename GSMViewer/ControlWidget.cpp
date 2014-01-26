@@ -11,9 +11,6 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	ui.setupUi(this);
 	ui.lineEditSimplifyThreshold->setText("10");
 	ui.lineEditRemoveShortDeadendThreshold->setText("10");
-	ui.horizontalSliderInterpolationRatio->setMinimum(0);
-	ui.horizontalSliderInterpolationRatio->setMaximum(20);
-	ui.horizontalSliderInterpolationRatio->setSingleStep(1);
 
 	// register the event handlers
 	connect(ui.pushButtonClean, SIGNAL(clicked()), this, SLOT(clean()));
@@ -22,9 +19,7 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
 	connect(ui.pushButtonExtractMajorRoads, SIGNAL(clicked()), this, SLOT(extractMajorRoads()));
 	connect(ui.pushButtonConnectRoads, SIGNAL(clicked()), this, SLOT(connectRoads()));
-	connect(ui.pushButtonInterpolation, SIGNAL(clicked()), this, SLOT(interpolation()));
-	connect(ui.horizontalSliderInterpolationRatio, SIGNAL(valueChanged(int)), this, SLOT(interpolationRatio(int)));
-	connect(ui.pushButtonFinalizeInterpolation, SIGNAL(clicked()), this, SLOT(finalizeInterpolation()));
+	connect(ui.pushButtonPlanarify, SIGNAL(clicked()), this, SLOT(planarify()));
 
 	hide();
 }
@@ -149,23 +144,11 @@ void ControlWidget::connectRoads() {
 }
 
 /**
- * Event handler for button [Interpolation]
+ * Event handler for button [Planarify]
  */
-void ControlWidget::interpolation() {
-	mainWin->glWidget->editor->interpolate();
+void ControlWidget::planarify() {
+	mainWin->glWidget->editor->planarify();
 
 	mainWin->glWidget->updateGL();
 }
 
-void ControlWidget::interpolationRatio(int ratio) {
-	mainWin->glWidget->editor->showInterpolatedRoads(ratio);
-
-	mainWin->glWidget->updateGL();
-}
-
-void ControlWidget::finalizeInterpolation() {
-	int ratio = ui.horizontalSliderInterpolationRatio->value();
-	mainWin->glWidget->editor->finalizeInterpolation(ratio);
-
-	mainWin->glWidget->updateGL();
-}

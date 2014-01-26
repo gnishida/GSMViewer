@@ -116,8 +116,8 @@ public:
 	static void simplify(RoadGraph* roads, float dist_threshold);
 	static void normalize(RoadGraph* roads);
 	static void singlify(RoadGraph* roads);
-	static void planarify(RoadGraph* roads);
-	static bool planarifyOne(RoadGraph* roads);
+	static void planarify(RoadGraph& roads);
+	static bool planarifyOne(RoadGraph& roads);
 	static void skeltonize(RoadGraph* roads);
 	static void rotate(RoadGraph* roads, float theta, const QVector2D& rotationCenter = QVector2D(0, 0));
 	static void translate(RoadGraph* roads, const QVector2D& offset);

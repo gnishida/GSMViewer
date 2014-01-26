@@ -65,6 +65,7 @@ public:
 	void simplify(float threshold);
 	void reduce();
 	void removeShortDeadend(float threshold);
+	void planarify();
 
 	void selectAll();
 

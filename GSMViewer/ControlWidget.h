@@ -28,8 +28,6 @@ public slots:
 	void removeShortDeadend();
 	void extractMajorRoads();
 	void connectRoads();
-	void interpolation();
-	void interpolationRatio(int ratio);
-	void finalizeInterpolation();
+	void planarify();
 };
 

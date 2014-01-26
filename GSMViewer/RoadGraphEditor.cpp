@@ -150,6 +150,10 @@ void RoadGraphEditor::removeShortDeadend(float threshold) {
 	GraphUtil::removeShortDeadend(roads, threshold);
 }
 
+void RoadGraphEditor::planarify() {
+	GraphUtil::planarify(*roads);
+}
+
 void RoadGraphEditor::selectAll() {
 	selectedArea = BBoxPtr(new BBox(GraphUtil::getAABoundingBox(roads)));
 
