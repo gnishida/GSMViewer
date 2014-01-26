@@ -25,7 +25,7 @@ void RoadGraph::generateMesh() {
 	// road edge
 	RoadEdgeIter ei, eend;
 	for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei) {
-		//if (!graph[*ei]->valid) continue;
+		if (!graph[*ei]->valid) continue;
 
 		RoadEdgePtr edge = graph[*ei];
 
