@@ -53,9 +53,11 @@ void ControlWidget::setRoadVertex(RoadVertexDesc vertexDesc, RoadVertexPtr selec
  * Display the selected edge information.
  */
 void ControlWidget::setRoadEdge(RoadEdgePtr selectedEdge) {
-	QString type("");
-	QString numLanes("");
-	QString oneWay("");
+	QString type;
+	QString numLanes;
+	QString oneWay;
+	QString link;
+	QString roundabout;
 
 	if (selectedEdge != NULL) {
 		switch (selectedEdge->type) {
@@ -68,20 +70,23 @@ void ControlWidget::setRoadEdge(RoadEdgePtr selectedEdge) {
 		case 1:
 			type = "Street";
 			break;
+		default:
+			type = "";
+			break;
 		}
 
 		numLanes.setNum(selectedEdge->lanes);
 
-		if (selectedEdge->oneWay) {
-			oneWay = "Yes";
-		} else {
-			oneWay = "No";
-		}
+		oneWay = selectedEdge->oneWay ? "Yes" : "No";
+		link = selectedEdge->link ? "Yes" : "No";
+		roundabout = selectedEdge->roundabout ? "Yes" : "No";
 	}
 
 	ui.lineEditEdgeType->setText(type);
 	ui.lineEditEdgeLanes->setText(numLanes);
 	ui.lineEditEdgeOneWay->setText(oneWay);
+	ui.lineEditEdgeLink->setText(link);
+	ui.lineEditEdgeRoundabout->setText(roundabout);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

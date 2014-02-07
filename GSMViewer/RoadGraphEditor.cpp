@@ -335,6 +335,10 @@ bool RoadGraphEditor::selectVertex(const QVector2D& pt) {
 	return true;
 }
 
+/**
+ * 指定された点に近いエッジを選択する。
+ * 近くにエッジがない場合は、falseを返却する。
+ */
 bool RoadGraphEditor::selectEdge(const QVector2D& pt) {
 	if (roads == NULL) return false;
 

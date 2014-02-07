@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'ControlWidget.ui'
 **
-** Created: Sat Jan 25 19:45:57 2014
+** Created: Fri Feb 7 16:27:59 2014
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -35,6 +35,10 @@ public:
     QLineEdit *lineEditEdgeLanes;
     QLabel *label_3;
     QLineEdit *lineEditEdgeOneWay;
+    QLineEdit *lineEditEdgeLink;
+    QLabel *label_9;
+    QLabel *label_10;
+    QLineEdit *lineEditEdgeRoundabout;
     QGroupBox *groupBox_2;
     QLabel *label_4;
     QLineEdit *lineEditSimplifyThreshold;
@@ -69,7 +73,7 @@ public:
         dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
         groupBox = new QGroupBox(dockWidgetContents);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        groupBox->setGeometry(QRect(10, 130, 171, 111));
+        groupBox->setGeometry(QRect(10, 110, 171, 131));
         label = new QLabel(groupBox);
         label->setObjectName(QString::fromUtf8("label"));
         label->setGeometry(QRect(10, 20, 31, 16));
@@ -78,16 +82,28 @@ public:
         lineEditEdgeType->setGeometry(QRect(80, 20, 81, 20));
         label_2 = new QLabel(groupBox);
         label_2->setObjectName(QString::fromUtf8("label_2"));
-        label_2->setGeometry(QRect(10, 50, 51, 16));
+        label_2->setGeometry(QRect(10, 40, 51, 16));
         lineEditEdgeLanes = new QLineEdit(groupBox);
         lineEditEdgeLanes->setObjectName(QString::fromUtf8("lineEditEdgeLanes"));
-        lineEditEdgeLanes->setGeometry(QRect(80, 50, 81, 20));
+        lineEditEdgeLanes->setGeometry(QRect(80, 40, 81, 20));
         label_3 = new QLabel(groupBox);
         label_3->setObjectName(QString::fromUtf8("label_3"));
-        label_3->setGeometry(QRect(10, 80, 51, 16));
+        label_3->setGeometry(QRect(10, 60, 51, 16));
         lineEditEdgeOneWay = new QLineEdit(groupBox);
         lineEditEdgeOneWay->setObjectName(QString::fromUtf8("lineEditEdgeOneWay"));
-        lineEditEdgeOneWay->setGeometry(QRect(80, 80, 81, 20));
+        lineEditEdgeOneWay->setGeometry(QRect(80, 60, 81, 20));
+        lineEditEdgeLink = new QLineEdit(groupBox);
+        lineEditEdgeLink->setObjectName(QString::fromUtf8("lineEditEdgeLink"));
+        lineEditEdgeLink->setGeometry(QRect(80, 80, 81, 20));
+        label_9 = new QLabel(groupBox);
+        label_9->setObjectName(QString::fromUtf8("label_9"));
+        label_9->setGeometry(QRect(10, 80, 51, 16));
+        label_10 = new QLabel(groupBox);
+        label_10->setObjectName(QString::fromUtf8("label_10"));
+        label_10->setGeometry(QRect(10, 100, 61, 16));
+        lineEditEdgeRoundabout = new QLineEdit(groupBox);
+        lineEditEdgeRoundabout->setObjectName(QString::fromUtf8("lineEditEdgeRoundabout"));
+        lineEditEdgeRoundabout->setGeometry(QRect(80, 100, 81, 20));
         groupBox_2 = new QGroupBox(dockWidgetContents);
         groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
         groupBox_2->setGeometry(QRect(10, 320, 171, 91));
@@ -114,7 +130,7 @@ public:
         lineEditRemoveShortDeadendThreshold->setGeometry(QRect(80, 20, 81, 20));
         pushButtonExtractMajorRoads = new QPushButton(dockWidgetContents);
         pushButtonExtractMajorRoads->setObjectName(QString::fromUtf8("pushButtonExtractMajorRoads"));
-        pushButtonExtractMajorRoads->setGeometry(QRect(20, 590, 151, 31));
+        pushButtonExtractMajorRoads->setGeometry(QRect(20, 610, 151, 31));
         groupBox_4 = new QGroupBox(dockWidgetContents);
         groupBox_4->setObjectName(QString::fromUtf8("groupBox_4"));
         groupBox_4->setGeometry(QRect(10, 250, 171, 61));
@@ -123,7 +139,7 @@ public:
         pushButtonClean->setGeometry(QRect(10, 20, 151, 31));
         groupBox_5 = new QGroupBox(dockWidgetContents);
         groupBox_5->setObjectName(QString::fromUtf8("groupBox_5"));
-        groupBox_5->setGeometry(QRect(10, 10, 171, 111));
+        groupBox_5->setGeometry(QRect(10, 10, 171, 91));
         label_6 = new QLabel(groupBox_5);
         label_6->setObjectName(QString::fromUtf8("label_6"));
         label_6->setGeometry(QRect(10, 20, 31, 16));
@@ -132,16 +148,16 @@ public:
         lineEditVertexDesc->setGeometry(QRect(80, 20, 81, 20));
         label_7 = new QLabel(groupBox_5);
         label_7->setObjectName(QString::fromUtf8("label_7"));
-        label_7->setGeometry(QRect(10, 50, 51, 16));
+        label_7->setGeometry(QRect(10, 40, 51, 16));
         lineEditVertexPos = new QLineEdit(groupBox_5);
         lineEditVertexPos->setObjectName(QString::fromUtf8("lineEditVertexPos"));
-        lineEditVertexPos->setGeometry(QRect(80, 50, 81, 20));
+        lineEditVertexPos->setGeometry(QRect(80, 40, 81, 20));
         label_8 = new QLabel(groupBox_5);
         label_8->setObjectName(QString::fromUtf8("label_8"));
-        label_8->setGeometry(QRect(10, 80, 51, 16));
+        label_8->setGeometry(QRect(10, 60, 51, 16));
         lineEditVertexNeighbors = new QLineEdit(groupBox_5);
         lineEditVertexNeighbors->setObjectName(QString::fromUtf8("lineEditVertexNeighbors"));
-        lineEditVertexNeighbors->setGeometry(QRect(80, 80, 81, 20));
+        lineEditVertexNeighbors->setGeometry(QRect(80, 60, 81, 20));
         groupBox_6 = new QGroupBox(dockWidgetContents);
         groupBox_6->setObjectName(QString::fromUtf8("groupBox_6"));
         groupBox_6->setGeometry(QRect(10, 420, 171, 61));
@@ -150,10 +166,10 @@ public:
         pushButtonReduce->setGeometry(QRect(10, 20, 151, 31));
         pushButtonConnectRoads = new QPushButton(dockWidgetContents);
         pushButtonConnectRoads->setObjectName(QString::fromUtf8("pushButtonConnectRoads"));
-        pushButtonConnectRoads->setGeometry(QRect(20, 630, 151, 31));
+        pushButtonConnectRoads->setGeometry(QRect(20, 650, 151, 31));
         pushButtonPlanarify = new QPushButton(dockWidgetContents);
         pushButtonPlanarify->setObjectName(QString::fromUtf8("pushButtonPlanarify"));
-        pushButtonPlanarify->setGeometry(QRect(20, 670, 151, 31));
+        pushButtonPlanarify->setGeometry(QRect(20, 690, 151, 31));
         ControlWidget->setWidget(dockWidgetContents);
 
         retranslateUi(ControlWidget);
@@ -167,6 +183,8 @@ public:
         label->setText(QApplication::translate("ControlWidget", "Type", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("ControlWidget", "Lanes", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("ControlWidget", "One Way", 0, QApplication::UnicodeUTF8));
+        label_9->setText(QApplication::translate("ControlWidget", "Link", 0, QApplication::UnicodeUTF8));
+        label_10->setText(QApplication::translate("ControlWidget", "Roundabout", 0, QApplication::UnicodeUTF8));
         groupBox_2->setTitle(QApplication::translate("ControlWidget", "Simplify", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("ControlWidget", "Threshold", 0, QApplication::UnicodeUTF8));
         pushButtonSimplify->setText(QApplication::translate("ControlWidget", "Simplify", 0, QApplication::UnicodeUTF8));
