@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Camera.h"
-#include "RoadGraphEditor.h"
-#include "RoadGraph.h"
-#include "RoadGraphRenderer.h"
 #include <QGLWidget>
 #include <QString>
+#include <common/RoadGraph.h>
+#include <common/RoadGraphRenderer.h>
+#include "Camera.h"
+#include "RoadGraphEditor.h"
 
 class MainWindow;
 
@@ -45,14 +45,12 @@ protected:
 	void mousePressEvent(QMouseEvent *e);
 	void mouseReleaseEvent(QMouseEvent *e);
 	void mouseMoveEvent(QMouseEvent *e);
+	void mouseDoubleClickEvent(QMouseEvent *e);
 	void initializeGL();
 	void resizeGL(int width, int height);
 	void paintGL();
 
 private:
 	void mouseTo2D(int x, int y, QVector2D *result);
-	bool hitTest(const AbstractArea& area, const QVector2D& pt);
-	bool hitTestDistortionPoint(const AbstractArea& area, const QVector2D& pt);
-	bool hitTestResizingPoint(const AbstractArea& area, const QVector2D& pt);
 };
 

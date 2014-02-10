@@ -1,6 +1,6 @@
 #include "GLWidget.h"
 #include "MainWindow.h"
-#include "GraphUtil.h"
+#include <common/GraphUtil.h>
 #include <gl/GLU.h>
 #include <vector>
 
@@ -21,7 +21,7 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	camera->setTranslation(0.0f, 0.0f, MIN_Z);
 
 	// initialize the width and others
-	editor->roads->setZ(MIN_Z);
+	editor->roads.setZ(MIN_Z);
 
 	showArea = false;
 
@@ -37,40 +37,26 @@ GLWidget::~GLWidget() {
 
 void GLWidget::drawScene() {
 	// draw the road graph
-	editor->roads->generateMesh();
-	renderer->render(editor->roads->renderables);
+	editor->roads.generateMesh();
+	renderer->render(editor->roads.renderables);
 
 	// define the height for other items
 	float height = (float)((int)(camera->dz * 0.012f)) * 0.1f * 1.5f;
 
 	// draw the selected area
-	if (editor->selectedArea != NULL) {
-		renderer->renderArea(*editor->selectedArea, height);
+	if (editor->selectedAreaBuilder.selected()) {
+		renderer->renderArea(editor->selectedAreaBuilder.polygon(), GL_LINE_STIPPLE, QColor(0, 0, 255), height);
 	}
 
 	// draw the selected vertex
 	if (editor->selectedVertex != NULL) {
-		renderer->renderPoint(editor->selectedVertex->pt, height);
+		renderer->renderPoint(editor->selectedVertex->pt, QColor(0, 0, 255), height);
 	}
 
 	// draw the selected edge
 	if (editor->selectedEdge != NULL) {
-		renderer->renderPolyline(editor->selectedEdge->polyLine, height);
+		renderer->renderPolyline(editor->selectedAreaBuilder.polyline(), GL_LINE_STIPPLE, height);
 	}
-
-	// draw the selected roads
-	if (editor->selectedRoads != NULL) {
-		editor->selectedRoads->setZ(camera->dz);
-		editor->selectedRoads->generateMesh();
-		renderer->render(editor->selectedRoads->renderables);
-	}
-
-	if (showArea) {
-		renderer->renderDenseArea(*editor->selectedArea, height);
-	}
-
-	// draw Voronoi diagram
-	renderer->renderVoronoiDiagram(editor->voronoiDiagram, height);
 }
 
 void GLWidget::showStatusMessage() {
@@ -94,33 +80,6 @@ void GLWidget::showStatusMessage() {
 		break;
 	case RoadGraphEditor::MODE_AREA_SELECTED:
 		strMode = "MODE_AREA_SELECTED";
-		break;
-	case RoadGraphEditor::MODE_AREA_MOVING:
-		strMode = "MODE_AREA_MOVING";
-		break;
-	case RoadGraphEditor::MODE_AREA_RESIZING_TL:
-		strMode = "MODE_AREA_RESIZING_TL";
-		break;
-	case RoadGraphEditor::MODE_AREA_RESIZING_TR:
-		strMode = "MODE_AREA_RESIZING_TR";
-		break;
-	case RoadGraphEditor::MODE_AREA_RESIZING_BL:
-		strMode = "MODE_AREA_RESIZING_BL";
-		break;
-	case RoadGraphEditor::MODE_AREA_RESIZING_BR:
-		strMode = "MODE_AREA_RESIZING_BR";
-		break;
-	case RoadGraphEditor::MODE_AREA_DISTORTING_TL:
-		strMode = "MODE_AREA_DISTORTING_TL";
-		break;
-	case RoadGraphEditor::MODE_AREA_DISTORTING_TR:
-		strMode = "MODE_AREA_DISTORTING_TR";
-		break;
-	case RoadGraphEditor::MODE_AREA_DISTORTING_BL:
-		strMode = "MODE_AREA_DISTORTING_BL";
-		break;
-	case RoadGraphEditor::MODE_AREA_DISTORTING_BR:
-		strMode = "MODE_AREA_DISTORTING_BR";
 		break;
 	}
 
@@ -191,15 +150,10 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
 
 		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
-			/*if (editor->selectedArea->hitTestResizingPoint(last2DPos)) {
-				editor->startResizingArea(RoadGraphEditor::MODE_BASIC_AREA_RESIZING_BR);
-			} else*/ if (editor->selectedArea->hitTestResizingPoint(last2DPos) && keyXPressed) {
-				editor->startDistortingArea(RoadGraphEditor::MODE_AREA_DISTORTING_BR);
-			} else if (editor->selectedArea->hitTest(last2DPos)) {
-				editor->startMovingArea();
+			/*if (editor->selectedArea->hitTest(last2DPos)) {
 			} else {
 				editor->unselectRoads();
-			}
+			}*/
 		} else {
 			if (keyXPressed) {
 				editor->splitEdge(last2DPos);
@@ -210,8 +164,14 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 				editor->startMovingVertex();
 			} else if (editor->selectEdge(last2DPos)) {				
 			} else {
+				if (!editor->selectedAreaBuilder.selecting()) {
+					editor->selectedAreaBuilder.start(last2DPos);
+					setMouseTracking(true);
+					editor->mode = RoadGraphEditor::MODE_DEFINING_AREA;
+				}
+
 				// if neither a vertex nor a edge is selected, then the selection mode starts
-				editor->startDefiningArea(last2DPos);
+				//editor->startDefiningArea(last2DPos);
 			}
 
 			mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
@@ -238,17 +198,8 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 			editor->stopMovingVertex();
 		}
 		break;
-	case RoadGraphEditor::MODE_AREA_MOVING:
-		editor->stopMovingArea();
-		break;
 	case RoadGraphEditor::MODE_DEFINING_AREA:
-		editor->stopDefiningArea();
-		break;
-	case RoadGraphEditor::MODE_AREA_DISTORTING_TL:
-	case RoadGraphEditor::MODE_AREA_DISTORTING_TR:
-	case RoadGraphEditor::MODE_AREA_DISTORTING_BL:
-	case RoadGraphEditor::MODE_AREA_DISTORTING_BR:
-		editor->stopDistortingArea();
+		//editor->stopDefiningArea();
 		break;
 	}
 
@@ -274,9 +225,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 
 	if (e->buttons() & Qt::LeftButton) {
 		switch (editor->mode) {
-		case RoadGraphEditor::MODE_AREA_MOVING:
-			editor->moveArea(dx2D, dy2D);
-			break;
 		case RoadGraphEditor::MODE_VERTEX_MOVING:
 			if (controlPressed) {
 				float snap_threshold = camera->dz * 0.03f;
@@ -290,13 +238,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 			break;
 		case RoadGraphEditor::MODE_DEFINING_AREA:
 			// update the selection box
-			editor->defineArea(last2DPos);
-			break;
-		case editor->MODE_AREA_DISTORTING_TL:
-		case editor->MODE_AREA_DISTORTING_TR:
-		case editor->MODE_AREA_DISTORTING_BL:
-		case editor->MODE_AREA_DISTORTING_BR:
-			editor->distortArea(last2DPos);
+			if (editor->selectedAreaBuilder.selecting()) {	// Move the last point of the selected polygonal area
+				editor->selectedAreaBuilder.moveLastPoint(pos);
+			}
 			break;
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
@@ -309,7 +253,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 		if (camera->dz > MAX_Z) camera->dz = MAX_Z;
 
 		// tell the Z coordinate to the road graph so that road graph updates rendering related variables.
-		editor->roads->setZ(camera->dz);
+		editor->roads.setZ(camera->dz);
 
 		lastPos = e->pos();
 	}
@@ -318,6 +262,17 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	showStatusMessage();
 
 	updateGL();
+}
+
+void GLWidget::mouseDoubleClickEvent(QMouseEvent *e) {
+	setMouseTracking(false);
+
+	if (editor->selectedAreaBuilder.selecting()) {
+		editor->selectedAreaBuilder.end();
+		editor->selectedArea = editor->selectedAreaBuilder.polygon();
+
+		editor->mode = RoadGraphEditor::MODE_DEFAULT;
+	}
 }
 
 void GLWidget::initializeGL() {

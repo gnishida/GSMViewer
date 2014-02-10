@@ -1,8 +1,8 @@
+#include <common/GraphUtil.h>
 #include "ControlWidget.h"
 #include "MainWindow.h"
 #include "GLWidget.h"
 #include "RoadGraphEditor.h"
-#include "GraphUtil.h"
 
 ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget", (QWidget*)mainWin) {
 	this->mainWin = mainWin;
@@ -17,8 +17,6 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	connect(ui.pushButtonSimplify, SIGNAL(clicked()), this, SLOT(simplify()));
 	connect(ui.pushButtonReduce, SIGNAL(clicked()), this, SLOT(reduce()));
 	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
-	connect(ui.pushButtonExtractMajorRoads, SIGNAL(clicked()), this, SLOT(extractMajorRoads()));
-	connect(ui.pushButtonConnectRoads, SIGNAL(clicked()), this, SLOT(connectRoads()));
 	connect(ui.pushButtonPlanarify, SIGNAL(clicked()), this, SLOT(planarify()));
 
 	hide();
@@ -61,13 +59,16 @@ void ControlWidget::setRoadEdge(RoadEdgePtr selectedEdge) {
 
 	if (selectedEdge != NULL) {
 		switch (selectedEdge->type) {
-		case 3:
+		case RoadEdge::TYPE_HIGHWAY:
 			type = "Highway";
 			break;
-		case 2:
+		case RoadEdge::TYPE_BOULEVARD:
+			type = "Boulevard";
+			break;
+		case RoadEdge::TYPE_AVENUE:
 			type = "Avenue";
 			break;
-		case 1:
+		case RoadEdge::TYPE_STREET:
 			type = "Street";
 			break;
 		default:
@@ -129,25 +130,6 @@ void ControlWidget::removeShortDeadend() {
 
 	mainWin->glWidget->updateGL();
 }
-
-/**
- * Event handler for button [Extract Major Roads]
- */
-void ControlWidget::extractMajorRoads() {
-	GraphUtil::extractMajorRoads(*mainWin->glWidget->editor->roads, 1000);
-
-	mainWin->glWidget->updateGL();
-}
-
-/**
- * Event handler for button [Connect Roads]
- */
-void ControlWidget::connectRoads() {
-	mainWin->glWidget->editor->connectRoads();
-
-	mainWin->glWidget->updateGL();
-}
-
 /**
  * Event handler for button [Planarify]
  */

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Thu Jan 16 13:32:51 2014
+** Created: Mon Feb 10 16:02:56 2014
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -155,7 +155,6 @@ public:
         menuBar->addAction(menuWindow->menuAction());
         menuFile->addAction(actionNew);
         menuFile->addAction(actionOpen);
-        menuFile->addAction(actionOpenToAdd);
         menuFile->addSeparator();
         menuFile->addAction(actionSave);
         menuFile->addSeparator();
@@ -168,8 +167,6 @@ public:
         menuEdit->addAction(actionPaste);
         menuEdit->addAction(actionDeleteEdge);
         menuSelect->addAction(actionSelectAll);
-        menuTool->addAction(actionVoronoi);
-        menuTool->addAction(actionVoronoiCut);
         menuTool->addAction(actionShowArea);
 
         retranslateUi(MainWindow);

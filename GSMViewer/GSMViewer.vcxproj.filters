@@ -33,6 +33,12 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="mylib">
+      <UniqueIdentifier>{3d6702d7-d437-4538-a304-38571e5a91eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mylib\common">
+      <UniqueIdentifier>{e091feb3-715a-4a4b-a31d-48b4edf8df18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -50,27 +56,6 @@
     <ClCompile Include="GLWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GraphUtil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RoadEdge.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RoadGraph.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RoadGraphRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RoadVertex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ControlWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -86,38 +71,41 @@
     <ClCompile Include="GeneratedFiles\Release\moc_MainWindow.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="BBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RoadGraphEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClipBoard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AbstractArea.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\RoadEdge.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
-    <ClCompile Include="CircleArea.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\RoadGraph.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
-    <ClCompile Include="ArcArea.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\RoadVertex.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
-    <ClCompile Include="BFSForest.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\BBox.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
-    <ClCompile Include="BFSTree.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\GraphUtil.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
-    <ClCompile Include="AbstractForest.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\Polygon2D.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
-    <ClCompile Include="VoronoiDiagram.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\Util.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
-    <ClCompile Include="VoronoiUtil.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\mylib\common\Renderable.cpp">
+      <Filter>mylib\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mylib\common\RoadGraphRenderer.cpp">
+      <Filter>mylib\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mylib\common\PolygonAreaBuilder.cpp">
+      <Filter>mylib\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -147,32 +135,8 @@
     <ClInclude Include="GLWidget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RoadEdge.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RoadGraph.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RoadGraphRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RoadVertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_ControlWidget.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BBox.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RoadGraphEditor.h">
       <Filter>Header Files</Filter>
@@ -180,29 +144,38 @@
     <ClInclude Include="ClipBoard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AbstractArea.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\RoadEdge.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
-    <ClInclude Include="CircleArea.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\RoadGraph.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
-    <ClInclude Include="ArcArea.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\RoadVertex.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
-    <ClInclude Include="BFSForest.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\BBox.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
-    <ClInclude Include="BFSTree.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\common.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
-    <ClInclude Include="AbstractForest.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\GraphUtil.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
-    <ClInclude Include="VoronoiDiagram.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\Polygon2D.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
-    <ClInclude Include="VoronoiUtil.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\mylib\common\Util.h">
+      <Filter>mylib\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mylib\common\Renderable.h">
+      <Filter>mylib\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mylib\common\RoadGraphRenderer.h">
+      <Filter>mylib\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mylib\common\PolygonAreaBuilder.h">
+      <Filter>mylib\common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

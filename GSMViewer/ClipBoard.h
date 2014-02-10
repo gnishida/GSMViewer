@@ -1,20 +1,21 @@
 #pragma once
 
-#include "AbstractArea.h"
-#include "RoadGraph.h"
+#include <common/Polygon2D.h>
+#include <common/RoadGraph.h>
 
 class ClipBoard {
 public:
-	RoadGraph* roads;
+	bool _empty;
+	RoadGraph _roads;
 
 public:
-	ClipBoard();
-	~ClipBoard();
+	ClipBoard() : _empty(true) {}
+	~ClipBoard() {}
 
 	void clear();
 	bool empty() const;
-	void copy(RoadGraph* roads);
-	void copy(RoadGraph* roads, const AbstractArea& area);
-	RoadGraph* paste();
+	void copy(RoadGraph& roads);
+	void copy(RoadGraph& roads, Polygon2D& area);
+	void paste(RoadGraph& roads);
 };
 

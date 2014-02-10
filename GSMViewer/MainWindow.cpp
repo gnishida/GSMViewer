@@ -1,5 +1,5 @@
 #include "MainWindow.h"
-#include "GraphUtil.h"
+#include <common/GraphUtil.h>
 
 MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
@@ -20,18 +20,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, 
 	// register the menu's action handlers
 	connect(ui.actionNew, SIGNAL(triggered()), this, SLOT(onNew()));
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
-	connect(ui.actionOpenToAdd, SIGNAL(triggered()), this, SLOT(onOpenToAdd()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionSelectAll, SIGNAL(triggered()), this, SLOT(onSelectAll()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
 	connect(ui.actionCut, SIGNAL(triggered()), this, SLOT(onCut()));
-	connect(ui.actionCopy, SIGNAL(triggered()), this, SLOT(onCopy()));
-	connect(ui.actionPaste, SIGNAL(triggered()), this, SLOT(onPaste()));
 	connect(ui.actionDeleteEdge, SIGNAL(triggered()), this, SLOT(onDeleteEdge()));
-	connect(ui.actionVoronoi, SIGNAL(triggered()), this, SLOT(onVoronoi()));
-	connect(ui.actionVoronoiCut, SIGNAL(triggered()), this, SLOT(onVoronoiCut()));
-	connect(ui.actionShowArea, SIGNAL(triggered()), this, SLOT(onShowArea()));
 	connect(ui.actionControlWidget, SIGNAL(triggered()), this, SLOT(onShowControlWidget()));
 
 	// setup the GL widget
@@ -89,21 +83,6 @@ void MainWindow::onOpen() {
 	QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::onOpenToAdd() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Open StreetMap file..."), "", tr("StreetMap Files (*.gsm)"));
-
-	if (filename.isEmpty()) {
-		printf("Unable to open file\n");
-		return;
-	}
-
-	QApplication::setOverrideCursor(Qt::WaitCursor);
-	glWidget->editor->openToAddRoad(filename);
-	glWidget->showStatusMessage();
-	glWidget->updateGL();
-	QApplication::restoreOverrideCursor();
-}
-
 void MainWindow::onSave() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save StreetMap file..."), "", tr("StreetMap Files (*.gsm)"));
 
@@ -132,32 +111,10 @@ void MainWindow::onCut() {
 	glWidget->updateGL();
 }
 
-void MainWindow::onCopy() {
-	glWidget->editor->copy();
-	glWidget->updateGL();
-}
-
-void MainWindow::onPaste() {
-	glWidget->editor->paste();
-	glWidget->updateGL();
-}
-
 void MainWindow::onDeleteEdge() {
 	qDebug() << "onDeleteEdge";
 	glWidget->editor->deleteEdge();
 	glWidget->updateGL();
-}
-
-void MainWindow::onVoronoi() {
-	glWidget->editor->voronoi();
-}
-
-void MainWindow::onVoronoiCut() {
-	glWidget->editor->voronoiMerge2();
-}
-
-void MainWindow::onShowArea() {
-	glWidget->showArea = true;
 }
 
 void MainWindow::onShowControlWidget() {

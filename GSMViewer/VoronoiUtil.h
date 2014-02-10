@@ -1,9 +1,9 @@
 #pragma once
 
-#include "RoadGraph.h"
+#include <boost/polygon/voronoi.hpp>
+#include <common/RoadGraph.h>
 #include "VoronoiDiagram.h"
 #include "AbstractArea.h"
-#include <boost/polygon/voronoi.hpp>
 
 class VoronoiVertex {
 public:

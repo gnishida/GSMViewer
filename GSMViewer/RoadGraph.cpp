@@ -32,13 +32,14 @@ void RoadGraph::generateMesh() {
 		QColor color, bColor;
 		float height;
 		switch (edge->type) {
-		case 3:	// high way
+		case RoadEdge::TYPE_HIGHWAY:	// high way
+		case RoadEdge::TYPE_BOULVARD:
 			color = QColor(255, 225, 104);
 			bColor = QColor(229, 153, 21);
 			height = highwayHeight;
 			break;
-		case 2: // avenue
-		case 1: // street
+		case RoadEdge::TYPE_AVENUE:
+		case RoadEdge::TYPE_STREET:
 			color = QColor(255, 255, 255);
 			bColor = QColor(217, 209, 201);
 			height = avenueHeight;

@@ -35,7 +35,6 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
-    <addaction name="actionOpenToAdd"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
@@ -68,8 +67,6 @@
     <property name="title">
      <string>Tool</string>
     </property>
-    <addaction name="actionVoronoi"/>
-    <addaction name="actionVoronoiCut"/>
     <addaction name="actionShowArea"/>
    </widget>
    <addaction name="menuFile"/>

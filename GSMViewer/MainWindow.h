@@ -30,17 +30,11 @@ public slots:
 	void onMenuEdit();
 	void onNew();
 	void onOpen();
-	void onOpenToAdd();
 	void onSave();
 	void onSelectAll();
 	void onUndo();
 	void onCut();
-	void onCopy();
-	void onPaste();
 	void onDeleteEdge();
-	void onVoronoi();
-	void onVoronoiCut();
-	void onShowArea();
 	void onShowControlWidget();
 };
 
