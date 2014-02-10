@@ -63,16 +63,9 @@
     </property>
     <addaction name="actionSelectAll"/>
    </widget>
-   <widget class="QMenu" name="menuTool">
-    <property name="title">
-     <string>Tool</string>
-    </property>
-    <addaction name="actionShowArea"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSelect"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuTool"/>
    <addaction name="menuWindow"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
