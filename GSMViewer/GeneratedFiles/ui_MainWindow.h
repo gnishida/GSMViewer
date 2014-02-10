@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created: Mon Feb 10 16:02:56 2014
+** Created: Mon Feb 10 18:32:45 2014
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -51,7 +51,6 @@ public:
     QMenu *menuWindow;
     QMenu *menuEdit;
     QMenu *menuSelect;
-    QMenu *menuTool;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -138,8 +137,6 @@ public:
         menuEdit->setObjectName(QString::fromUtf8("menuEdit"));
         menuSelect = new QMenu(menuBar);
         menuSelect->setObjectName(QString::fromUtf8("menuSelect"));
-        menuTool = new QMenu(menuBar);
-        menuTool->setObjectName(QString::fromUtf8("menuTool"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
@@ -151,7 +148,6 @@ public:
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuSelect->menuAction());
         menuBar->addAction(menuEdit->menuAction());
-        menuBar->addAction(menuTool->menuAction());
         menuBar->addAction(menuWindow->menuAction());
         menuFile->addAction(actionNew);
         menuFile->addAction(actionOpen);
@@ -167,7 +163,6 @@ public:
         menuEdit->addAction(actionPaste);
         menuEdit->addAction(actionDeleteEdge);
         menuSelect->addAction(actionSelectAll);
-        menuTool->addAction(actionShowArea);
 
         retranslateUi(MainWindow);
 
@@ -211,7 +206,6 @@ public:
         menuWindow->setTitle(QApplication::translate("MainWindow", "Window", 0, QApplication::UnicodeUTF8));
         menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0, QApplication::UnicodeUTF8));
         menuSelect->setTitle(QApplication::translate("MainWindow", "Select", 0, QApplication::UnicodeUTF8));
-        menuTool->setTitle(QApplication::translate("MainWindow", "Tool", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

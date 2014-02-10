@@ -142,7 +142,7 @@ bool RoadGraphEditor::selectEdge(const QVector2D& pt) {
 }
 
 void RoadGraphEditor::startMovingVertex() {
-	history.push_back(roads);
+	//history.push_back(roads);
 
 	mode = MODE_VERTEX_MOVING;
 }

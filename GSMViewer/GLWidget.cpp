@@ -55,7 +55,7 @@ void GLWidget::drawScene() {
 
 	// draw the selected edge
 	if (editor->selectedEdge != NULL) {
-		renderer->renderPolyline(editor->selectedAreaBuilder.polyline(), GL_LINE_STIPPLE, height);
+		renderer->renderPolyline(editor->selectedEdge->polyLine, GL_LINE_STRIP, height);
 	}
 }
 
@@ -164,11 +164,11 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 				editor->startMovingVertex();
 			} else if (editor->selectEdge(last2DPos)) {				
 			} else {
-				if (!editor->selectedAreaBuilder.selecting()) {
+				/*if (!editor->selectedAreaBuilder.selecting()) {
 					editor->selectedAreaBuilder.start(last2DPos);
 					setMouseTracking(true);
 					editor->mode = RoadGraphEditor::MODE_DEFINING_AREA;
-				}
+				}*/
 
 				// if neither a vertex nor a edge is selected, then the selection mode starts
 				//editor->startDefiningArea(last2DPos);
@@ -238,9 +238,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 			break;
 		case RoadGraphEditor::MODE_DEFINING_AREA:
 			// update the selection box
-			if (editor->selectedAreaBuilder.selecting()) {	// Move the last point of the selected polygonal area
+			/*if (editor->selectedAreaBuilder.selecting()) {	// Move the last point of the selected polygonal area
 				editor->selectedAreaBuilder.moveLastPoint(pos);
-			}
+			}*/
 			break;
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
