@@ -393,7 +393,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="pushButtonConnectRoads">
+   <widget class="QPushButton" name="pushButtonExtractAvenues">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -403,7 +403,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Connect Roads</string>
+     <string>Extract Avenue Roads</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButtonPlanarify">

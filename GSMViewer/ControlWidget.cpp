@@ -17,6 +17,7 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	connect(ui.pushButtonSimplify, SIGNAL(clicked()), this, SLOT(simplify()));
 	connect(ui.pushButtonReduce, SIGNAL(clicked()), this, SLOT(reduce()));
 	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
+	connect(ui.pushButtonExtractAvenues, SIGNAL(clicked()), this, SLOT(extractAvenues()));
 	connect(ui.pushButtonPlanarify, SIGNAL(clicked()), this, SLOT(planarify()));
 
 	hide();
@@ -130,6 +131,16 @@ void ControlWidget::removeShortDeadend() {
 
 	mainWin->glWidget->updateGL();
 }
+
+void ControlWidget::extractAvenues() {
+	GraphUtil::extractRoads(mainWin->glWidget->editor->roads, RoadEdge::TYPE_AVENUE);
+	GraphUtil::clean(mainWin->glWidget->editor->roads);
+	GraphUtil::reduce(mainWin->glWidget->editor->roads);
+	GraphUtil::clean(mainWin->glWidget->editor->roads);
+
+	mainWin->glWidget->updateGL();
+}
+
 /**
  * Event handler for button [Planarify]
  */

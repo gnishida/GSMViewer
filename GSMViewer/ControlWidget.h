@@ -26,6 +26,7 @@ public slots:
 	void simplify();
 	void reduce();
 	void removeShortDeadend();
+	void extractAvenues();
 	void planarify();
 };
 

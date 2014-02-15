@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'ControlWidget.ui'
 **
-** Created: Mon Feb 10 18:14:08 2014
+** Created: Fri Feb 14 20:00:20 2014
 **      by: Qt User Interface Compiler version 4.8.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -59,7 +59,7 @@ public:
     QLineEdit *lineEditVertexNeighbors;
     QGroupBox *groupBox_6;
     QPushButton *pushButtonReduce;
-    QPushButton *pushButtonConnectRoads;
+    QPushButton *pushButtonExtractAvenues;
     QPushButton *pushButtonPlanarify;
 
     void setupUi(QDockWidget *ControlWidget)
@@ -164,9 +164,9 @@ public:
         pushButtonReduce = new QPushButton(groupBox_6);
         pushButtonReduce->setObjectName(QString::fromUtf8("pushButtonReduce"));
         pushButtonReduce->setGeometry(QRect(10, 20, 151, 31));
-        pushButtonConnectRoads = new QPushButton(dockWidgetContents);
-        pushButtonConnectRoads->setObjectName(QString::fromUtf8("pushButtonConnectRoads"));
-        pushButtonConnectRoads->setGeometry(QRect(20, 650, 151, 31));
+        pushButtonExtractAvenues = new QPushButton(dockWidgetContents);
+        pushButtonExtractAvenues->setObjectName(QString::fromUtf8("pushButtonExtractAvenues"));
+        pushButtonExtractAvenues->setGeometry(QRect(20, 650, 151, 31));
         pushButtonPlanarify = new QPushButton(dockWidgetContents);
         pushButtonPlanarify->setObjectName(QString::fromUtf8("pushButtonPlanarify"));
         pushButtonPlanarify->setGeometry(QRect(20, 690, 151, 31));
@@ -200,7 +200,7 @@ public:
         label_8->setText(QApplication::translate("ControlWidget", "Neighbors", 0, QApplication::UnicodeUTF8));
         groupBox_6->setTitle(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
         pushButtonReduce->setText(QApplication::translate("ControlWidget", "Reduce", 0, QApplication::UnicodeUTF8));
-        pushButtonConnectRoads->setText(QApplication::translate("ControlWidget", "Connect Roads", 0, QApplication::UnicodeUTF8));
+        pushButtonExtractAvenues->setText(QApplication::translate("ControlWidget", "Extract Avenue Roads", 0, QApplication::UnicodeUTF8));
         pushButtonPlanarify->setText(QApplication::translate("ControlWidget", "Planar Graph", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(ControlWidget);
     } // retranslateUi
