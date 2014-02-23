@@ -1,6 +1,6 @@
 #include "GLWidget.h"
 #include "MainWindow.h"
-#include <common/GraphUtil.h>
+#include <road/GraphUtil.h>
 #include <gl/GLU.h>
 #include <vector>
 
@@ -55,7 +55,7 @@ void GLWidget::drawScene() {
 
 	// draw the selected edge
 	if (editor->selectedEdge != NULL) {
-		renderer->renderPolyline(editor->selectedEdge->polyLine, GL_LINE_STRIP, height);
+		renderer->renderPolyline(editor->selectedEdge->polyLine, QColor(0, 0, 255), GL_LINE_STRIP, height);
 	}
 }
 

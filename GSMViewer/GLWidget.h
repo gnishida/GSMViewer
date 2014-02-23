@@ -2,8 +2,8 @@
 
 #include <QGLWidget>
 #include <QString>
-#include <common/RoadGraph.h>
-#include <common/RoadGraphRenderer.h>
+#include <road/RoadGraph.h>
+#include <road/RoadGraphRenderer.h>
 #include "Camera.h"
 #include "RoadGraphEditor.h"
 

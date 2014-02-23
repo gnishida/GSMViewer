@@ -1,9 +1,9 @@
 #pragma once
 
-#include <common/RoadGraph.h>
 #include <common/BBox.h>
 #include <common/Polygon2D.h>
-#include <common/PolygonAreaBuilder.h>
+#include <common/PolygonBuilder.h>
+#include <road/RoadGraph.h>
 #include "ClipBoard.h"
 
 class RoadGraphEditor {
@@ -23,7 +23,7 @@ public:
 
 	int mode;
 
-	PolygonAreaBuilder selectedAreaBuilder;
+	PolygonBuilder selectedAreaBuilder;
 	Polygon2D selectedArea;				// the selected area
 
 	RoadVertexPtr selectedVertex;

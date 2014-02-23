@@ -1,5 +1,5 @@
-﻿#include <common/GraphUtil.h>
-#include <common/Util.h>
+﻿#include <common/Util.h>
+#include <road/GraphUtil.h>
 #include "RoadGraphEditor.h"
 
 RoadGraphEditor::RoadGraphEditor() {
