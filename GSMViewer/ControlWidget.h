@@ -22,11 +22,10 @@ public:
 	void setRoadEdge(RoadEdgePtr selectedEdge);
 
 public slots:
+	void showRoad(int flag);
 	void clean();
 	void simplify();
 	void reduce();
 	void removeShortDeadend();
-	void extractAvenues();
-	void planarify();
 };
 

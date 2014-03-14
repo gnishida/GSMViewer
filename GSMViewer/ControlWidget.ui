@@ -24,7 +24,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>110</y>
+      <y>180</y>
       <width>171</width>
       <height>131</height>
      </rect>
@@ -152,7 +152,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>320</y>
+      <y>490</y>
       <width>171</width>
       <height>91</height>
      </rect>
@@ -201,7 +201,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>490</y>
+      <y>590</y>
       <width>171</width>
       <height>91</height>
      </rect>
@@ -246,24 +246,11 @@
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="pushButtonExtractMajorRoads">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>610</y>
-      <width>151</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Extract Major Roads</string>
-    </property>
-   </widget>
    <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>250</y>
+      <y>350</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -280,6 +267,9 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="text">
       <string>Clean</string>
      </property>
@@ -289,7 +279,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
+      <y>80</y>
       <width>171</width>
       <height>91</height>
      </rect>
@@ -393,30 +383,56 @@
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="pushButtonExtractAvenues">
+   <widget class="QCheckBox" name="checkBoxShowHighway">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>650</y>
-      <width>151</width>
-      <height>31</height>
+      <x>10</x>
+      <y>10</y>
+      <width>70</width>
+      <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Extract Avenue Roads</string>
+     <string>Highways</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButtonPlanarify">
+   <widget class="QCheckBox" name="checkBoxShowBoulevard">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>690</y>
-      <width>151</width>
-      <height>31</height>
+      <x>100</x>
+      <y>10</y>
+      <width>70</width>
+      <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>Planar Graph</string>
+     <string>Boulevard</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxShowAvenue">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>70</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Avenues</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxShowLocalStreet">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>30</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Local Streets</string>
     </property>
    </widget>
   </widget>

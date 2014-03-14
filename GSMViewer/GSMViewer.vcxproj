@@ -130,6 +130,8 @@
     <ClCompile Include="..\..\mylib\common\BBox.cpp" />
     <ClCompile Include="..\..\mylib\common\Polygon2D.cpp" />
     <ClCompile Include="..\..\mylib\common\PolygonBuilder.cpp" />
+    <ClCompile Include="..\..\mylib\common\Polyline2D.cpp" />
+    <ClCompile Include="..\..\mylib\common\Polyline3D.cpp" />
     <ClCompile Include="..\..\mylib\common\Renderable.cpp" />
     <ClCompile Include="..\..\mylib\common\Util.cpp" />
     <ClCompile Include="..\..\mylib\road\GraphUtil.cpp" />
@@ -220,6 +222,8 @@
     <ClInclude Include="..\..\mylib\common\common.h" />
     <ClInclude Include="..\..\mylib\common\Polygon2D.h" />
     <ClInclude Include="..\..\mylib\common\PolygonBuilder.h" />
+    <ClInclude Include="..\..\mylib\common\Polyline2D.h" />
+    <ClInclude Include="..\..\mylib\common\Polyline3D.h" />
     <ClInclude Include="..\..\mylib\common\Renderable.h" />
     <ClInclude Include="..\..\mylib\common\Util.h" />
     <ClInclude Include="..\..\mylib\road\GraphUtil.h" />

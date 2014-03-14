@@ -116,6 +116,12 @@
     <ClCompile Include="..\..\mylib\common\PolygonBuilder.cpp">
       <Filter>mylib\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\mylib\common\Polyline2D.cpp">
+      <Filter>mylib\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mylib\common\Polyline3D.cpp">
+      <Filter>mylib\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -190,6 +196,12 @@
       <Filter>mylib\road</Filter>
     </ClInclude>
     <ClInclude Include="..\..\mylib\common\PolygonBuilder.h">
+      <Filter>mylib\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mylib\common\Polyline2D.h">
+      <Filter>mylib\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mylib\common\Polyline3D.h">
       <Filter>mylib\common</Filter>
     </ClInclude>
   </ItemGroup>
