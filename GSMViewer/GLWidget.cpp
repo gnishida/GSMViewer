@@ -290,7 +290,7 @@ void GLWidget::initializeGL() {
 	glDepthFunc(GL_LEQUAL);
 
 	//---- lighting ----
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 
 	static GLfloat lightPosition[4] = { 0.0f, 0.0f, 100.0f, 0.0f };

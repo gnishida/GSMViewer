@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui/QMainWindow>
+#include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
 #include "ControlWidget.h"
 #include "GLWidget.h"
@@ -17,7 +17,7 @@ public:
 	QLabel* statusLabelR;
 
 public:
-	MainWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
+	MainWindow(QWidget *parent = 0);
 	~MainWindow();
 
 	void setStatusMessage(QString message1, QString message2);

@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include <road/GraphUtil.h>
 
-MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags) : QMainWindow(parent, flags) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
 
 	statusLebelL = new QLabel();
