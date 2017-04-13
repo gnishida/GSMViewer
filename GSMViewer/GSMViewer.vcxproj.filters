@@ -104,6 +104,9 @@
     <ClCompile Include="road\RoadGraphRenderer.cpp">
       <Filter>Source Files\road</Filter>
     </ClCompile>
+    <ClCompile Include="OSMRoadsParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -170,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="road\RoadGraphRenderer.h">
       <Filter>Source Files\road</Filter>
+    </ClInclude>
+    <ClInclude Include="OSMRoadsParser.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

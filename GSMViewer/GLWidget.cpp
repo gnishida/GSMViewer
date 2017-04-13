@@ -17,10 +17,10 @@ GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers
 	// set up the camera
 	camera = new Camera();
 	camera->setLookAt(0.0f, 0.0f, 0.0f);
-	camera->setTranslation(0.0f, 0.0f, MIN_Z);
+	camera->setTranslation(0.0f, 0.0f, (MIN_Z + MAX_Z) * 0.5);
 
 	// initialize the width and others
-	editor->roads.setZ(MIN_Z);
+	editor->roads.setZ(camera->dz);
 
 	showArea = false;
 
@@ -219,6 +219,8 @@ void GLWidget::wheelEvent(QWheelEvent* e) {
 
 	// tell the Z coordinate to the road graph so that road graph updates rendering related variables.
 	editor->roads.setZ(camera->dz);
+
+	showStatusMessage();
 
 	updateGL();
 }

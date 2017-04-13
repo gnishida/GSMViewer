@@ -167,6 +167,7 @@
     <ClCompile Include="GLWidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="OSMRoadsParser.cpp" />
     <ClCompile Include="RoadGraphEditor.cpp" />
     <ClCompile Include="road\GraphUtil.cpp" />
     <ClCompile Include="road\RoadEdge.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="common\Polyline2D.h" />
     <ClInclude Include="common\Renderable.h" />
     <ClInclude Include="common\Util.h" />
+    <ClInclude Include="OSMRoadsParser.h" />
     <ClInclude Include="RoadGraphEditor.h" />
     <ClInclude Include="road\GraphUtil.h" />
     <ClInclude Include="road\RoadEdge.h" />

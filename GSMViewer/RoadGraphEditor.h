@@ -31,8 +31,9 @@ public:
 	~RoadGraphEditor();
 
 	void clear();
-	void openRoad(QString filename);
-	void saveRoad(QString filename);
+	void openRoad(const QString& filename);
+	void openOSMRoad(const QString& filename);
+	void saveRoad(const QString& filename);
 	void undo();
 	bool deleteEdge();
 	void reduce();

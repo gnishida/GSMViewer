@@ -1,6 +1,7 @@
 ﻿#include <common/Util.h>
 #include <road/GraphUtil.h>
 #include "RoadGraphEditor.h"
+#include "OSMRoadsParser.h"
 
 RoadGraphEditor::RoadGraphEditor() {
 	clear();
@@ -24,13 +25,30 @@ void RoadGraphEditor::clear() {
 	history.clear();
 }
 
-void RoadGraphEditor::openRoad(QString filename) {
+void RoadGraphEditor::openRoad(const QString& filename) {
 	clear();
 
 	GraphUtil::loadRoads(roads, filename);
 }
 
-void RoadGraphEditor::saveRoad(QString filename) {
+void RoadGraphEditor::openOSMRoad(const QString& filename) {
+	clear();
+
+	OSMRoadsParser parser(&roads);
+
+	// read OSM file
+	QXmlSimpleReader reader;
+	reader.setContentHandler(&parser);
+	QFile file(filename);
+	QXmlInputSource source(&file);
+	reader.parse(source);
+
+	// make the vertex with degree of 2 just a point on an edge
+	GraphUtil::reduce(roads);
+	GraphUtil::clean(roads);
+}
+
+void RoadGraphEditor::saveRoad(const QString& filename) {
 	// make the vertex with degree of 2 just a point on an edge
 	GraphUtil::reduce(roads);
 	GraphUtil::clean(roads);

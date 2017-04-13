@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	// register the menu's action handlers
 	connect(ui.actionNew, SIGNAL(triggered()), this, SLOT(onNew()));
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
+	connect(ui.actionOpenOSM, SIGNAL(triggered()), this, SLOT(onOpenOSM()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
@@ -68,12 +69,24 @@ void MainWindow::onOpen() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Open StreetMap file..."), "", tr("StreetMap Files (*.gsm)"));
 
 	if (filename.isEmpty()) {
-		printf("Unable to open file\n");
 		return;
 	}
 
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 	glWidget->editor->openRoad(filename);
+	glWidget->updateGL();
+	QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::onOpenOSM() {
+	QString filename = QFileDialog::getOpenFileName(this, tr("Open StreetMap file..."), "", tr("StreetMap Files (*.osm)"));
+
+	if (filename.isEmpty()) {
+		return;
+	}
+
+	QApplication::setOverrideCursor(Qt::WaitCursor);
+	glWidget->editor->openOSMRoad(filename);
 	glWidget->updateGL();
 	QApplication::restoreOverrideCursor();
 }

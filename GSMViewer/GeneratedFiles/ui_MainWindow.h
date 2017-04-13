@@ -44,12 +44,12 @@ public:
     QAction *actionModeLayer;
     QAction *actionModeSketch;
     QAction *actionShowArea;
+    QAction *actionOpenOSM;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuWindow;
     QMenu *menuEdit;
-    QMenu *menuSelect;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -122,6 +122,8 @@ public:
         actionModeSketch->setCheckable(true);
         actionShowArea = new QAction(MainWindow);
         actionShowArea->setObjectName(QStringLiteral("actionShowArea"));
+        actionOpenOSM = new QAction(MainWindow);
+        actionOpenOSM->setObjectName(QStringLiteral("actionOpenOSM"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindow->setCentralWidget(centralWidget);
@@ -134,8 +136,6 @@ public:
         menuWindow->setObjectName(QStringLiteral("menuWindow"));
         menuEdit = new QMenu(menuBar);
         menuEdit->setObjectName(QStringLiteral("menuEdit"));
-        menuSelect = new QMenu(menuBar);
-        menuSelect->setObjectName(QStringLiteral("menuSelect"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -145,11 +145,11 @@ public:
         MainWindow->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
-        menuBar->addAction(menuSelect->menuAction());
         menuBar->addAction(menuEdit->menuAction());
         menuBar->addAction(menuWindow->menuAction());
         menuFile->addAction(actionNew);
         menuFile->addAction(actionOpen);
+        menuFile->addAction(actionOpenOSM);
         menuFile->addSeparator();
         menuFile->addAction(actionSave);
         menuFile->addSeparator();
@@ -158,7 +158,6 @@ public:
         menuEdit->addAction(actionUndo);
         menuEdit->addSeparator();
         menuEdit->addAction(actionDeleteEdge);
-        menuSelect->addAction(actionSelectAll);
 
         retranslateUi(MainWindow);
 
@@ -198,10 +197,10 @@ public:
         actionModeLayer->setText(QApplication::translate("MainWindow", "Graph", 0));
         actionModeSketch->setText(QApplication::translate("MainWindow", "Sketch", 0));
         actionShowArea->setText(QApplication::translate("MainWindow", "Show Area", 0));
+        actionOpenOSM->setText(QApplication::translate("MainWindow", "Open OSM", 0));
         menuFile->setTitle(QApplication::translate("MainWindow", "File", 0));
         menuWindow->setTitle(QApplication::translate("MainWindow", "Window", 0));
         menuEdit->setTitle(QApplication::translate("MainWindow", "Edit", 0));
-        menuSelect->setTitle(QApplication::translate("MainWindow", "Select", 0));
     } // retranslateUi
 
 };

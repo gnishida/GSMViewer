@@ -35,6 +35,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenOSM"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
@@ -54,14 +55,7 @@
     <addaction name="separator"/>
     <addaction name="actionDeleteEdge"/>
    </widget>
-   <widget class="QMenu" name="menuSelect">
-    <property name="title">
-     <string>Select</string>
-    </property>
-    <addaction name="actionSelectAll"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuSelect"/>
    <addaction name="menuEdit"/>
    <addaction name="menuWindow"/>
   </widget>
@@ -233,6 +227,11 @@
   <action name="actionShowArea">
    <property name="text">
     <string>Show Area</string>
+   </property>
+  </action>
+  <action name="actionOpenOSM">
+   <property name="text">
+    <string>Open OSM</string>
    </property>
   </action>
  </widget>

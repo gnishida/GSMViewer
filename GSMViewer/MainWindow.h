@@ -30,6 +30,7 @@ public slots:
 	void onMenuEdit();
 	void onNew();
 	void onOpen();
+	void onOpenOSM();
 	void onSave();
 	void onUndo();
 	void onDeleteEdge();
