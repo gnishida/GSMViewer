@@ -18,6 +18,6 @@ public:
 };
 
 /**
- * Linestringを定義
+ * Polyline2D
  */
 BOOST_GEOMETRY_REGISTER_LINESTRING(Polyline2D)

@@ -9,13 +9,6 @@
 #include <boost/geometry/geometries/polygon.hpp>
 #include "BBox.h"
 
-/**
- * QVector2DをBoostのpointの代替として使用
- */
-// BBox.hで定義済みなので、再定義は不要
-//BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(QVector2D, float, boost::geometry::cs::cartesian, x, y, setX, setY)
-
-
 
 class Polygon2D : public std::vector<QVector2D> {
 public:
@@ -44,7 +37,7 @@ public:
 };
 
 /**
- * Polygon2DをBoostのringの代替として使用
+ * Polygon2D
  */
 BOOST_GEOMETRY_REGISTER_RING(Polygon2D)
 

@@ -174,7 +174,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 
 	showStatusMessage();
 
-	setCursor(Qt::ArrowCursor);
 	updateGL();
 }
 
