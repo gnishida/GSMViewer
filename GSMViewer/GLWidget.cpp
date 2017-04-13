@@ -245,17 +245,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
-	} else if (e->buttons() & Qt::RightButton) { // Zoom the camera
-		setCursor(Qt::SizeVerCursor);
-
-		camera->changeXYZTranslation(0, 0, -dy * camera->dz * 0.02f);
-		if (camera->dz < MIN_Z) camera->dz = MIN_Z;
-		if (camera->dz > MAX_Z) camera->dz = MAX_Z;
-
-		// tell the Z coordinate to the road graph so that road graph updates rendering related variables.
-		editor->roads.setZ(camera->dz);
-
-		lastPos = e->pos();
 	}
 
 	last2DPos = pos;
@@ -273,6 +262,17 @@ void GLWidget::mouseDoubleClickEvent(QMouseEvent *e) {
 
 		editor->mode = RoadGraphEditor::MODE_DEFAULT;
 	}
+}
+
+void GLWidget::wheelEvent(QWheelEvent* e) {
+	camera->changeXYZTranslation(0, 0, -e->delta() * camera->dz * 0.002f);
+	if (camera->dz < MIN_Z) camera->dz = MIN_Z;
+	if (camera->dz > MAX_Z) camera->dz = MAX_Z;
+
+	// tell the Z coordinate to the road graph so that road graph updates rendering related variables.
+	editor->roads.setZ(camera->dz);
+
+	updateGL();
 }
 
 void GLWidget::initializeGL() {

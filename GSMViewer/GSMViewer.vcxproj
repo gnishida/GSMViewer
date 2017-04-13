@@ -131,22 +131,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\mylib\common\BBox.cpp" />
-    <ClCompile Include="..\..\mylib\common\Polygon2D.cpp" />
-    <ClCompile Include="..\..\mylib\common\PolygonBuilder.cpp" />
-    <ClCompile Include="..\..\mylib\common\Polyline2D.cpp" />
-    <ClCompile Include="..\..\mylib\common\Polyline3D.cpp" />
-    <ClCompile Include="..\..\mylib\common\Renderable.cpp" />
-    <ClCompile Include="..\..\mylib\common\Util.cpp" />
-    <ClCompile Include="..\..\mylib\road\GraphUtil.cpp" />
-    <ClCompile Include="..\..\mylib\road\RoadArea.cpp" />
-    <ClCompile Include="..\..\mylib\road\RoadAreaSet.cpp" />
-    <ClCompile Include="..\..\mylib\road\RoadEdge.cpp" />
-    <ClCompile Include="..\..\mylib\road\RoadGraph.cpp" />
-    <ClCompile Include="..\..\mylib\road\RoadGraphRenderer.cpp" />
-    <ClCompile Include="..\..\mylib\road\RoadVertex.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ClipBoard.cpp" />
+    <ClCompile Include="common\BBox.cpp" />
+    <ClCompile Include="common\global.cpp" />
+    <ClCompile Include="common\Polygon2D.cpp" />
+    <ClCompile Include="common\PolygonBuilder.cpp" />
+    <ClCompile Include="common\Polyline2D.cpp" />
+    <ClCompile Include="common\Polyline3D.cpp" />
+    <ClCompile Include="common\Renderable.cpp" />
+    <ClCompile Include="common\Util.cpp" />
     <ClCompile Include="ControlWidget.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_ControlWidget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -178,6 +172,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="RoadGraphEditor.cpp" />
+    <ClCompile Include="road\GraphUtil.cpp" />
+    <ClCompile Include="road\RoadEdge.cpp" />
+    <ClCompile Include="road\RoadGraph.cpp" />
+    <ClCompile Include="road\RoadGraphRenderer.cpp" />
+    <ClCompile Include="road\RoadVertex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.h">
@@ -222,24 +221,23 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\mylib\common\BBox.h" />
-    <ClInclude Include="..\..\mylib\common\common.h" />
-    <ClInclude Include="..\..\mylib\common\Polygon2D.h" />
-    <ClInclude Include="..\..\mylib\common\PolygonBuilder.h" />
-    <ClInclude Include="..\..\mylib\common\Polyline2D.h" />
-    <ClInclude Include="..\..\mylib\common\Polyline3D.h" />
-    <ClInclude Include="..\..\mylib\common\Renderable.h" />
-    <ClInclude Include="..\..\mylib\common\Util.h" />
-    <ClInclude Include="..\..\mylib\road\GraphUtil.h" />
-    <ClInclude Include="..\..\mylib\road\RoadArea.h" />
-    <ClInclude Include="..\..\mylib\road\RoadAreaSet.h" />
-    <ClInclude Include="..\..\mylib\road\RoadEdge.h" />
-    <ClInclude Include="..\..\mylib\road\RoadGraph.h" />
-    <ClInclude Include="..\..\mylib\road\RoadGraphRenderer.h" />
-    <ClInclude Include="..\..\mylib\road\RoadVertex.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ClipBoard.h" />
+    <ClInclude Include="common\BBox.h" />
+    <ClInclude Include="common\common.h" />
+    <ClInclude Include="common\global.h" />
+    <ClInclude Include="common\Polygon2D.h" />
+    <ClInclude Include="common\PolygonBuilder.h" />
+    <ClInclude Include="common\Polyline2D.h" />
+    <ClInclude Include="common\Polyline3D.h" />
+    <ClInclude Include="common\Renderable.h" />
+    <ClInclude Include="common\Util.h" />
     <ClInclude Include="RoadGraphEditor.h" />
+    <ClInclude Include="road\GraphUtil.h" />
+    <ClInclude Include="road\RoadEdge.h" />
+    <ClInclude Include="road\RoadGraph.h" />
+    <ClInclude Include="road\RoadGraphRenderer.h" />
+    <ClInclude Include="road\RoadVertex.h" />
     <CustomBuild Include="ControlWidget.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath);%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ControlWidget.h...</Message>

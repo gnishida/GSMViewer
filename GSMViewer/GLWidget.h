@@ -46,6 +46,7 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *e);
 	void mouseMoveEvent(QMouseEvent *e);
 	void mouseDoubleClickEvent(QMouseEvent *e);
+	void wheelEvent(QWheelEvent* e);
 	void initializeGL();
 	void resizeGL(int width, int height);
 	void paintGL();

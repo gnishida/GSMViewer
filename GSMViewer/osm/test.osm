@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="CGImap 0.5.8 (7115 thorn-02.openstreetmap.org)" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+ <bounds minlat="40.4617600" minlon="-86.9248800" maxlat="40.4631400" maxlon="-86.9223300"/>
+ <node id="37968698" visible="true" version="3" changeset="3977332" timestamp="2010-02-26T02:55:56Z" user="mcgrew" uid="156147" lat="40.4620399" lon="-86.9227465"/>
+ <node id="37968701" visible="true" version="3" changeset="3977332" timestamp="2010-02-26T02:55:57Z" user="mcgrew" uid="156147" lat="40.4627365" lon="-86.9227819"/>
+ <node id="37983882" visible="true" version="4" changeset="4021730" timestamp="2010-03-03T00:54:55Z" user="mcgrew" uid="156147" lat="40.4619970" lon="-86.9245148"/>
+ <node id="37983883" visible="true" version="3" changeset="3977332" timestamp="2010-02-26T02:55:53Z" user="mcgrew" uid="156147" lat="40.4619541" lon="-86.9248100"/>
+ <node id="37983884" visible="true" version="3" changeset="3977332" timestamp="2010-02-26T02:55:52Z" user="mcgrew" uid="156147" lat="40.4619194" lon="-86.9252994"/>
+ <node id="37995423" visible="true" version="3" changeset="3977332" timestamp="2010-02-26T02:55:56Z" user="mcgrew" uid="156147" lat="40.4620231" lon="-86.9237939"/>
+ <node id="37995424" visible="true" version="3" changeset="3977332" timestamp="2010-02-26T02:55:57Z" user="mcgrew" uid="156147" lat="40.4627264" lon="-86.9238249"/>
+ <node id="38028108" visible="true" version="2" changeset="3078855" timestamp="2009-11-09T23:40:32Z" user="woodpeck_fixbot" uid="147510" lat="40.4649370" lon="-86.9246010"/>
+ <node id="38028113" visible="true" version="2" changeset="3078855" timestamp="2009-11-09T23:40:32Z" user="woodpeck_fixbot" uid="147510" lat="40.4664820" lon="-86.9246500"/>
+ <node id="38028117" visible="true" version="4" changeset="43442696" timestamp="2016-11-06T14:34:14Z" user="lrhill" uid="1813535" lat="40.4679087" lon="-86.9246133"/>
+ <node id="650004344" visible="true" version="2" changeset="43442696" timestamp="2016-11-06T14:34:14Z" user="lrhill" uid="1813535" lat="40.4678077" lon="-86.9246126"/>
+ <node id="3547584564" visible="true" version="1" changeset="31478492" timestamp="2015-05-26T16:26:28Z" user="dcs" uid="236412" lat="40.4611032" lon="-86.9245200"/>
+ <way id="5327023" visible="true" version="4" changeset="31596181" timestamp="2015-05-31T00:34:21Z" user="jumbanho" uid="38487">
+  <nd ref="37968698"/>
+  <nd ref="37968701"/>
+  <tag k="highway" v="residential"/>
+  <tag k="name" v="Fall Place"/>
+  <tag k="tiger:cfcc" v="A41"/>
+  <tag k="tiger:county" v="Tippecanoe, IN"/>
+  <tag k="tiger:name_base" v="Fall"/>
+  <tag k="tiger:name_type" v="Pl"/>
+  <tag k="tiger:reviewed" v="no"/>
+  <tag k="tiger:zip_left" v="47906"/>
+  <tag k="tiger:zip_right" v="47906"/>
+ </way>
+ <way id="5328626" visible="true" version="3" changeset="31596181" timestamp="2015-05-31T00:35:02Z" user="jumbanho" uid="38487">
+  <nd ref="37983882"/>
+  <nd ref="37983883"/>
+  <nd ref="37983884"/>
+  <tag k="highway" v="residential"/>
+  <tag k="tiger:cfcc" v="A74"/>
+  <tag k="tiger:county" v="Tippecanoe, IN"/>
+  <tag k="tiger:reviewed" v="no"/>
+ </way>
+ <way id="5329764" visible="true" version="4" changeset="31596181" timestamp="2015-05-31T00:34:20Z" user="jumbanho" uid="38487">
+  <nd ref="37995423"/>
+  <nd ref="37995424"/>
+  <tag k="highway" v="residential"/>
+  <tag k="name" v="Fall Court"/>
+  <tag k="tiger:cfcc" v="A41"/>
+  <tag k="tiger:county" v="Tippecanoe, IN"/>
+  <tag k="tiger:name_base" v="Fall"/>
+  <tag k="tiger:name_type" v="Ct"/>
+  <tag k="tiger:reviewed" v="no"/>
+  <tag k="tiger:zip_left" v="47906"/>
+  <tag k="tiger:zip_right" v="47906"/>
+ </way>
+ <way id="5333232" visible="true" version="4" changeset="31596181" timestamp="2015-05-31T00:34:48Z" user="jumbanho" uid="38487">
+  <nd ref="37968698"/>
+  <nd ref="37995423"/>
+  <nd ref="37983882"/>
+  <tag k="highway" v="residential"/>
+  <tag k="name" v="Summer Drive"/>
+  <tag k="tiger:cfcc" v="A41"/>
+  <tag k="tiger:county" v="Tippecanoe, IN"/>
+  <tag k="tiger:name_base" v="Summer"/>
+  <tag k="tiger:name_type" v="Dr"/>
+  <tag k="tiger:reviewed" v="no"/>
+ </way>
+ <way id="348710866" visible="true" version="1" changeset="31478492" timestamp="2015-05-26T16:26:28Z" user="dcs" uid="236412">
+  <nd ref="3547584564"/>
+  <nd ref="37983882"/>
+  <nd ref="38028108"/>
+  <nd ref="38028113"/>
+  <nd ref="650004344"/>
+  <nd ref="38028117"/>
+  <tag k="highway" v="residential"/>
+  <tag k="name" v="Yeager Road"/>
+  <tag k="tiger:cfcc" v="A41"/>
+  <tag k="tiger:county" v="Tippecanoe, IN"/>
+  <tag k="tiger:name_base" v="Yeager"/>
+  <tag k="tiger:name_type" v="Rd"/>
+  <tag k="tiger:reviewed" v="no"/>
+  <tag k="tiger:zip_left" v="47906"/>
+  <tag k="tiger:zip_right" v="47906"/>
+ </way>
+</osm>

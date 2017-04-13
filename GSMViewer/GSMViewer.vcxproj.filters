@@ -33,14 +33,11 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="mylib">
-      <UniqueIdentifier>{3d6702d7-d437-4538-a304-38571e5a91eb}</UniqueIdentifier>
+    <Filter Include="Source Files\road">
+      <UniqueIdentifier>{b2f76c68-a3a6-48ab-aa45-ab271b83add4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="mylib\common">
-      <UniqueIdentifier>{e091feb3-715a-4a4b-a31d-48b4edf8df18}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="mylib\road">
-      <UniqueIdentifier>{d991e6d7-604b-43a9-83bd-c480d1678e85}</UniqueIdentifier>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{4429bca2-bcf0-491d-bfff-9814cfbbf832}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -80,47 +77,44 @@
     <ClCompile Include="ClipBoard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\common\BBox.cpp">
-      <Filter>mylib\common</Filter>
+    <ClCompile Include="road\GraphUtil.cpp">
+      <Filter>Source Files\road</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\common\Polygon2D.cpp">
-      <Filter>mylib\common</Filter>
+    <ClCompile Include="road\RoadEdge.cpp">
+      <Filter>Source Files\road</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\common\Util.cpp">
-      <Filter>mylib\common</Filter>
+    <ClCompile Include="road\RoadGraph.cpp">
+      <Filter>Source Files\road</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\common\Renderable.cpp">
-      <Filter>mylib\common</Filter>
+    <ClCompile Include="road\RoadVertex.cpp">
+      <Filter>Source Files\road</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\road\GraphUtil.cpp">
-      <Filter>mylib\road</Filter>
+    <ClCompile Include="common\BBox.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\road\RoadArea.cpp">
-      <Filter>mylib\road</Filter>
+    <ClCompile Include="common\global.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\road\RoadAreaSet.cpp">
-      <Filter>mylib\road</Filter>
+    <ClCompile Include="common\Polygon2D.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\road\RoadEdge.cpp">
-      <Filter>mylib\road</Filter>
+    <ClCompile Include="common\Polyline2D.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\road\RoadGraph.cpp">
-      <Filter>mylib\road</Filter>
+    <ClCompile Include="common\Polyline3D.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\road\RoadGraphRenderer.cpp">
-      <Filter>mylib\road</Filter>
+    <ClCompile Include="common\Util.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\road\RoadVertex.cpp">
-      <Filter>mylib\road</Filter>
+    <ClCompile Include="road\RoadGraphRenderer.cpp">
+      <Filter>Source Files\road</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\common\PolygonBuilder.cpp">
-      <Filter>mylib\common</Filter>
+    <ClCompile Include="common\PolygonBuilder.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mylib\common\Polyline2D.cpp">
-      <Filter>mylib\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mylib\common\Polyline3D.cpp">
-      <Filter>mylib\common</Filter>
+    <ClCompile Include="common\Renderable.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -159,50 +153,47 @@
     <ClInclude Include="ClipBoard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\common\BBox.h">
-      <Filter>mylib\common</Filter>
+    <ClInclude Include="road\GraphUtil.h">
+      <Filter>Source Files\road</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\common\common.h">
-      <Filter>mylib\common</Filter>
+    <ClInclude Include="road\RoadEdge.h">
+      <Filter>Source Files\road</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\common\Polygon2D.h">
-      <Filter>mylib\common</Filter>
+    <ClInclude Include="road\RoadGraph.h">
+      <Filter>Source Files\road</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\common\Util.h">
-      <Filter>mylib\common</Filter>
+    <ClInclude Include="road\RoadVertex.h">
+      <Filter>Source Files\road</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\common\Renderable.h">
-      <Filter>mylib\common</Filter>
+    <ClInclude Include="common\BBox.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\road\GraphUtil.h">
-      <Filter>mylib\road</Filter>
+    <ClInclude Include="common\common.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\road\RoadArea.h">
-      <Filter>mylib\road</Filter>
+    <ClInclude Include="common\global.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\road\RoadAreaSet.h">
-      <Filter>mylib\road</Filter>
+    <ClInclude Include="common\Polygon2D.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\road\RoadEdge.h">
-      <Filter>mylib\road</Filter>
+    <ClInclude Include="common\Polyline2D.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\road\RoadGraph.h">
-      <Filter>mylib\road</Filter>
+    <ClInclude Include="common\Polyline3D.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\road\RoadGraphRenderer.h">
-      <Filter>mylib\road</Filter>
+    <ClInclude Include="common\Util.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\road\RoadVertex.h">
-      <Filter>mylib\road</Filter>
+    <ClInclude Include="road\RoadGraphRenderer.h">
+      <Filter>Source Files\road</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\common\PolygonBuilder.h">
-      <Filter>mylib\common</Filter>
+    <ClInclude Include="common\PolygonBuilder.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mylib\common\Polyline2D.h">
-      <Filter>mylib\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\mylib\common\Polyline3D.h">
-      <Filter>mylib\common</Filter>
+    <ClInclude Include="common\Renderable.h">
+      <Filter>Source Files\common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
