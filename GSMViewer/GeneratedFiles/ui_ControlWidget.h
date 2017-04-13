@@ -19,7 +19,6 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QPushButton>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -39,16 +38,6 @@ public:
     QLabel *label_9;
     QLabel *label_10;
     QLineEdit *lineEditEdgeRoundabout;
-    QGroupBox *groupBox_2;
-    QLabel *label_4;
-    QLineEdit *lineEditSimplifyThreshold;
-    QPushButton *pushButtonSimplify;
-    QGroupBox *groupBox_3;
-    QPushButton *pushButtonRemoveShortDeadend;
-    QLabel *label_5;
-    QLineEdit *lineEditRemoveShortDeadendThreshold;
-    QGroupBox *groupBox_4;
-    QPushButton *pushButtonClean;
     QGroupBox *groupBox_5;
     QLabel *label_6;
     QLineEdit *lineEditVertexDesc;
@@ -56,8 +45,6 @@ public:
     QLineEdit *lineEditVertexPos;
     QLabel *label_8;
     QLineEdit *lineEditVertexNeighbors;
-    QGroupBox *groupBox_6;
-    QPushButton *pushButtonReduce;
     QCheckBox *checkBoxShowHighway;
     QCheckBox *checkBoxShowBoulevard;
     QCheckBox *checkBoxShowAvenue;
@@ -105,37 +92,6 @@ public:
         lineEditEdgeRoundabout = new QLineEdit(groupBox);
         lineEditEdgeRoundabout->setObjectName(QStringLiteral("lineEditEdgeRoundabout"));
         lineEditEdgeRoundabout->setGeometry(QRect(80, 100, 81, 20));
-        groupBox_2 = new QGroupBox(dockWidgetContents);
-        groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
-        groupBox_2->setGeometry(QRect(10, 490, 171, 91));
-        label_4 = new QLabel(groupBox_2);
-        label_4->setObjectName(QStringLiteral("label_4"));
-        label_4->setGeometry(QRect(20, 20, 46, 21));
-        lineEditSimplifyThreshold = new QLineEdit(groupBox_2);
-        lineEditSimplifyThreshold->setObjectName(QStringLiteral("lineEditSimplifyThreshold"));
-        lineEditSimplifyThreshold->setGeometry(QRect(80, 20, 81, 20));
-        pushButtonSimplify = new QPushButton(groupBox_2);
-        pushButtonSimplify->setObjectName(QStringLiteral("pushButtonSimplify"));
-        pushButtonSimplify->setGeometry(QRect(10, 50, 151, 31));
-        groupBox_3 = new QGroupBox(dockWidgetContents);
-        groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
-        groupBox_3->setGeometry(QRect(10, 590, 171, 91));
-        pushButtonRemoveShortDeadend = new QPushButton(groupBox_3);
-        pushButtonRemoveShortDeadend->setObjectName(QStringLiteral("pushButtonRemoveShortDeadend"));
-        pushButtonRemoveShortDeadend->setGeometry(QRect(10, 50, 151, 31));
-        label_5 = new QLabel(groupBox_3);
-        label_5->setObjectName(QStringLiteral("label_5"));
-        label_5->setGeometry(QRect(20, 20, 46, 21));
-        lineEditRemoveShortDeadendThreshold = new QLineEdit(groupBox_3);
-        lineEditRemoveShortDeadendThreshold->setObjectName(QStringLiteral("lineEditRemoveShortDeadendThreshold"));
-        lineEditRemoveShortDeadendThreshold->setGeometry(QRect(80, 20, 81, 20));
-        groupBox_4 = new QGroupBox(dockWidgetContents);
-        groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
-        groupBox_4->setGeometry(QRect(10, 350, 171, 61));
-        pushButtonClean = new QPushButton(groupBox_4);
-        pushButtonClean->setObjectName(QStringLiteral("pushButtonClean"));
-        pushButtonClean->setGeometry(QRect(10, 20, 151, 31));
-        pushButtonClean->setStyleSheet(QStringLiteral(""));
         groupBox_5 = new QGroupBox(dockWidgetContents);
         groupBox_5->setObjectName(QStringLiteral("groupBox_5"));
         groupBox_5->setGeometry(QRect(10, 80, 171, 91));
@@ -157,12 +113,6 @@ public:
         lineEditVertexNeighbors = new QLineEdit(groupBox_5);
         lineEditVertexNeighbors->setObjectName(QStringLiteral("lineEditVertexNeighbors"));
         lineEditVertexNeighbors->setGeometry(QRect(80, 60, 81, 20));
-        groupBox_6 = new QGroupBox(dockWidgetContents);
-        groupBox_6->setObjectName(QStringLiteral("groupBox_6"));
-        groupBox_6->setGeometry(QRect(10, 420, 171, 61));
-        pushButtonReduce = new QPushButton(groupBox_6);
-        pushButtonReduce->setObjectName(QStringLiteral("pushButtonReduce"));
-        pushButtonReduce->setGeometry(QRect(10, 20, 151, 31));
         checkBoxShowHighway = new QCheckBox(dockWidgetContents);
         checkBoxShowHighway->setObjectName(QStringLiteral("checkBoxShowHighway"));
         checkBoxShowHighway->setGeometry(QRect(10, 10, 70, 17));
@@ -190,20 +140,10 @@ public:
         label_3->setText(QApplication::translate("ControlWidget", "One Way", 0));
         label_9->setText(QApplication::translate("ControlWidget", "Link", 0));
         label_10->setText(QApplication::translate("ControlWidget", "Roundabout", 0));
-        groupBox_2->setTitle(QApplication::translate("ControlWidget", "Simplify", 0));
-        label_4->setText(QApplication::translate("ControlWidget", "Threshold", 0));
-        pushButtonSimplify->setText(QApplication::translate("ControlWidget", "Simplify", 0));
-        groupBox_3->setTitle(QApplication::translate("ControlWidget", "Remove Short Dead-End", 0));
-        pushButtonRemoveShortDeadend->setText(QApplication::translate("ControlWidget", "Remove Short Dead-End", 0));
-        label_5->setText(QApplication::translate("ControlWidget", "Threshold", 0));
-        groupBox_4->setTitle(QApplication::translate("ControlWidget", "Clean", 0));
-        pushButtonClean->setText(QApplication::translate("ControlWidget", "Clean", 0));
         groupBox_5->setTitle(QApplication::translate("ControlWidget", "Vertex", 0));
         label_6->setText(QApplication::translate("ControlWidget", "ID", 0));
         label_7->setText(QApplication::translate("ControlWidget", "Location", 0));
         label_8->setText(QApplication::translate("ControlWidget", "Neighbors", 0));
-        groupBox_6->setTitle(QApplication::translate("ControlWidget", "Reduce", 0));
-        pushButtonReduce->setText(QApplication::translate("ControlWidget", "Reduce", 0));
         checkBoxShowHighway->setText(QApplication::translate("ControlWidget", "Highways", 0));
         checkBoxShowBoulevard->setText(QApplication::translate("ControlWidget", "Boulevard", 0));
         checkBoxShowAvenue->setText(QApplication::translate("ControlWidget", "Avenues", 0));

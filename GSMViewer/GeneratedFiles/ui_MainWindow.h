@@ -157,9 +157,6 @@ public:
         menuWindow->addAction(actionControlWidget);
         menuEdit->addAction(actionUndo);
         menuEdit->addSeparator();
-        menuEdit->addAction(actionCut);
-        menuEdit->addAction(actionCopy);
-        menuEdit->addAction(actionPaste);
         menuEdit->addAction(actionDeleteEdge);
         menuSelect->addAction(actionSelectAll);
 

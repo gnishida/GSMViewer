@@ -11,7 +11,6 @@ float GLWidget::MAX_Z = 11520.0f;
 GLWidget::GLWidget(MainWindow* mainWin) : QGLWidget(QGLFormat(QGL::SampleBuffers), (QWidget*)mainWin) {
 	this->mainWin = mainWin;
 
-	//roads = new RoadGraph();
 	editor = new RoadGraphEditor();
 	renderer = new RoadGraphRenderer();
 
@@ -43,11 +42,6 @@ void GLWidget::drawScene() {
 	// define the height for other items
 	float height = (float)((int)(camera->dz * 0.012f)) * 0.1f * 1.5f;
 
-	// draw the selected area
-	if (editor->selectedAreaBuilder.selected()) {
-		renderer->renderArea(editor->selectedAreaBuilder.polygon(), GL_LINE_STIPPLE, QColor(0, 0, 255), height);
-	}
-
 	// draw the selected vertex
 	if (editor->selectedVertex != NULL) {
 		renderer->renderPoint(editor->selectedVertex->pt, QColor(0, 0, 255), height);
@@ -74,12 +68,6 @@ void GLWidget::showStatusMessage() {
 		break;
 	case RoadGraphEditor::MODE_EDGE_SELECTED:
 		strMode = "MODE_EDGE_SELECTED";
-		break;
-	case RoadGraphEditor::MODE_DEFINING_AREA:
-		strMode = "MODE_DEFINING_AREA";
-		break;
-	case RoadGraphEditor::MODE_AREA_SELECTED:
-		strMode = "MODE_AREA_SELECTED";
 		break;
 	}
 
@@ -146,37 +134,19 @@ void GLWidget::mousePressEvent(QMouseEvent *e) {
 	lastPos = e->pos();
 	mouseTo2D(e->x(), e->y(), &last2DPos);
 
-	if (e->buttons() & Qt::LeftButton) {
-		//mainWin->ui.statusBar->showMessage(QString("clicked (%1, %2)").arg(pos.x()).arg(pos.y()));
-
-		if (editor->mode == RoadGraphEditor::MODE_AREA_SELECTED) {
-			/*if (editor->selectedArea->hitTest(last2DPos)) {
-			} else {
-				editor->unselectRoads();
-			}*/
-		} else {
-			if (keyXPressed) {
-				editor->splitEdge(last2DPos);
-			}
-
-			// if the vertex is close to the point, the vertex is selected
-			if (editor->selectVertex(last2DPos)) {
-				editor->startMovingVertex();
-			} else if (editor->selectEdge(last2DPos)) {				
-			} else {
-				/*if (!editor->selectedAreaBuilder.selecting()) {
-					editor->selectedAreaBuilder.start(last2DPos);
-					setMouseTracking(true);
-					editor->mode = RoadGraphEditor::MODE_DEFINING_AREA;
-				}*/
-
-				// if neither a vertex nor a edge is selected, then the selection mode starts
-				//editor->startDefiningArea(last2DPos);
-			}
-
-			mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
-			mainWin->controlWidget->setRoadEdge(editor->selectedEdge);
+	if (e->buttons() & Qt::LeftButton) {		
+		if (keyXPressed) {
+			editor->splitEdge(last2DPos);
 		}
+
+		// if the vertex is close to the point, the vertex is selected
+		if (editor->selectVertex(last2DPos)) {
+			editor->startMovingVertex();
+		} else if (editor->selectEdge(last2DPos)) {	
+		}
+
+		mainWin->controlWidget->setRoadVertex(editor->selectedVertexDesc, editor->selectedVertex);
+		mainWin->controlWidget->setRoadEdge(editor->selectedEdge);
 	}
 
 	showStatusMessage();
@@ -198,9 +168,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *e) {
 			editor->stopMovingVertex();
 		}
 		break;
-	case RoadGraphEditor::MODE_DEFINING_AREA:
-		//editor->stopDefiningArea();
-		break;
 	}
 
 	e->ignore();
@@ -215,7 +182,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	float dx = (float)(e->x() - lastPos.x());
 	float dy = (float)(e->y() - lastPos.y());
 	lastPos = e->pos();
-	//float camElevation = camera->getCamElevation();
 
 	QVector2D pos;
 	mouseTo2D(e->x(), e->y(), &pos);
@@ -236,12 +202,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 				editor->moveVertex(last2DPos);
 			}
 			break;
-		case RoadGraphEditor::MODE_DEFINING_AREA:
-			// update the selection box
-			/*if (editor->selectedAreaBuilder.selecting()) {	// Move the last point of the selected polygonal area
-				editor->selectedAreaBuilder.moveLastPoint(pos);
-			}*/
-			break;
 		}
 	} else if (e->buttons() & Qt::MidButton) {   // Shift the camera
 		camera->changeXYZTranslation(-dx * camera->dz * 0.001f, dy * camera->dz * 0.001f, 0);
@@ -251,17 +211,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e) {
 	showStatusMessage();
 
 	updateGL();
-}
-
-void GLWidget::mouseDoubleClickEvent(QMouseEvent *e) {
-	setMouseTracking(false);
-
-	if (editor->selectedAreaBuilder.selecting()) {
-		editor->selectedAreaBuilder.end();
-		editor->selectedArea = editor->selectedAreaBuilder.polygon();
-
-		editor->mode = RoadGraphEditor::MODE_DEFAULT;
-	}
 }
 
 void GLWidget::wheelEvent(QWheelEvent* e) {

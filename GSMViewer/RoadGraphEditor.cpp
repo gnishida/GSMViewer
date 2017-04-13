@@ -20,7 +20,6 @@ void RoadGraphEditor::clear() {
 
 	selectedVertex = NULL;
 	selectedEdge = NULL;
-	selectedAreaBuilder.cancel();
 
 	history.clear();
 }
@@ -32,6 +31,10 @@ void RoadGraphEditor::openRoad(QString filename) {
 }
 
 void RoadGraphEditor::saveRoad(QString filename) {
+	// make the vertex with degree of 2 just a point on an edge
+	GraphUtil::reduce(roads);
+	GraphUtil::clean(roads);
+
 	GraphUtil::saveRoads(roads, filename);
 }
 
@@ -46,33 +49,17 @@ void RoadGraphEditor::undo() {
 	selectedEdge = NULL;
 }
 
-void RoadGraphEditor::cut() {
-	if (mode != MODE_AREA_SELECTED) return;
-	if (!selectedAreaBuilder.selected()) return;
-
-	history.push_back(roads);
-
-	// extract the roads within the area, and put it into the clipboard.
-	clipBoard.copy(roads, selectedArea);
-
-	GraphUtil::subtractRoads2(roads, selectedArea);
-}
-
 bool RoadGraphEditor::deleteEdge() {
 	if (selectedEdge == NULL) return false;
 
 	RoadGraph temp;
-	history.push_back(roads);
+	GraphUtil::copyRoads(roads, temp);
+	history.push_back(temp);
 	roads.graph[selectedEdgeDesc]->valid = false;
 	selectedEdge = NULL;
 	roads.setModified();
 
 	return true;
-}
-
-void RoadGraphEditor::simplify(float threshold) {
-	history.push_back(roads);
-	GraphUtil::simplify(roads, threshold);
 }
 
 void RoadGraphEditor::reduce() {
@@ -87,13 +74,6 @@ void RoadGraphEditor::removeShortDeadend(float threshold) {
 
 void RoadGraphEditor::planarify() {
 	GraphUtil::planarify(roads);
-}
-
-void RoadGraphEditor::selectAll() {
-	BBox bbox = GraphUtil::getAABoundingBox(roads);
-	boost::geometry::convert(bbox, selectedArea);
-
-	mode = MODE_AREA_SELECTED;
 }
 
 void RoadGraphEditor::unselectRoads() {
@@ -120,8 +100,7 @@ bool RoadGraphEditor::selectVertex(const QVector2D& pt) {
 }
 
 /**
- * 指定された点に近いエッジを選択する。
- * 近くにエッジがない場合は、falseを返却する。
+ * Select an edge.
  */
 bool RoadGraphEditor::selectEdge(const QVector2D& pt) {
 	RoadEdgeDesc desc;

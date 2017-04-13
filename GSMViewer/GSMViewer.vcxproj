@@ -132,13 +132,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ClipBoard.cpp" />
     <ClCompile Include="common\BBox.cpp" />
-    <ClCompile Include="common\global.cpp" />
     <ClCompile Include="common\Polygon2D.cpp" />
-    <ClCompile Include="common\PolygonBuilder.cpp" />
     <ClCompile Include="common\Polyline2D.cpp" />
-    <ClCompile Include="common\Polyline3D.cpp" />
     <ClCompile Include="common\Renderable.cpp" />
     <ClCompile Include="common\Util.cpp" />
     <ClCompile Include="ControlWidget.cpp" />
@@ -222,14 +218,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="ClipBoard.h" />
     <ClInclude Include="common\BBox.h" />
     <ClInclude Include="common\common.h" />
-    <ClInclude Include="common\global.h" />
     <ClInclude Include="common\Polygon2D.h" />
-    <ClInclude Include="common\PolygonBuilder.h" />
     <ClInclude Include="common\Polyline2D.h" />
-    <ClInclude Include="common\Polyline3D.h" />
     <ClInclude Include="common\Renderable.h" />
     <ClInclude Include="common\Util.h" />
     <ClInclude Include="RoadGraphEditor.h" />

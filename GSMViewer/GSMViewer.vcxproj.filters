@@ -74,9 +74,6 @@
     <ClCompile Include="RoadGraphEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ClipBoard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="road\GraphUtil.cpp">
       <Filter>Source Files\road</Filter>
     </ClCompile>
@@ -92,29 +89,20 @@
     <ClCompile Include="common\BBox.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="common\global.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
     <ClCompile Include="common\Polygon2D.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="common\Polyline2D.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="common\Polyline3D.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
     <ClCompile Include="common\Util.cpp">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-    <ClCompile Include="road\RoadGraphRenderer.cpp">
-      <Filter>Source Files\road</Filter>
-    </ClCompile>
-    <ClCompile Include="common\PolygonBuilder.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
     <ClCompile Include="common\Renderable.cpp">
       <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="road\RoadGraphRenderer.cpp">
+      <Filter>Source Files\road</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -150,9 +138,6 @@
     <ClInclude Include="RoadGraphEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClipBoard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="road\GraphUtil.h">
       <Filter>Source Files\road</Filter>
     </ClInclude>
@@ -171,29 +156,20 @@
     <ClInclude Include="common\common.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="common\global.h">
-      <Filter>Source Files\common</Filter>
-    </ClInclude>
     <ClInclude Include="common\Polygon2D.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
     <ClInclude Include="common\Polyline2D.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="common\Polyline3D.h">
-      <Filter>Source Files\common</Filter>
-    </ClInclude>
     <ClInclude Include="common\Util.h">
-      <Filter>Source Files\common</Filter>
-    </ClInclude>
-    <ClInclude Include="road\RoadGraphRenderer.h">
-      <Filter>Source Files\road</Filter>
-    </ClInclude>
-    <ClInclude Include="common\PolygonBuilder.h">
       <Filter>Source Files\common</Filter>
     </ClInclude>
     <ClInclude Include="common\Renderable.h">
       <Filter>Source Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="road\RoadGraphRenderer.h">
+      <Filter>Source Files\road</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

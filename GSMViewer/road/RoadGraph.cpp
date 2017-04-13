@@ -56,18 +56,6 @@ void RoadGraph::generateMesh() {
 		}
 	}
 
-	// road vertex
-	/*
-	RoadVertexIter vi, vend;
-	for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi) {
-		if (!graph[*vi]->valid) continue;
-
-		if (graph[*vi]->seed) {
-			addMeshFromVertex(renderables[1], graph[*vi], QColor(0, 0, 255), 2.0f);
-		}
-	}
-	*/
-
 	modified = false;
 }
 

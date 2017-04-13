@@ -13,18 +13,12 @@ ControlWidget::ControlWidget(MainWindow* mainWin) : QDockWidget("Control Widget"
 	ui.checkBoxShowBoulevard->setChecked(true);
 	ui.checkBoxShowAvenue->setChecked(true);
 	ui.checkBoxShowLocalStreet->setChecked(true);
-	ui.lineEditSimplifyThreshold->setText("10");
-	ui.lineEditRemoveShortDeadendThreshold->setText("10");
 
 	// register the event handlers
 	connect(ui.checkBoxShowHighway, SIGNAL(stateChanged(int)), this, SLOT(showRoad(int)));
 	connect(ui.checkBoxShowBoulevard, SIGNAL(stateChanged(int)), this, SLOT(showRoad(int)));
 	connect(ui.checkBoxShowAvenue, SIGNAL(stateChanged(int)), this, SLOT(showRoad(int)));
 	connect(ui.checkBoxShowLocalStreet, SIGNAL(stateChanged(int)), this, SLOT(showRoad(int)));
-	connect(ui.pushButtonClean, SIGNAL(clicked()), this, SLOT(clean()));
-	connect(ui.pushButtonSimplify, SIGNAL(clicked()), this, SLOT(simplify()));
-	connect(ui.pushButtonReduce, SIGNAL(clicked()), this, SLOT(reduce()));
-	connect(ui.pushButtonRemoveShortDeadend, SIGNAL(clicked()), this, SLOT(removeShortDeadend()));
 
 	hide();
 }
@@ -106,44 +100,6 @@ void ControlWidget::showRoad(int flag) {
 	mainWin->glWidget->editor->roads.showAvenues = ui.checkBoxShowAvenue->isChecked();
 	mainWin->glWidget->editor->roads.showLocalStreets = ui.checkBoxShowLocalStreet->isChecked();
 	mainWin->glWidget->editor->roads.setModified();
-
-	mainWin->glWidget->updateGL();
-}
-
-/**
- * Event handler for button [Clean]
- */
-void ControlWidget::clean() {
-	GraphUtil::clean(mainWin->glWidget->editor->roads);
-
-	mainWin->glWidget->updateGL();
-}
-
-/**
- * Event handler for button [Simplify]
- */
-void ControlWidget::simplify() {
-	float threshold = ui.lineEditSimplifyThreshold->text().toFloat();
-	mainWin->glWidget->editor->simplify(threshold);
-
-	mainWin->glWidget->updateGL();
-}
-
-/**
- * Event handler for button [Reduce]
- */
-void ControlWidget::reduce() {
-	mainWin->glWidget->editor->reduce();
-
-	mainWin->glWidget->updateGL();
-}
-
-/**
- * Event handler for button [Remove Short Dead-End]
- */
-void ControlWidget::removeShortDeadend() {
-	float threshold = ui.lineEditRemoveShortDeadendThreshold->text().toFloat();
-	mainWin->glWidget->editor->removeShortDeadend(threshold);
 
 	mainWin->glWidget->updateGL();
 }

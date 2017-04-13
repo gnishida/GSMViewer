@@ -22,9 +22,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
-	connect(ui.actionSelectAll, SIGNAL(triggered()), this, SLOT(onSelectAll()));
 	connect(ui.actionUndo, SIGNAL(triggered()), this, SLOT(onUndo()));
-	connect(ui.actionCut, SIGNAL(triggered()), this, SLOT(onCut()));
 	connect(ui.actionDeleteEdge, SIGNAL(triggered()), this, SLOT(onDeleteEdge()));
 	connect(ui.actionControlWidget, SIGNAL(triggered()), this, SLOT(onShowControlWidget()));
 
@@ -58,9 +56,6 @@ void MainWindow::keyReleaseEvent(QKeyEvent* e) {
 
 void MainWindow::onMenuEdit() {
 	ui.actionUndo->setDisabled(glWidget->editor->history.empty());
-	ui.actionCut->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_AREA_SELECTED);
-	ui.actionCopy->setEnabled(glWidget->editor->mode == RoadGraphEditor::MODE_AREA_SELECTED);
-	ui.actionPaste->setDisabled(glWidget->editor->clipBoard.empty());
 	ui.actionDeleteEdge->setDisabled(glWidget->editor->selectedEdge == NULL);
 }
 
@@ -96,23 +91,12 @@ void MainWindow::onSave() {
 	QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::onSelectAll() {
-	glWidget->editor->selectAll();
-	glWidget->updateGL();
-}
-
 void MainWindow::onUndo() {
 	glWidget->editor->undo();
 	glWidget->updateGL();
 }
 
-void MainWindow::onCut() {
-	glWidget->editor->cut();
-	glWidget->updateGL();
-}
-
 void MainWindow::onDeleteEdge() {
-	qDebug() << "onDeleteEdge";
 	glWidget->editor->deleteEdge();
 	glWidget->updateGL();
 }
