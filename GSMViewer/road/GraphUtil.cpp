@@ -1880,6 +1880,9 @@ bool GraphUtil::reduce(RoadGraph& roads, RoadVertexDesc desc) {
 		count++;
 	}
 
+	// Don't remove the vertex if it is a loop road.
+	if (vd[0] == vd[1]) return false;
+
 	if (edges[0]->type != edges[1]->type) return false;
 	//if (edges[0]->lanes != edges[1]->lanes) return false;
 

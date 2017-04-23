@@ -46,6 +46,7 @@ void RoadGraphEditor::openOSMRoad(const QString& filename) {
 	// make the vertex with degree of 2 just a point on an edge
 	GraphUtil::reduce(roads);
 	GraphUtil::clean(roads);
+	GraphUtil::planarify(roads);
 }
 
 void RoadGraphEditor::saveRoad(const QString& filename) {
